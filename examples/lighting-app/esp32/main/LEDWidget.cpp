@@ -129,8 +129,8 @@ void LEDWidget::DoSet(void)
 #else
     if (mGPIONum < GPIO_NUM_MAX)
     {
-        ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, brightness);
-        ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        ledc_set_duty(LEDC_LOW_SPEED_MODE, mChannel, brightness);
+        ledc_update_duty(LEDC_LOW_SPEED_MODE, mChannel);
     }
 #endif // CONFIG_LED_TYPE_RMT
 #if CONFIG_HAVE_DISPLAY

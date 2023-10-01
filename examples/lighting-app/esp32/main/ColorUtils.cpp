@@ -23,9 +23,15 @@ float lerp(float from, float to, float t)
     return from + (to - from) * t;
 }
 
-float invLerp(float from, float to, float value)
+float invLerp(float from, float to, float value, bool clamp = true)
 {
-    return (value - from) / (to - from);
+    float prop = (value - from) / (to - from);
+    if (clamp)
+    {
+        prop = prop < 1.0f ? prop : 1.0f;
+        prop = prop > 0.0f ? prop : 0.0f;
+    }
+    return prop;
 }
 
 float remap(float origFrom, float origTo, float targetFrom, float targetTo, float value)
@@ -71,8 +77,8 @@ std::vector<float> multiLerp(std::vector<float> boundaries, float target)
             ESP_LOGI(TAG, "found boundary %d, %1.3f", i, boundaries[i]);
             didBreak      = true;
             float prop    = invLerp(boundaries[i - 1], boundaries[i], target);
-            result[i - 1] = prop;
-            result[i]     = 1.0f - prop;
+            result[i - 1] = 1.0f - prop;
+            result[i]     = prop;
             break;
         }
         else
@@ -94,8 +100,8 @@ std::vector<float> multiLerp(std::vector<float> boundaries, float target)
         // }
         // else
         // {
-            ESP_LOGI(TAG, "Overflow");
-            result[boundaries.size() - 1] = 1.0f;
+        ESP_LOGI(TAG, "Overflow");
+        result[boundaries.size() - 1] = 1.0f;
         // }
     }
     return result;

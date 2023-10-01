@@ -32,6 +32,20 @@ void LEDCluster::Init(uint8_t * gpios, float * temps, uint8_t size)
         mLeds.push_back(newLed);
         mLedProp.push_back(0.0f);
         mTemps.push_back(temps[ledIndex]);
+        ESP_LOGI(TAG, "Created LED:");
+        ESP_LOGI(TAG, "GPIO %d:", gpios[ledIndex]);
+        ESP_LOGI(TAG, "Channel %d", ledIndex);
+        ESP_LOGI(TAG, "Temp: %1.2f", temps[ledIndex]);
+    }
+    ESP_LOGI(TAG, "Done creating");
+    
+    for (int ledIndex = 0; ledIndex < mLeds.size(); ledIndex++)
+    { 
+        ESP_LOGI(TAG, "Checking LED:");
+        ESP_LOGI(TAG, "GPIO %d:", mLeds[ledIndex].mGPIONum);
+        ESP_LOGI(TAG, "Channel %d", mLeds[ledIndex].mChannel);
+        ESP_LOGI(TAG, "Temp: %1.2f", mTemps[ledIndex]);
+        ESP_LOGI(TAG, "Prop: %1.2f", mLedProp[ledIndex]);
     }
 }
 
@@ -77,8 +91,8 @@ bool LEDCluster::IsTurnedOn()
 void LEDCluster::SetColorTemp(uint16_t temp)
 {
     ESP_LOGI(TAG, "Got Temp %d", temp);
-    float tempf = remap(500, 167, 2600, 5000, temp);
-
+    // float tempf = remap(500, 167, 2600, 5000, temp);
+    float tempf = 1000000.0/(double) temp;
     ESP_LOGI(TAG, "Calced Temp = %1.3f", tempf);
     mLedProp    = multiLerp(mTemps, tempf);
 

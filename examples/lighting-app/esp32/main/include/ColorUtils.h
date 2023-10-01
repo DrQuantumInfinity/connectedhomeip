@@ -17,12 +17,11 @@
 
 #pragma once
 
-
+#include "esp_log.h"
 #include <math.h>
 #include <vector>
-#include "esp_log.h"
 
 float lerp(float from, float to, float t);
-float invLerp(float from, float to, float value);
+float invLerp(float from, float to, float value, bool clamp = true);
 float remap(float origFrom, float origTo, float targetFrom, float targetTo, float value);
 std::vector<float> multiLerp(std::vector<float> boundaries, float target);

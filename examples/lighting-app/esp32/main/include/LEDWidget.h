@@ -48,17 +48,18 @@ public:
     void SetVLED(int id1);
 #endif
 
+    ledc_channel_t mChannel;
+    gpio_num_t mGPIONum;
+    
 private:
     bool mState;
     uint8_t mBrightness;
-    ledc_channel_t mChannel;
 
 #if CONFIG_LED_TYPE_RMT
     uint8_t mHue;
     uint8_t mSaturation;
     led_strip_t * mStrip;
 #else
-    gpio_num_t mGPIONum;
 #endif
 
 #if CONFIG_DEVICE_TYPE_M5STACK
