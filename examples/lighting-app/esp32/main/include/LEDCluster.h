@@ -27,43 +27,34 @@
 #include "driver/ledc.h"
 #include "hal/ledc_types.h"
 #endif
+#include <vector>
+#include "LEDWidget.h"
 
-class LEDWidget
+class LEDCluster
 {
 public:
-    void Init(gpio_num_t gpio_num,  ledc_channel_t channel);
+    void Init(uint8_t * gpios, float * temps, uint8_t size);
     void Set(bool state);
     void Toggle(void);
 
     void SetBrightness(uint8_t brightness);
     void UpdateState();
-#if CONFIG_LED_TYPE_RMT
     void SetColor(uint8_t Hue, uint8_t Saturation);
-#endif
+    void SetColorTemp(uint16_t temp);
     uint8_t GetLevel(void);
     bool IsTurnedOn(void);
 
-#if CONFIG_DEVICE_TYPE_M5STACK
-    // binds this LED to a virtual LED on a screen
-    void SetVLED(int id1);
-#endif
 
 private:
     bool mState;
     uint8_t mBrightness;
-    ledc_channel_t mChannel;
 
-#if CONFIG_LED_TYPE_RMT
     uint8_t mHue;
     uint8_t mSaturation;
-    led_strip_t * mStrip;
-#else
-    gpio_num_t mGPIONum;
-#endif
-
-#if CONFIG_DEVICE_TYPE_M5STACK
-    int mVirtualLEDIndex = -1;
-#endif
+    // led_strip_t * mStrip;
+    std::vector<LEDWidget> mLeds;
+    std::vector<float> mLedProp;
+    std::vector<float> mTemps;
 
     void DoSet(void);
 };

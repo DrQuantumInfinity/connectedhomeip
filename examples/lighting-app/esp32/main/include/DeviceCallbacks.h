@@ -32,9 +32,9 @@ private:
     void OnIdentifyPostAttributeChangeCallback(chip::EndpointId endpointId, chip::AttributeId attributeId, uint8_t * value);
     void OnOnOffPostAttributeChangeCallback(chip::EndpointId endpointId, chip::AttributeId attributeId, uint8_t * value);
     void OnLevelControlAttributeChangeCallback(chip::EndpointId endpointId, chip::AttributeId attributeId, uint8_t * value);
-#if CONFIG_LED_TYPE_RMT
+// #if CONFIG_LED_TYPE_RMT
     void OnColorControlAttributeChangeCallback(chip::EndpointId endpointId, chip::AttributeId attributeId, uint8_t * value);
-#endif
+// #endif
 };
 
 class AppDeviceCallbacksDelegate : public DeviceCallbacksDelegate

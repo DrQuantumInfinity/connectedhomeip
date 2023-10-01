@@ -1,0 +1,111 @@
+/*
+ *
+ *    Copyright (c) 2021-2023 Project CHIP Authors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+#include "LEDCluster.h"
+#include "ColorFormat.h"
+#include "ColorUtils.h"
+#include "LEDWidget.h"
+#include "led_strip.h"
+
+static const char * TAG = "LEDCluster";
+
+void LEDCluster::Init(uint8_t * gpios, float * temps, uint8_t size)
+{
+    for (int ledIndex = 0; ledIndex < size; ledIndex++)
+    {
+        LEDWidget newLed;
+        newLed.Init((gpio_num_t) gpios[ledIndex], (ledc_channel_t) ledIndex);
+        mLeds.push_back(newLed);
+        mLedProp.push_back(0.0f);
+        mTemps.push_back(temps[ledIndex]);
+    }
+}
+
+void LEDCluster::Set(bool state)
+{
+    ESP_LOGI(TAG, "Setting state to %d", state ? 1 : 0);
+    if (state == mState)
+        return;
+    mState = state;
+
+    DoSet();
+}
+
+void LEDCluster::Toggle()
+{
+    ESP_LOGI(TAG, "Toggling state to %d", !mState);
+    mState = !mState;
+
+    DoSet();
+}
+
+void LEDCluster::SetBrightness(uint8_t brightness)
+{
+    ESP_LOGI(TAG, "Setting brightness to %d", brightness);
+    if (brightness == mBrightness)
+        return;
+
+    mBrightness = brightness;
+
+    DoSet();
+}
+
+uint8_t LEDCluster::GetLevel()
+{
+    return this->mBrightness;
+}
+
+bool LEDCluster::IsTurnedOn()
+{
+    return this->mState;
+}
+
+void LEDCluster::SetColorTemp(uint16_t temp)
+{
+    ESP_LOGI(TAG, "Got Temp %d", temp);
+    float tempf = remap(500, 167, 2600, 5000, temp);
+
+    ESP_LOGI(TAG, "Calced Temp = %1.3f", tempf);
+    mLedProp    = multiLerp(mTemps, tempf);
+
+    ESP_LOGI(TAG, "Calced prop1 = %1.3f", mLedProp[0]);
+    ESP_LOGI(TAG, "Calced prop2 = %1.3f", mLedProp[1]);
+    ESP_LOGI(TAG, "Calced prop3 = %1.3f", mLedProp[2]);
+    DoSet();
+}
+
+// #if CONFIG_LED_TYPE_RMT
+void LEDCluster::SetColor(uint8_t Hue, uint8_t Saturation)
+{
+    if (Hue == mHue && Saturation == mSaturation)
+        return;
+
+    mHue        = Hue;
+    mSaturation = Saturation;
+
+    DoSet();
+}
+// #endif // CONFIG_LED_TYPE_RMT
+
+void LEDCluster::DoSet(void)
+{
+    for (int ledIndex = 0; ledIndex < mLeds.size(); ledIndex++)
+    {
+        mLeds[ledIndex].Set(mState);
+        mLeds[ledIndex].SetBrightness((uint8_t) (mLedProp[ledIndex] * mBrightness));
+    }
+}

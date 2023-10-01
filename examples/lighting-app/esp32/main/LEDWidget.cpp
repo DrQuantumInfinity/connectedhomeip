@@ -17,17 +17,15 @@
 
 #include "LEDWidget.h"
 #include "ColorFormat.h"
-#if CONFIG_HAVE_DISPLAY
-#include "ScreenManager.h"
-#endif
 #include "led_strip.h"
 
 static const char * TAG = "LEDWidget";
 
-void LEDWidget::Init(void)
+void LEDWidget::Init(gpio_num_t gpio_num,  ledc_channel_t channel)
 {
     mState      = false;
     mBrightness = UINT8_MAX;
+    mChannel = channel;
 
 #if CONFIG_LED_TYPE_RMT
     rmt_config_t config             = RMT_DEFAULT_CONFIG_TX((gpio_num_t) CONFIG_LED_GPIO, (rmt_channel_t) CONFIG_LED_RMT_CHANNEL);
@@ -41,7 +39,7 @@ void LEDWidget::Init(void)
     mHue        = 0;
     mSaturation = 0;
 #else
-    mGPIONum                       = (gpio_num_t) CONFIG_LED_GPIO;
+    mGPIONum                       = gpio_num;
     ledc_timer_config_t ledc_timer = {
         .speed_mode      = LEDC_LOW_SPEED_MODE, // timer mode
         .duty_resolution = LEDC_TIMER_8_BIT,    // resolution of PWM duty
@@ -53,7 +51,7 @@ void LEDWidget::Init(void)
     ledc_channel_config_t ledc_channel = {
         .gpio_num   = mGPIONum,
         .speed_mode = LEDC_LOW_SPEED_MODE,
-        .channel    = LEDC_CHANNEL_0,
+        .channel    = channel,
         .intr_type  = LEDC_INTR_DISABLE,
         .timer_sel  = LEDC_TIMER_1,
         .duty       = 0,

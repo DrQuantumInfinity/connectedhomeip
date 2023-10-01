@@ -19,7 +19,7 @@
 
 #include "DeviceCallbacks.h"
 #include "Globals.h"
-#include "LEDWidget.h"
+#include "LEDCluster.h"
 
 #include <app/util/util.h>
 
@@ -31,7 +31,7 @@
 
 static const char * TAG = "light-app-callbacks";
 
-extern LEDWidget AppLED;
+extern LEDCluster AppLEDC;
 
 using namespace chip;
 using namespace chip::Inet;
@@ -54,11 +54,11 @@ void AppDeviceCallbacks::PostAttributeChangeCallback(EndpointId endpointId, Clus
         OnLevelControlAttributeChangeCallback(endpointId, attributeId, value);
         break;
 
-#if CONFIG_LED_TYPE_RMT
+// #if CONFIG_LED_TYPE_RMT
     case ColorControl::Id:
         OnColorControlAttributeChangeCallback(endpointId, attributeId, value);
         break;
-#endif
+// #endif
 
     default:
         ESP_LOGI(TAG, "Unhandled cluster ID: %" PRIu32, clusterId);
@@ -74,7 +74,7 @@ void AppDeviceCallbacks::OnOnOffPostAttributeChangeCallback(EndpointId endpointI
                  ESP_LOGI(TAG, "Unhandled Attribute ID: '0x%" PRIx32 "'", attributeId));
     VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
 
-    AppLED.Set(*value);
+    AppLEDC.Set(*value);
 
 exit:
     return;
@@ -86,24 +86,30 @@ void AppDeviceCallbacks::OnLevelControlAttributeChangeCallback(EndpointId endpoi
                  ESP_LOGI(TAG, "Unhandled Attribute ID: '0x%" PRIx32 "'", attributeId));
     VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
 
-    AppLED.SetBrightness(*value);
+    AppLEDC.SetBrightness(*value);
 
 exit:
     return;
 }
 
 // Currently ColorControl cluster is supported for ESP32C3_DEVKITM and ESP32S3_DEVKITM which have an on-board RGB-LED
-#if CONFIG_LED_TYPE_RMT
+// #if CONFIG_LED_TYPE_RMT
 void AppDeviceCallbacks::OnColorControlAttributeChangeCallback(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
 {
     using namespace ColorControl::Attributes;
 
     uint8_t hue, saturation;
 
-    VerifyOrExit(attributeId == CurrentHue::Id || attributeId == CurrentSaturation::Id,
+    VerifyOrExit(attributeId == CurrentHue::Id || attributeId == CurrentSaturation::Id || attributeId == ColorTemperatureMireds::Id,
                  ESP_LOGI(TAG, "Unhandled AttributeId ID: '0x%" PRIx32 "'", attributeId));
     VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
 
+    if (attributeId == ColorTemperatureMireds::Id)
+    {
+        uint16_t temp;
+        memcpy(&temp, value, sizeof(temp));
+        AppLEDC.SetColorTemp(temp);
+    }
     if (attributeId == CurrentHue::Id)
     {
         hue = *value;
@@ -114,12 +120,12 @@ void AppDeviceCallbacks::OnColorControlAttributeChangeCallback(EndpointId endpoi
         saturation = *value;
         CurrentHue::Get(endpointId, &hue);
     }
-    AppLED.SetColor(hue, saturation);
+    // AppLEDC.SetColor(hue, saturation);
 
 exit:
     return;
 }
-#endif // CONFIG_LED_TYPE_RMT
+// #endif // CONFIG_LED_TYPE_RMT
 
 /** @brief OnOff Cluster Init
  *

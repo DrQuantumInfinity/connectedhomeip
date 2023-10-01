@@ -37,7 +37,7 @@ using namespace ::chip::DeviceLayer;
 
 static const char * TAG = "app-task";
 
-LEDWidget AppLED;
+LEDCluster AppLEDC;
 
 namespace {
 constexpr EndpointId kLightEndpointId = 1;
@@ -107,14 +107,9 @@ void AppTask::ButtonPressedAction(AppEvent * aEvent)
 CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-
-    AppLED.Init();
-
-#if CONFIG_HAVE_DISPLAY
-    InitDeviceDisplay();
-
-    AppLED.SetVLED(ScreenManager::AddVLED(TFT_YELLOW));
-#endif
+    uint8_t gpios [3] = { 5, 17, 18};
+    float temps [3] = { 2600.0f, 3000.0f, 5000.0f};
+    AppLEDC.Init(gpios, temps, 3);
 
     return err;
 }
@@ -179,7 +174,7 @@ void AppTask::DispatchEvent(AppEvent * aEvent)
 
 void AppTask::LightingActionEventHandler(AppEvent * aEvent)
 {
-    AppLED.Toggle();
+    AppLEDC.Toggle();
     chip::DeviceLayer::PlatformMgr().LockChipStack();
     sAppTask.UpdateClusterState();
     chip::DeviceLayer::PlatformMgr().UnlockChipStack();
@@ -189,7 +184,7 @@ void AppTask::UpdateClusterState()
 {
     ESP_LOGI(TAG, "Writing to OnOff cluster");
     // write the new on/off value
-    EmberAfStatus status = Clusters::OnOff::Attributes::OnOff::Set(kLightEndpointId, AppLED.IsTurnedOn());
+    EmberAfStatus status = Clusters::OnOff::Attributes::OnOff::Set(kLightEndpointId, AppLEDC.IsTurnedOn());
 
     if (status != EMBER_ZCL_STATUS_SUCCESS)
     {
@@ -197,7 +192,7 @@ void AppTask::UpdateClusterState()
     }
 
     ESP_LOGI(TAG, "Writing to Current Level cluster");
-    status = Clusters::LevelControl::Attributes::CurrentLevel::Set(kLightEndpointId, AppLED.GetLevel());
+    status = Clusters::LevelControl::Attributes::CurrentLevel::Set(kLightEndpointId, AppLEDC.GetLevel());
 
     if (status != EMBER_ZCL_STATUS_SUCCESS)
     {
