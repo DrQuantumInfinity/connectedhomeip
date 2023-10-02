@@ -23,7 +23,7 @@ float lerp(float from, float to, float t)
     return from + (to - from) * t;
 }
 
-float invLerp(float from, float to, float value, bool clamp = true)
+float invLerp(float from, float to, float value, bool clamp)
 {
     float prop = (value - from) / (to - from);
     if (clamp)
