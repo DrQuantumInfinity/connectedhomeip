@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2021-2023 Project CHIP Authors
+ *    Copyright (c) 2021 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,54 +18,85 @@
 #include "LEDWidget.h"
 #include "ColorFormat.h"
 #include "led_strip.h"
+#include "esp_timer.h"
 
 static const char * TAG = "LEDWidget";
 
-void LEDWidget::Init(gpio_num_t gpio_num,  ledc_channel_t channel)
+void LEDWidget::InitColor(gpio_num_t pin, rmt_channel_t rmtChannel)
+{
+    Init(true, pin, rmtChannel, (ledc_channel_t)0);
+}
+void LEDWidget::InitMono(gpio_num_t pin, ledc_channel_t ledcChannel)
+{
+    Init(false, pin, (rmt_channel_t)0, ledcChannel);
+}
+
+void LEDWidget::Init(bool color, gpio_num_t pin, rmt_channel_t rmtChannel, ledc_channel_t ledcChannel)
 {
     mState      = false;
     mBrightness = UINT8_MAX;
-    mChannel = channel;
+    mColor = color;
+    mGPIONum = pin;
+    mLedcChannel = ledcChannel;
 
-#if CONFIG_LED_TYPE_RMT
-    rmt_config_t config             = RMT_DEFAULT_CONFIG_TX((gpio_num_t) CONFIG_LED_GPIO, (rmt_channel_t) CONFIG_LED_RMT_CHANNEL);
-    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t) config.channel);
+    if (color)
+    {
+// #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+//         led_strip_config_t strip_config = {
+//             .strip_gpio_num = mGPIONum,
+//             .max_leds       = 1,
+//         };
 
-    config.clk_div = 2;
-    rmt_config(&config);
-    rmt_driver_install(config.channel, 0, 0);
+//         led_strip_new_rmt_device(&strip_config, &mStrip);
+// #else
+        rmt_config_t config             = RMT_DEFAULT_CONFIG_TX(mGPIONum, (rmt_channel_t)rmtChannel);
+        led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t) config.channel);
 
-    mStrip      = led_strip_new_rmt_ws2812(&strip_config);
-    mHue        = 0;
-    mSaturation = 0;
-#else
-    mGPIONum                       = gpio_num;
-    ledc_timer_config_t ledc_timer = {
-        .speed_mode      = LEDC_LOW_SPEED_MODE, // timer mode
-        .duty_resolution = LEDC_TIMER_8_BIT,    // resolution of PWM duty
-        .timer_num       = LEDC_TIMER_1,        // timer index
-        .freq_hz         = 5000,                // frequency of PWM signal
-        .clk_cfg         = LEDC_AUTO_CLK,       // Auto select the source clock
-    };
-    ledc_timer_config(&ledc_timer);
-    ledc_channel_config_t ledc_channel = {
-        .gpio_num   = mGPIONum,
-        .speed_mode = LEDC_LOW_SPEED_MODE,
-        .channel    = channel,
-        .intr_type  = LEDC_INTR_DISABLE,
-        .timer_sel  = LEDC_TIMER_1,
-        .duty       = 0,
-        .hpoint     = 0,
-    };
-    ledc_channel_config(&ledc_channel);
-#endif // CONFIG_LED_TYPE_RMT
+        config.clk_div = 2;
+        rmt_config(&config);
+        rmt_driver_install(config.channel, 0, 0);
+
+        mStrip = led_strip_new_rmt_ws2812(&strip_config);
+// #endif
+        mHue        = 90;
+        mSaturation = 255;
+        mBrightness = 10;
+    }
+    else
+    {
+        ledc_timer_config_t ledc_timer = {
+            .speed_mode      = LEDC_LOW_SPEED_MODE, // timer mode
+            .duty_resolution = LEDC_TIMER_8_BIT,    // resolution of PWM duty
+            .timer_num       = LEDC_TIMER_1,        // timer index
+            .freq_hz         = 5000,                // frequency of PWM signal
+            .clk_cfg         = LEDC_AUTO_CLK,       // Auto select the source clock
+        };
+        ledc_timer_config(&ledc_timer);
+        ledc_channel_config_t ledc_channel = {
+            .gpio_num   = mGPIONum,
+            .speed_mode = LEDC_LOW_SPEED_MODE,
+            .channel    = mLedcChannel,
+            .intr_type  = LEDC_INTR_DISABLE,
+            .timer_sel  = LEDC_TIMER_1,
+            .duty       = 0,
+            .hpoint     = 0,
+        };
+        ledc_channel_config(&ledc_channel);
+    }
 }
 
 void LEDWidget::Set(bool state)
 {
     ESP_LOGI(TAG, "Setting state to %d", state ? 1 : 0);
     if (state == mState)
+    {
         return;
+    }
+    else if (state == true)
+    {
+        mTurnOnTimeMs = esp_timer_get_time();
+        ESP_LOGI(TAG, "Turn on at %llu", mTurnOnTimeMs);
+    }
 
     mState = state;
 
@@ -86,7 +117,16 @@ void LEDWidget::SetBrightness(uint8_t brightness)
     if (brightness == mBrightness)
         return;
 
-    mBrightness = brightness;
+    if (brightness != 1 || 
+        esp_timer_get_time() - mTurnOnTimeMs > 500*1000)
+    {
+        mBrightness = brightness;
+    }
+    else
+    {
+        ESP_LOGI(TAG, "Ignoring brightness to %d. timeDelta = %llu", brightness, esp_timer_get_time() - mTurnOnTimeMs);
+        return;
+    }
 
     DoSet();
 }
@@ -101,9 +141,11 @@ bool LEDWidget::IsTurnedOn()
     return this->mState;
 }
 
-#if CONFIG_LED_TYPE_RMT
 void LEDWidget::SetColor(uint8_t Hue, uint8_t Saturation)
 {
+    if (!mColor)
+        return;
+
     if (Hue == mHue && Saturation == mSaturation)
         return;
 
@@ -112,42 +154,35 @@ void LEDWidget::SetColor(uint8_t Hue, uint8_t Saturation)
 
     DoSet();
 }
-#endif // CONFIG_LED_TYPE_RMT
 
 void LEDWidget::DoSet(void)
 {
     uint8_t brightness = mState ? mBrightness : 0;
 
-#if CONFIG_LED_TYPE_RMT
-    if (mStrip)
+    if (mColor)
     {
-        HsvColor_t hsv = { mHue, mSaturation, brightness };
-        RgbColor_t rgb = HsvToRgb(hsv);
-        mStrip->set_pixel(mStrip, 0, rgb.r, rgb.g, rgb.b);
-        mStrip->refresh(mStrip, 100);
+        if (mStrip)
+        {
+            HsvColor_t hsv = { (uint16_t)(mHue*360/255), (uint8_t)(mSaturation*100/255), brightness };
+            RgbColor_t rgb = HsvToRgb(hsv);
+// #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+//             ESP_LOGI(TAG, "DoSet to GPIO number %d, %d:%d:%d", mGPIONum, rgb.r, rgb.g, rgb.b);
+//             led_strip_set_pixel(mStrip, 0, rgb.r, rgb.g, rgb.b);
+//             led_strip_refresh(mStrip);
+// #else
+            ESP_LOGI(TAG, "DoSet to GPIO number %d, old %d:%d:%d", mGPIONum, rgb.r, rgb.g, rgb.b);
+            mStrip->set_pixel(mStrip, 0, rgb.r, rgb.g, rgb.b);
+            mStrip->refresh(mStrip, 100);
+// #endif
+        }
     }
-#else
-    if (mGPIONum < GPIO_NUM_MAX)
+    else
     {
-        ledc_set_duty(LEDC_LOW_SPEED_MODE, mChannel, brightness);
-        ledc_update_duty(LEDC_LOW_SPEED_MODE, mChannel);
-    }
-#endif // CONFIG_LED_TYPE_RMT
-#if CONFIG_HAVE_DISPLAY
-    if (mVirtualLEDIndex != -1)
-    {
-        ScreenManager::SetVLED(mVirtualLEDIndex, mState);
-    }
-#endif // CONFIG_HAVE_DISPLAY
-}
-
-#if CONFIG_DEVICE_TYPE_M5STACK
-void LEDWidget::SetVLED(int id1)
-{
-    mVirtualLEDIndex = id1;
-    if (mVirtualLEDIndex != -1)
-    {
-        ScreenManager::SetVLED(mVirtualLEDIndex, mState);
+        ESP_LOGI(TAG, "DoSet to GPIO number %d", mGPIONum);
+        if (mGPIONum < GPIO_NUM_MAX)
+        {
+            ledc_set_duty(LEDC_LOW_SPEED_MODE, mLedcChannel, brightness);
+            ledc_update_duty(LEDC_LOW_SPEED_MODE, mLedcChannel);
+        }
     }
 }
-#endif

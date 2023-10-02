@@ -23,12 +23,12 @@
 
 static const char * TAG = "LEDCluster";
 
-void LEDCluster::Init(uint8_t * gpios, float * temps, uint8_t size)
+void LEDCluster::Init(uint8_t * gpios, float * temps, uint8_t size, uint8_t colorGpio)
 {
     for (int ledIndex = 0; ledIndex < size; ledIndex++)
     {
         LEDWidget newLed;
-        newLed.Init((gpio_num_t) gpios[ledIndex], (ledc_channel_t) ledIndex);
+        newLed.InitMono((gpio_num_t) gpios[ledIndex], (ledc_channel_t) ledIndex);
         mLeds.push_back(newLed);
         mLedProp.push_back(0.0f);
         mTemps.push_back(temps[ledIndex]);
@@ -38,15 +38,16 @@ void LEDCluster::Init(uint8_t * gpios, float * temps, uint8_t size)
         ESP_LOGI(TAG, "Temp: %1.2f", temps[ledIndex]);
     }
     ESP_LOGI(TAG, "Done creating");
-    
-    for (int ledIndex = 0; ledIndex < mLeds.size(); ledIndex++)
-    { 
-        ESP_LOGI(TAG, "Checking LED:");
-        ESP_LOGI(TAG, "GPIO %d:", mLeds[ledIndex].mGPIONum);
-        ESP_LOGI(TAG, "Channel %d", mLeds[ledIndex].mChannel);
-        ESP_LOGI(TAG, "Temp: %1.2f", mTemps[ledIndex]);
-        ESP_LOGI(TAG, "Prop: %1.2f", mLedProp[ledIndex]);
-    }
+    mColorLed.InitColor((gpio_num_t) colorGpio, (rmt_channel_t) 0);
+    mMode = Mode_Mono;
+    // for (int ledIndex = 0; ledIndex < mLeds.size(); ledIndex++)
+    // {
+    //     ESP_LOGI(TAG, "Checking LED:");
+    //     ESP_LOGI(TAG, "GPIO %d:", mLeds[ledIndex].mGPIONum);
+    //     ESP_LOGI(TAG, "Channel %d", mLeds[ledIndex].mChannel);
+    //     ESP_LOGI(TAG, "Temp: %1.2f", mTemps[ledIndex]);
+    //     ESP_LOGI(TAG, "Prop: %1.2f", mLedProp[ledIndex]);
+    // }
 }
 
 void LEDCluster::Set(bool state)
@@ -92,17 +93,17 @@ void LEDCluster::SetColorTemp(uint16_t temp)
 {
     ESP_LOGI(TAG, "Got Temp %d", temp);
     // float tempf = remap(500, 167, 2600, 5000, temp);
-    float tempf = 1000000.0/(double) temp;
+    float tempf = 1000000.0 / (double) temp;
     ESP_LOGI(TAG, "Calced Temp = %1.3f", tempf);
-    mLedProp    = multiLerp(mTemps, tempf);
+    mLedProp = multiLerp(mTemps, tempf);
 
     ESP_LOGI(TAG, "Calced prop1 = %1.3f", mLedProp[0]);
     ESP_LOGI(TAG, "Calced prop2 = %1.3f", mLedProp[1]);
     ESP_LOGI(TAG, "Calced prop3 = %1.3f", mLedProp[2]);
+    mMode = Mode_Mono;
     DoSet();
 }
 
-// #if CONFIG_LED_TYPE_RMT
 void LEDCluster::SetColor(uint8_t Hue, uint8_t Saturation)
 {
     if (Hue == mHue && Saturation == mSaturation)
@@ -110,16 +111,18 @@ void LEDCluster::SetColor(uint8_t Hue, uint8_t Saturation)
 
     mHue        = Hue;
     mSaturation = Saturation;
-
+    mMode = Mode_Color;
     DoSet();
 }
-// #endif // CONFIG_LED_TYPE_RMT
 
 void LEDCluster::DoSet(void)
 {
     for (int ledIndex = 0; ledIndex < mLeds.size(); ledIndex++)
     {
-        mLeds[ledIndex].Set(mState);
+        mLeds[ledIndex].Set(mState && (mMode == Mode_Mono));
         mLeds[ledIndex].SetBrightness((uint8_t) (mLedProp[ledIndex] * mBrightness));
     }
+    mColorLed.SetColor(mHue, mSaturation);
+    mColorLed.Set(mState && (mMode == Mode_Color));
+    mColorLed.SetBrightness(mBrightness);
 }

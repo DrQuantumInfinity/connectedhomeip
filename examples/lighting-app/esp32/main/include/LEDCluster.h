@@ -30,10 +30,12 @@
 #include <vector>
 #include "LEDWidget.h"
 
+enum Mode { Mode_Mono, Mode_Color };
+
 class LEDCluster
 {
 public:
-    void Init(uint8_t * gpios, float * temps, uint8_t size);
+    void Init(uint8_t * gpios, float * temps, uint8_t size, uint8_t colorGpio);
     void Set(bool state);
     void Toggle(void);
 
@@ -47,12 +49,14 @@ public:
 
 private:
     bool mState;
+    Mode mMode;
     uint8_t mBrightness;
 
     uint8_t mHue;
     uint8_t mSaturation;
     // led_strip_t * mStrip;
     std::vector<LEDWidget> mLeds;
+    LEDWidget mColorLed;
     std::vector<float> mLedProp;
     std::vector<float> mTemps;
 

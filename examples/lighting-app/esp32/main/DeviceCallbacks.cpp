@@ -110,17 +110,18 @@ void AppDeviceCallbacks::OnColorControlAttributeChangeCallback(EndpointId endpoi
         memcpy(&temp, value, sizeof(temp));
         AppLEDC.SetColorTemp(temp);
     }
-    if (attributeId == CurrentHue::Id)
+    else if (attributeId == CurrentHue::Id)
     {
         hue = *value;
         CurrentSaturation::Get(endpointId, &saturation);
+        AppLEDC.SetColor(hue, saturation);
     }
     else
     {
         saturation = *value;
         CurrentHue::Get(endpointId, &hue);
+        AppLEDC.SetColor(hue, saturation);
     }
-    // AppLEDC.SetColor(hue, saturation);
 
 exit:
     return;
