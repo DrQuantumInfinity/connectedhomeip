@@ -44,26 +44,28 @@ void AppDeviceCallbacks::PostAttributeChangeCallback(EndpointId endpointId, Clus
     ESP_LOGI(TAG, "PostAttributeChangeCallback - Cluster ID: '0x%" PRIx32 "', EndPoint ID: '0x%x', Attribute ID: '0x%" PRIx32 "'",
              clusterId, endpointId, attributeId);
 
-    switch (clusterId)
-    {
-    case OnOff::Id:
-        OnOnOffPostAttributeChangeCallback(endpointId, attributeId, value);
-        break;
+    GetAppTask().OnAttributeChangeCallback(endpointId, clusterId, attributeId, size, value);
+    
+//     switch (clusterId)
+//     {
+//     case OnOff::Id:
+//         OnOnOffPostAttributeChangeCallback(endpointId, attributeId, value);
+//         break;
 
-    case LevelControl::Id:
-        OnLevelControlAttributeChangeCallback(endpointId, attributeId, value);
-        break;
+//     case LevelControl::Id:
+//         OnLevelControlAttributeChangeCallback(endpointId, attributeId, value);
+//         break;
 
-// #if CONFIG_LED_TYPE_RMT
-    case ColorControl::Id:
-        OnColorControlAttributeChangeCallback(endpointId, attributeId, value);
-        break;
-// #endif
+// // #if CONFIG_LED_TYPE_RMT
+//     case ColorControl::Id:
+//         OnColorControlAttributeChangeCallback(endpointId, attributeId, value);
+//         break;
+// // #endif
 
-    default:
-        ESP_LOGI(TAG, "Unhandled cluster ID: %" PRIu32, clusterId);
-        break;
-    }
+//     default:
+//         ESP_LOGI(TAG, "Unhandled cluster ID: %" PRIu32, clusterId);
+//         break;
+//     }
 
     ESP_LOGI(TAG, "Current free heap: %u\n", static_cast<unsigned int>(heap_caps_get_free_size(MALLOC_CAP_8BIT)));
 }
@@ -96,6 +98,8 @@ exit:
 // #if CONFIG_LED_TYPE_RMT
 void AppDeviceCallbacks::OnColorControlAttributeChangeCallback(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
 {
+    
+    GetAppTask().ClearBrown();
     using namespace ColorControl::Attributes;
 
     uint8_t hue, saturation;
@@ -113,6 +117,9 @@ void AppDeviceCallbacks::OnColorControlAttributeChangeCallback(EndpointId endpoi
     else if (attributeId == CurrentHue::Id)
     {
         hue = *value;
+        if(hue == 30){
+            GetAppTask().SetBrown();
+        }
         CurrentSaturation::Get(endpointId, &saturation);
         AppLEDC.SetColor(hue, saturation);
     }

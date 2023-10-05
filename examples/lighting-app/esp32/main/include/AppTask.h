@@ -38,28 +38,29 @@
 extern LEDCluster AppLEDC;
 extern Button AppButton;
 
+
+enum TaskType { TaskType_OnOff, TaskType_Level, TaskType_Color };
+
 class AppTask
 {
 
 public:
     CHIP_ERROR StartAppTask();
     static void AppTaskMain(void * pvParameter);
-    void PostEvent(const AppEvent * event);
+    void PostEvent(const AttributeChangeEvent * event);
 
     void ButtonEventHandler(const uint8_t buttonHandle, uint8_t btnAction);
 
     void UpdateClusterState();
+    void OnAttributeChangeCallback(chip::EndpointId endpointId, chip::ClusterId clusterId, chip::AttributeId attributeId, uint8_t * value);
 
 private:
-    friend AppTask & GetAppTask(void);
+    friend AttributeChangeEvent & GetAppTask(void);
     CHIP_ERROR Init();
-    void DispatchEvent(AppEvent * event);
-    static void SwitchActionEventHandler(AppEvent * aEvent);
-    static void LightingActionEventHandler(AppEvent * aEvent);
-
-#if CONFIG_DEVICE_TYPE_M5STACK
-    static void ButtonPressedAction(AppEvent * aEvent);
-#endif
+    void DispatchEvent(AttributeChangeEvent * event);
+    static void SwitchActionEventHandler(AttributeChangeEvent * aEvent);
+    static void LightingActionEventHandler(AttributeChangeEvent * aEvent);
+    uint64_t mNextRainbowUpdateMics;
 
     static AppTask sAppTask;
 };

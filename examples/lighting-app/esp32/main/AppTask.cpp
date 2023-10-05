@@ -17,12 +17,14 @@
  */
 
 #include "AppTask.h"
+#include "AttributeChangeEvent.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 
 #include "DeviceWithDisplay.h"
 
 #include <app-common/zap-generated/attributes/Accessors.h>
+#include "esp_timer.h"
 
 #define APP_TASK_NAME "APP"
 #define APP_EVENT_QUEUE_SIZE 10
@@ -49,7 +51,7 @@ AppTask AppTask::sAppTask;
 
 CHIP_ERROR AppTask::StartAppTask()
 {
-    sAppEventQueue = xQueueCreate(APP_EVENT_QUEUE_SIZE, sizeof(AppEvent));
+    sAppEventQueue = xQueueCreate(APP_EVENT_QUEUE_SIZE, sizeof(AttributeChangeEvent));
     if (sAppEventQueue == NULL)
     {
         ESP_LOGE(TAG, "Failed to allocate app event queue");
@@ -62,53 +64,109 @@ CHIP_ERROR AppTask::StartAppTask()
     return (xReturned == pdPASS) ? CHIP_NO_ERROR : APP_ERROR_CREATE_TASK_FAILED;
 }
 
-void AppTask::ButtonEventHandler(const uint8_t buttonHandle, uint8_t btnAction)
+void AppTask::OnAttributeChangeCallback(EndpointId endpointId, ClusterId clusterId, AttributeId attributeId, uint16_t size,
+                                        uint8_t * value)
 {
-    if (btnAction != APP_BUTTON_PRESSED)
-    {
-        return;
-    }
-
-    AppEvent button_event = {};
-    button_event.Type     = AppEvent::kEventType_Button;
-
-#if CONFIG_HAVE_DISPLAY
-    button_event.ButtonEvent.PinNo  = buttonHandle;
-    button_event.ButtonEvent.Action = btnAction;
-    button_event.mHandler           = ButtonPressedAction;
-#else
-    button_event.mHandler = AppTask::LightingActionEventHandler;
-#endif
-
-    sAppTask.PostEvent(&button_event);
+    AttributeChangeEvent event;
+    event.endpointId  = endpointId;
+    event.attributeId = attributeId;
+    event.clusterId   = clusterId;
+    memcpy(event.value, value, size);
+    sAppTask.PostEvent(&event);
 }
 
-#if CONFIG_DEVICE_TYPE_M5STACK
-void AppTask::ButtonPressedAction(AppEvent * aEvent)
+void AppTask::AttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
 {
-    uint32_t io_num = aEvent->ButtonEvent.PinNo;
-    int level       = gpio_get_level((gpio_num_t) io_num);
-    if (level == 0)
+    switch (clusterId)
     {
-        bool woken = WakeDisplay();
-        if (woken)
+    case OnOff::Id:
+        OnOnOffPostAttributeChangeCallback(endpointId, attributeId, value);
+        break;
+
+    case LevelControl::Id:
+        OnLevelControlAttributeChangeCallback(endpointId, attributeId, value);
+        break;
+
+        // #if CONFIG_LED_TYPE_RMT
+    case ColorControl::Id:
+        OnColorControlAttributeChangeCallback(endpointId, attributeId, value);
+        break;
+        // #endif
+
+    default:
+        ESP_LOGI(TAG, "Unhandled cluster ID: %" PRIu32, clusterId);
+        break;
+    }
+}
+
+void AppTask::OnOffPostAttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
+{
+    VerifyOrExit(attributeId == OnOff::Attributes::OnOff::Id,
+                 ESP_LOGI(TAG, "Unhandled Attribute ID: '0x%" PRIx32 "'", attributeId));
+    VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
+
+    AppLEDC.Set(*value);
+
+exit:
+    return;
+}
+
+void AppTask::LevelControlAttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
+{
+    VerifyOrExit(attributeId == LevelControl::Attributes::CurrentLevel::Id,
+                 ESP_LOGI(TAG, "Unhandled Attribute ID: '0x%" PRIx32 "'", attributeId));
+    VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
+
+    AppLEDC.SetBrightness(*value);
+
+exit:
+    return;
+}
+
+void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
+{
+
+    GetAppTask().ClearBrown();
+    using namespace ColorControl::Attributes;
+
+    uint8_t hue, saturation;
+
+    VerifyOrExit(attributeId == CurrentHue::Id || attributeId == CurrentSaturation::Id || attributeId == ColorTemperatureMireds::Id,
+                 ESP_LOGI(TAG, "Unhandled AttributeId ID: '0x%" PRIx32 "'", attributeId));
+    VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
+
+    if (attributeId == ColorTemperatureMireds::Id)
+    {
+        uint16_t temp;
+        memcpy(&temp, value, sizeof(temp));
+        AppLEDC.SetColorTemp(temp);
+    }
+    else if (attributeId == CurrentHue::Id)
+    {
+        hue = *value;
+        if (hue == 30)
         {
-            return;
+            GetAppTask().SetBrown();
         }
-        // Button 1 is connected to the pin 39
-        // Button 2 is connected to the pin 38
-        // Button 3 is connected to the pin 37
-        // So we use 40 - io_num to map the pin number to button number
-        ScreenManager::ButtonPressed(40 - io_num);
+        CurrentSaturation::Get(endpointId, &saturation);
+        AppLEDC.SetColor(hue, saturation);
     }
+    else
+    {
+        saturation = *value;
+        CurrentHue::Get(endpointId, &hue);
+        AppLEDC.SetColor(hue, saturation);
+    }
+
+exit:
+    return;
 }
-#endif
 
 CHIP_ERROR AppTask::Init()
 {
-    CHIP_ERROR err = CHIP_NO_ERROR;
-    uint8_t gpios [3] = { 17, 18, 19};
-    float temps [3] = { 2600.0f, 3000.0f, 5000.0f};
+    CHIP_ERROR err   = CHIP_NO_ERROR;
+    uint8_t gpios[3] = { 17, 18, 19 };
+    float temps[3]   = { 2600.0f, 3000.0f, 5000.0f };
     AppLEDC.Init(gpios, temps, 3, 5);
 
     return err;
@@ -128,16 +186,42 @@ void AppTask::AppTaskMain(void * pvParameter)
 
     while (true)
     {
-        BaseType_t eventReceived = xQueueReceive(sAppEventQueue, &event, pdMS_TO_TICKS(10));
-        while (eventReceived == pdTRUE)
+        BaseType_t eventReceived = xQueueReceive(sAppEventQueue, &event, GetTimeoutMs());
+        if (eventReceived == pdTRUE)
         {
             sAppTask.DispatchEvent(&event);
-            eventReceived = xQueueReceive(sAppEventQueue, &event, 0); // return immediately if the queue is empty
+        }
+        else
+        {
+            HandleTimeout();
         }
     }
 }
 
-void AppTask::PostEvent(const AppEvent * aEvent)
+static TickType_t AppTask::GetTimeoutTicks(void)
+{
+    if (mNextRainbowUpdateMs != 0)
+    {
+        return pdMS_TO_TICKS((mNextRainbowUpdateMics - esp_timer_get_time())/1000);
+    }
+    else
+    {
+        return portMAX_DELAY;
+    }
+}
+
+static void AppTask::HandleTimeout(void)
+{
+    if (mNextRainbowUpdateMics - esp_timer_get_time() <= 0)
+    {
+        mNextRainbowUpdateMics = esp_timer_get_time() + 2000*1000;
+        mHue++ && 0xFF;
+        AppLEDC.SetColor(mHue, 255);
+        //SetColor
+    }
+}
+
+void AppTask::PostEvent(const AttributeChangeEvent * aEvent)
 {
     if (sAppEventQueue != NULL)
     {
@@ -160,25 +244,18 @@ void AppTask::PostEvent(const AppEvent * aEvent)
     }
 }
 
-void AppTask::DispatchEvent(AppEvent * aEvent)
+void AppTask::DispatchEvent(AttributeChangeEvent * aEvent)
 {
-    if (aEvent->mHandler)
-    {
-        aEvent->mHandler(aEvent);
-    }
-    else
-    {
-        ESP_LOGI(TAG, "Event received with no handler. Dropping event.");
-    }
+    AttributeChangeHandler(aEvent->endpointId, aEvent->attributeId, aEvent->value);
 }
 
-void AppTask::LightingActionEventHandler(AppEvent * aEvent)
-{
-    AppLEDC.Toggle();
-    chip::DeviceLayer::PlatformMgr().LockChipStack();
-    sAppTask.UpdateClusterState();
-    chip::DeviceLayer::PlatformMgr().UnlockChipStack();
-}
+// void AppTask::LightingActionEventHandler(AppEvent * aEvent)
+// {
+//     AppLEDC.Toggle();
+//     chip::DeviceLayer::PlatformMgr().LockChipStack();
+//     sAppTask.UpdateClusterState();
+//     chip::DeviceLayer::PlatformMgr().UnlockChipStack();
+// }
 
 void AppTask::UpdateClusterState()
 {

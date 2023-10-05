@@ -15,42 +15,15 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 #pragma once
+#include <app-common/zap-generated/ids/Attributes.h>
+#include <app-common/zap-generated/ids/Clusters.h>
 
-struct AppEvent;
-typedef void (*EventHandler)(AppEvent *);
-
-struct AppEvent
+struct AttributeChangeEvent
 {
-    enum AppEventTypes
-    {
-        kEventType_Button = 0,
-        kEventType_Timer,
-        kEventType_Light,
-        kEventType_Install,
-    };
-
-    uint16_t Type;
-
-    
-    
-    union
-    {
-        struct
-        {
-            uint8_t Action;
-            uint8_t PinNo;
-        } ButtonEvent;
-        struct
-        {
-            void * Context;
-        } TimerEvent;
-        struct
-        {
-            uint8_t Action;
-            int32_t Actor;
-        } LightEvent;
-    };
-
-    EventHandler mHandler;
+    chip::EndpointId endpointId;
+    chip::ClusterId clusterId;
+    chip::AttributeId attributeId;
+    uint8_t value[16];
 };
