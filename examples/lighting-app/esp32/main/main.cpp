@@ -156,7 +156,7 @@ extern "C" void app_main()
     chip::LaunchShell();
 #endif
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    if (Internal::ESP32Utils::InitWiFiStack() != CHIP_NO_ERROR)
+    if (chip::DeviceLayer::Internal::ESP32Utils::InitWiFiStack() != CHIP_NO_ERROR)
     {
         ESP_LOGE(TAG, "Failed to initialize WiFi stack");
         return;

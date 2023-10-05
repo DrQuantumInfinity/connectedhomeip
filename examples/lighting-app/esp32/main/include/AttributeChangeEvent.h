@@ -20,10 +20,10 @@
 #include <app-common/zap-generated/ids/Attributes.h>
 #include <app-common/zap-generated/ids/Clusters.h>
 
-struct AttributeChangeEvent
+typedef struct
 {
     chip::EndpointId endpointId;
     chip::ClusterId clusterId;
     chip::AttributeId attributeId;
     uint8_t value[16];
-};
+} AttributeChangeEvent;

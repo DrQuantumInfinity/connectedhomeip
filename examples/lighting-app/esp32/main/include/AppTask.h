@@ -21,11 +21,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "AppEvent.h"
+#include "AttributeChangeEvent.h"
 #include "Button.h"
 #include "LEDCluster.h"
 #include "freertos/FreeRTOS.h"
 #include <platform/CHIPDeviceLayer.h>
+
+#include <app-common/zap-generated/ids/Attributes.h>
+#include <app-common/zap-generated/ids/Clusters.h>
 
 // Application-defined error codes in the CHIP_ERROR space.
 #define APP_ERROR_EVENT_QUEUE_FAILED CHIP_APPLICATION_ERROR(0x01)
@@ -38,8 +41,15 @@
 extern LEDCluster AppLEDC;
 extern Button AppButton;
 
-
-enum TaskType { TaskType_OnOff, TaskType_Level, TaskType_Color };
+enum AppMode
+{
+    AppMode_Normal,
+    AppMode_Rainbow
+};
+using namespace chip;
+using namespace chip::Inet;
+using namespace chip::System;
+using namespace chip::app::Clusters;
 
 class AppTask
 {
@@ -52,16 +62,30 @@ public:
     void ButtonEventHandler(const uint8_t buttonHandle, uint8_t btnAction);
 
     void UpdateClusterState();
-    void OnAttributeChangeCallback(chip::EndpointId endpointId, chip::ClusterId clusterId, chip::AttributeId attributeId, uint8_t * value);
+    void OnAttributeChangeCallback(chip::EndpointId endpointId, chip::ClusterId clusterId, chip::AttributeId attributeId,
+                                   uint16_t size, uint8_t * value);
+    // AppTask GetAppTask(void);
 
 private:
-    friend AttributeChangeEvent & GetAppTask(void);
+    friend AppTask & GetAppTask(void);
     CHIP_ERROR Init();
     void DispatchEvent(AttributeChangeEvent * event);
+    void StartRainbow(void);
+    void StopRainbow(void);
     static void SwitchActionEventHandler(AttributeChangeEvent * aEvent);
     static void LightingActionEventHandler(AttributeChangeEvent * aEvent);
-    uint64_t mNextRainbowUpdateMics;
+    void AttributeChangeHandler(chip::EndpointId endpointId, chip::AttributeId attributeId, chip::ClusterId clusterId,
+                                uint8_t * value);
+    void OnOffPostAttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value);
 
+    void LevelControlAttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value);
+
+    void ColorControlAttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value);
+    TickType_t GetTimeoutTicks(void);
+    void HandleTimeout(void);
+    uint64_t mNextRainbowUpdateMics;
+    AppMode mMode;
+    uint8_t mHue;
     static AppTask sAppTask;
 };
 

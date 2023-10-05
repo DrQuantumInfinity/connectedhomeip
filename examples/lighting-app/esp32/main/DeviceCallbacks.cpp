@@ -98,8 +98,6 @@ exit:
 // #if CONFIG_LED_TYPE_RMT
 void AppDeviceCallbacks::OnColorControlAttributeChangeCallback(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
 {
-    
-    GetAppTask().ClearBrown();
     using namespace ColorControl::Attributes;
 
     uint8_t hue, saturation;
@@ -118,7 +116,6 @@ void AppDeviceCallbacks::OnColorControlAttributeChangeCallback(EndpointId endpoi
     {
         hue = *value;
         if(hue == 30){
-            GetAppTask().SetBrown();
         }
         CurrentSaturation::Get(endpointId, &saturation);
         AppLEDC.SetColor(hue, saturation);

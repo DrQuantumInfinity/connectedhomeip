@@ -17,14 +17,13 @@
  */
 
 #include "AppTask.h"
-#include "AttributeChangeEvent.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 
 #include "DeviceWithDisplay.h"
 
-#include <app-common/zap-generated/attributes/Accessors.h>
 #include "esp_timer.h"
+#include <app-common/zap-generated/attributes/Accessors.h>
 
 #define APP_TASK_NAME "APP"
 #define APP_EVENT_QUEUE_SIZE 10
@@ -46,6 +45,10 @@ constexpr EndpointId kLightEndpointId = 1;
 QueueHandle_t sAppEventQueue;
 TaskHandle_t sAppTaskHandle;
 } // namespace
+using namespace chip;
+using namespace chip::Inet;
+using namespace chip::System;
+using namespace chip::app::Clusters;
 
 AppTask AppTask::sAppTask;
 
@@ -75,23 +78,21 @@ void AppTask::OnAttributeChangeCallback(EndpointId endpointId, ClusterId cluster
     sAppTask.PostEvent(&event);
 }
 
-void AppTask::AttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
+void AppTask::AttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, ClusterId clusterId, uint8_t * value)
 {
     switch (clusterId)
     {
     case OnOff::Id:
-        OnOnOffPostAttributeChangeCallback(endpointId, attributeId, value);
+        OnOffPostAttributeChangeHandler(endpointId, attributeId, value);
         break;
 
     case LevelControl::Id:
-        OnLevelControlAttributeChangeCallback(endpointId, attributeId, value);
+        LevelControlAttributeChangeHandler(endpointId, attributeId, value);
         break;
 
-        // #if CONFIG_LED_TYPE_RMT
     case ColorControl::Id:
-        OnColorControlAttributeChangeCallback(endpointId, attributeId, value);
+        ColorControlAttributeChangeHandler(endpointId, attributeId, value);
         break;
-        // #endif
 
     default:
         ESP_LOGI(TAG, "Unhandled cluster ID: %" PRIu32, clusterId);
@@ -125,10 +126,8 @@ exit:
 
 void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
 {
-
-    GetAppTask().ClearBrown();
     using namespace ColorControl::Attributes;
-
+    StopRainbow();
     uint8_t hue, saturation;
 
     VerifyOrExit(attributeId == CurrentHue::Id || attributeId == CurrentSaturation::Id || attributeId == ColorTemperatureMireds::Id,
@@ -146,7 +145,7 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
         hue = *value;
         if (hue == 30)
         {
-            GetAppTask().SetBrown();
+            StartRainbow();
         }
         CurrentSaturation::Get(endpointId, &saturation);
         AppLEDC.SetColor(hue, saturation);
@@ -168,13 +167,13 @@ CHIP_ERROR AppTask::Init()
     uint8_t gpios[3] = { 17, 18, 19 };
     float temps[3]   = { 2600.0f, 3000.0f, 5000.0f };
     AppLEDC.Init(gpios, temps, 3, 5);
-
+    mMode = AppMode_Normal;
     return err;
 }
 
 void AppTask::AppTaskMain(void * pvParameter)
 {
-    AppEvent event;
+    AttributeChangeEvent event;
     CHIP_ERROR err = sAppTask.Init();
     if (err != CHIP_NO_ERROR)
     {
@@ -186,23 +185,23 @@ void AppTask::AppTaskMain(void * pvParameter)
 
     while (true)
     {
-        BaseType_t eventReceived = xQueueReceive(sAppEventQueue, &event, GetTimeoutMs());
+        BaseType_t eventReceived = xQueueReceive(sAppEventQueue, &event, sAppTask.GetTimeoutTicks());
         if (eventReceived == pdTRUE)
         {
             sAppTask.DispatchEvent(&event);
         }
         else
         {
-            HandleTimeout();
+            sAppTask.HandleTimeout();
         }
     }
 }
 
-static TickType_t AppTask::GetTimeoutTicks(void)
+TickType_t AppTask::GetTimeoutTicks(void)
 {
-    if (mNextRainbowUpdateMs != 0)
+    if (mNextRainbowUpdateMics != 0)
     {
-        return pdMS_TO_TICKS((mNextRainbowUpdateMics - esp_timer_get_time())/1000);
+        return pdMS_TO_TICKS((mNextRainbowUpdateMics - esp_timer_get_time()) / 1000);
     }
     else
     {
@@ -210,15 +209,30 @@ static TickType_t AppTask::GetTimeoutTicks(void)
     }
 }
 
-static void AppTask::HandleTimeout(void)
+void AppTask::HandleTimeout(void)
 {
-    if (mNextRainbowUpdateMics - esp_timer_get_time() <= 0)
+    if (mMode == AppMode_Normal)
     {
-        mNextRainbowUpdateMics = esp_timer_get_time() + 2000*1000;
-        mHue++ && 0xFF;
-        AppLEDC.SetColor(mHue, 255);
-        //SetColor
+        if (mNextRainbowUpdateMics - esp_timer_get_time() <= 0)
+        {
+            mNextRainbowUpdateMics = esp_timer_get_time() + 2000 * 1000;
+            mHue++ && 0xFF;
+            AppLEDC.SetColor(mHue, 255);
+        }
     }
+}
+
+void AppTask::StartRainbow(void)
+{
+    mMode                  = AppMode_Normal;
+    mNextRainbowUpdateMics = esp_timer_get_time();
+    mHue                   = 0;
+    HandleTimeout();
+}
+
+void AppTask::StopRainbow(void)
+{
+    mMode = AppMode_Normal;
 }
 
 void AppTask::PostEvent(const AttributeChangeEvent * aEvent)
@@ -246,16 +260,8 @@ void AppTask::PostEvent(const AttributeChangeEvent * aEvent)
 
 void AppTask::DispatchEvent(AttributeChangeEvent * aEvent)
 {
-    AttributeChangeHandler(aEvent->endpointId, aEvent->attributeId, aEvent->value);
+    AttributeChangeHandler(aEvent->endpointId, aEvent->attributeId, aEvent->clusterId, aEvent->value);
 }
-
-// void AppTask::LightingActionEventHandler(AppEvent * aEvent)
-// {
-//     AppLEDC.Toggle();
-//     chip::DeviceLayer::PlatformMgr().LockChipStack();
-//     sAppTask.UpdateClusterState();
-//     chip::DeviceLayer::PlatformMgr().UnlockChipStack();
-// }
 
 void AppTask::UpdateClusterState()
 {
