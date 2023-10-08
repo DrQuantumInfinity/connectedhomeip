@@ -141,11 +141,18 @@ bool LEDWidget::IsTurnedOn()
     return this->mState;
 }
 
-void LEDWidget::SetColor(uint8_t Hue, uint8_t Saturation)
+void LEDWidget::SetColor(int16_t Hue, int16_t Saturation)
 {
     if (!mColor)
         return;
-
+    if (Hue < 0)
+    {
+        Hue = mHue;
+    }
+    if (Saturation < 0)
+    {
+        Saturation = mSaturation;
+    }
     if (Hue == mHue && Saturation == mSaturation)
         return;
 

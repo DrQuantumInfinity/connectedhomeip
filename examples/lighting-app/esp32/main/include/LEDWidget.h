@@ -35,7 +35,7 @@ public:
 
     void SetBrightness(uint8_t brightness);
     void UpdateState();
-    void SetColor(uint8_t Hue, uint8_t Saturation);
+    void SetColor(int16_t Hue, int16_t Saturation);
     uint8_t GetLevel(void);
     bool IsTurnedOn(void);
 

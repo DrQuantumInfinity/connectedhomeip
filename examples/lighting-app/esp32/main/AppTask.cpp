@@ -50,6 +50,8 @@ using namespace chip::Inet;
 using namespace chip::System;
 using namespace chip::app::Clusters;
 
+#define MIN(a, b) (((a)<(b)) ? (a) : (b))
+
 AppTask AppTask::sAppTask;
 
 CHIP_ERROR AppTask::StartAppTask()
@@ -74,7 +76,7 @@ void AppTask::OnAttributeChangeCallback(EndpointId endpointId, ClusterId cluster
     event.endpointId  = endpointId;
     event.attributeId = attributeId;
     event.clusterId   = clusterId;
-    memcpy(event.value, value, size);
+    memcpy(event.value, value, MIN(sizeof(event.value), size));
     sAppTask.PostEvent(&event);
 }
 
@@ -127,7 +129,6 @@ exit:
 void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, AttributeId attributeId, uint8_t * value)
 {
     using namespace ColorControl::Attributes;
-    StopRainbow();
     uint8_t hue, saturation;
 
     VerifyOrExit(attributeId == CurrentHue::Id || attributeId == CurrentSaturation::Id || attributeId == ColorTemperatureMireds::Id,
@@ -136,6 +137,7 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
 
     if (attributeId == ColorTemperatureMireds::Id)
     {
+        StopRainbow();
         uint16_t temp;
         memcpy(&temp, value, sizeof(temp));
         AppLEDC.SetColorTemp(temp);
@@ -143,18 +145,24 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
     else if (attributeId == CurrentHue::Id)
     {
         hue = *value;
-        if (hue == 30)
+        saturation = -1;
+        if (hue == 21)
         {
             StartRainbow();
+            saturation = 255;
         }
-        CurrentSaturation::Get(endpointId, &saturation);
+        else
+        {
+            StopRainbow();
+        }
+        //CurrentSaturation::Get(endpointId, &saturation);
         AppLEDC.SetColor(hue, saturation);
     }
     else
     {
         saturation = *value;
-        CurrentHue::Get(endpointId, &hue);
-        AppLEDC.SetColor(hue, saturation);
+        //CurrentHue::Get(endpointId, &hue);
+        AppLEDC.SetColor(-1, saturation);
     }
 
 exit:
@@ -201,38 +209,52 @@ TickType_t AppTask::GetTimeoutTicks(void)
 {
     if (mNextRainbowUpdateMics != 0)
     {
-        return pdMS_TO_TICKS((mNextRainbowUpdateMics - esp_timer_get_time()) / 1000);
+        int64_t micsRemaining = mNextRainbowUpdateMics - esp_timer_get_time();
+        if (micsRemaining < 0)
+        {
+            micsRemaining = 0;
+        }
+        return pdMS_TO_TICKS(micsRemaining / 1000);
     }
     else
     {
-        return portMAX_DELAY;
+        return pdMS_TO_TICKS(1000);
     }
 }
 
 void AppTask::HandleTimeout(void)
 {
-    if (mMode == AppMode_Normal)
+    ESP_LOGI(TAG, "Handle Timeout");
+    if (mMode == AppMode_Rainbow)
     {
-        if (mNextRainbowUpdateMics - esp_timer_get_time() <= 0)
+        if ((int64_t)(mNextRainbowUpdateMics - esp_timer_get_time()) <= 0)
         {
             mNextRainbowUpdateMics = esp_timer_get_time() + 2000 * 1000;
+            ESP_LOGI(TAG, "Next Rainbow at %llu", mNextRainbowUpdateMics);
             mHue++ && 0xFF;
             AppLEDC.SetColor(mHue, 255);
         }
+    }
+    else
+    {
+        mNextRainbowUpdateMics = 0;
     }
 }
 
 void AppTask::StartRainbow(void)
 {
-    mMode                  = AppMode_Normal;
+    mMode                  = AppMode_Rainbow;
     mNextRainbowUpdateMics = esp_timer_get_time();
-    mHue                   = 0;
+    ESP_LOGI(TAG, "Start Rainbow at %llu", mNextRainbowUpdateMics);
+    mHue                   = 107;
     HandleTimeout();
 }
 
 void AppTask::StopRainbow(void)
 {
+    ESP_LOGI(TAG, "Stop Rainbow");
     mMode = AppMode_Normal;
+    mNextRainbowUpdateMics = 0;
 }
 
 void AppTask::PostEvent(const AttributeChangeEvent * aEvent)

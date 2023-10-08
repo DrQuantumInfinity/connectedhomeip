@@ -104,11 +104,18 @@ void LEDCluster::SetColorTemp(uint16_t temp)
     DoSet();
 }
 
-void LEDCluster::SetColor(uint8_t Hue, uint8_t Saturation)
+void LEDCluster::SetColor(int16_t Hue, int16_t Saturation)
 {
     if (Hue == mHue && Saturation == mSaturation)
         return;
-
+    if (Hue < 0)
+    {
+        Hue = mHue;
+    }
+    if (Saturation < 0)
+    {
+        Saturation = mSaturation;
+    }
     mHue        = Hue;
     mSaturation = Saturation;
     mMode = Mode_Color;
