@@ -14,7 +14,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
+#pragma once
 // These are the bridged devices
 #include <app/util/attribute-storage.h>
 #include <functional>

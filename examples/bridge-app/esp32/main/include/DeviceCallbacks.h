@@ -22,7 +22,7 @@
  * Implementations for the DeviceManager callbacks for this application
  *
  **/
-
+#pragma once
 #include <common/CHIPDeviceManager.h>
 #include <common/CommonDeviceCallbacks.h>
 
