@@ -15,26 +15,26 @@
  *    limitations under the License.
  */
 
+#include "DeviceMngr.h"
 #include "Device.h"
 #include "DeviceCallbacks.h"
 #include "esp_log.h"
-#include "nvs_flash.h"
-#include "DeviceMngr.h"
+// #include "nvs_flash.h"
 #include <app-common/zap-generated/ids/Attributes.h>
 #include <app-common/zap-generated/ids/Clusters.h>
 #include <app/ConcreteAttributePath.h>
-#include <app/clusters/identify-server/identify-server.h>
+// #include <app/clusters/identify-server/identify-server.h>
 #include <app/reporting/reporting.h>
-#include <app/server/OnboardingCodesUtil.h>
+// #include <app/server/OnboardingCodesUtil.h>
 #include <app/util/attribute-storage.h>
 #include <common/Esp32AppServer.h>
-#include <credentials/DeviceAttestationCredsProvider.h>
-#include <credentials/examples/DeviceAttestationCredsExample.h>
+// #include <credentials/DeviceAttestationCredsProvider.h>
+// #include <credentials/examples/DeviceAttestationCredsExample.h>
 #include <lib/core/CHIPError.h>
-#include <lib/support/CHIPMem.h>
-#include <lib/support/CHIPMemString.h>
+// #include <lib/support/CHIPMem.h>
+// #include <lib/support/CHIPMemString.h>
 #include <lib/support/ZclString.h>
-#include <platform/ESP32/ESP32Utils.h>
+// #include <platform/ESP32/ESP32Utils.h>
 
 #include <app/InteractionModelEngine.h>
 #include <app/server/Server.h>
@@ -63,46 +63,66 @@ chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 
 static const char * TAG = "device-mngr";
 
-
-
 // 4 Bridged devices
 // static Device gLight1("Light 1", "Office");
 // static Device gLight2("Light 2", "Office");
 // static Device gLight3("Light 3", "Kitchen");
 // static Device gLight4("Light 4", "Den");
 
-
-
 // Declare On/Off cluster attributes
-DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(onOffAttrs)
-DECLARE_DYNAMIC_ATTRIBUTE(OnOff::Attributes::OnOff::Id, BOOLEAN, 1, 0), /* on/off */
-    DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
+// DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(onOffAttrs)
+// DECLARE_DYNAMIC_ATTRIBUTE(OnOff::Attributes::OnOff::Id, BOOLEAN, 1, 0), /* on/off */
+//     DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
 
+EmberAfAttributeMetadata onOffAttrs[] = {
+    { ZAP_EMPTY_DEFAULT(), OnOff::Attributes::OnOff::Id, 1, ZAP_TYPE(BOOLEAN), 0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+    { ZAP_EMPTY_DEFAULT(), 0xFFFD, 2, ZAP_TYPE(INT16U), ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) }
+};
 // Declare Descriptor cluster attributes
-DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(descriptorAttrs)
-DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::DeviceTypeList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* device list */
-    DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::ServerList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* server list */
-    DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::ClientList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* client list */
-    DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::PartsList::Id, ARRAY, kDescriptorAttributeArraySize, 0),  /* parts list */
-    DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
+// DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(descriptorAttrs)
+// DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::DeviceTypeList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* device list */
+//     DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::ServerList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* server list */
+//     DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::ClientList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* client list */
+//     DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::PartsList::Id, ARRAY, kDescriptorAttributeArraySize, 0),  /* parts list */
+//     DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
+
+EmberAfAttributeMetadata descriptorAttrs[] = {
+    { ZAP_EMPTY_DEFAULT(), Descriptor::Attributes::DeviceTypeList::Id, kDescriptorAttributeArraySize, ZAP_TYPE(ARRAY),
+      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+    { ZAP_EMPTY_DEFAULT(), Descriptor::Attributes::ServerList::Id, kDescriptorAttributeArraySize, ZAP_TYPE(ARRAY),
+      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+    { ZAP_EMPTY_DEFAULT(), Descriptor::Attributes::ClientList::Id, kDescriptorAttributeArraySize, ZAP_TYPE(ARRAY),
+      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+    { ZAP_EMPTY_DEFAULT(), Descriptor::Attributes::PartsList::Id, kDescriptorAttributeArraySize, ZAP_TYPE(ARRAY),
+      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+    { ZAP_EMPTY_DEFAULT(), 0xFFFD, 2, ZAP_TYPE(INT16U), ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) }
+};
 
 // Declare Bridged Device Basic Information cluster attributes
-DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(bridgedDeviceBasicAttrs)
-DECLARE_DYNAMIC_ATTRIBUTE(BridgedDeviceBasicInformation::Attributes::NodeLabel::Id, CHAR_STRING, kNodeLabelSize, 0), /* NodeLabel */
-    DECLARE_DYNAMIC_ATTRIBUTE(BridgedDeviceBasicInformation::Attributes::Reachable::Id, BOOLEAN, 1, 0),              /* Reachable */
-    DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
+// DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(bridgedDeviceBasicAttrs)
+// DECLARE_DYNAMIC_ATTRIBUTE(BridgedDeviceBasicInformation::Attributes::NodeLabel::Id, CHAR_STRING, kNodeLabelSize, 0), /* NodeLabel
+// */
+//     DECLARE_DYNAMIC_ATTRIBUTE(BridgedDeviceBasicInformation::Attributes::Reachable::Id, BOOLEAN, 1, 0),              /* Reachable
+//     */ DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
 
-
-
-DECLARE_DYNAMIC_CLUSTER_LIST_BEGIN(bridgedLightClusters)
-DECLARE_DYNAMIC_CLUSTER(OnOff::Id, onOffAttrs, onOffIncomingCommands, nullptr),
-    DECLARE_DYNAMIC_CLUSTER(Descriptor::Id, descriptorAttrs, nullptr, nullptr),
-    DECLARE_DYNAMIC_CLUSTER(BridgedDeviceBasicInformation::Id, bridgedDeviceBasicAttrs, nullptr,
-                            nullptr) DECLARE_DYNAMIC_CLUSTER_LIST_END;
+EmberAfAttributeMetadata bridgedDeviceBasicAttrs[] = {
+    { ZAP_EMPTY_DEFAULT(), BridgedDeviceBasicInformation::Attributes::NodeLabel::Id, kNodeLabelSize, ZAP_TYPE(CHAR_STRING),
+      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+    { ZAP_EMPTY_DEFAULT(), BridgedDeviceBasicInformation::Attributes::Reachable::Id, 1, ZAP_TYPE(BOOLEAN),
+      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+    { ZAP_EMPTY_DEFAULT(), 0xFFFD, 2, ZAP_TYPE(INT16U), ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) }
+};
+// DECLARE_DYNAMIC_CLUSTER_LIST_BEGIN(bridgedLightClusters)
+EmberAfCluster bridgedLightClusters[] = {
+    { OnOff::Id, onOffAttrs, ArraySize(onOffAttrs), 0, ZAP_CLUSTER_MASK(SERVER), NULL, onOffIncomingCommands, nullptr },
+    { Descriptor::Id, descriptorAttrs, ArraySize(descriptorAttrs), 0, ZAP_CLUSTER_MASK(SERVER), NULL, nullptr, nullptr },
+    { BridgedDeviceBasicInformation::Id, bridgedDeviceBasicAttrs, ArraySize(bridgedDeviceBasicAttrs), 0, ZAP_CLUSTER_MASK(SERVER),
+      NULL, nullptr, nullptr }
+};
 
 // Declare Bridged Light endpoint
-DECLARE_DYNAMIC_ENDPOINT(bridgedLightEndpoint, bridgedLightClusters);
-
+// DECLARE_DYNAMIC_ENDPOINT(bridgedLightEndpoint, bridgedLightClusters);
+EmberAfEndpointType bridgedLightEndpoint = { bridgedLightClusters, ArraySize(bridgedLightClusters), 0 };
 
 
 // DataVersion gLight1DataVersions[ArraySize(bridgedLightClusters)];
@@ -324,8 +344,9 @@ const EmberAfDeviceType gAggregateNodeDeviceTypes[] = { { DEVICE_TYPE_BRIDGE, DE
 // const EmberAfDeviceType gBridgedOnOffDeviceTypes[] = { { DEVICE_TYPE_LO_ON_OFF_LIGHT, DEVICE_VERSION_DEFAULT },
 //                                                        { DEVICE_TYPE_BRIDGED_NODE, DEVICE_VERSION_DEFAULT } };
 
-void InitDevMgr(){
- // Set starting endpoint id where dynamic endpoints will be assigned, which
+void InitDevMgr()
+{
+    // Set starting endpoint id where dynamic endpoints will be assigned, which
     // will be the next consecutive endpoint id after the last fixed endpoint.
     gFirstDynamicEndpointId = static_cast<chip::EndpointId>(
         static_cast<int>(emberAfEndpointFromIndex(static_cast<uint16_t>(emberAfFixedEndpointCount() - 1))) + 1);
