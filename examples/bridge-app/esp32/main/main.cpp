@@ -63,7 +63,7 @@ chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 #endif // CONFIG_ENABLE_ESP32_DEVICE_INFO_PROVIDER
 } // namespace
 
-const char * TAG = "bridge-app";
+static const char * TAGm = "bridge-app";
 
 using namespace ::chip;
 using namespace ::chip::DeviceManager;
@@ -403,19 +403,27 @@ using namespace ::chip::app::Clusters;
 //                       Span<DataVersion>(gLight2DataVersions), 1);
 // }
 
+static void InitServer(intptr_t context)
+{
+    PrintOnboardingCodes(chip::RendezvousInformationFlags(CONFIG_RENDEZVOUS_MODE));
+
+    Esp32AppServer::Init(); // Init ZCL Data Model and CHIP App Server AND Initialize device attestation config
+    InitDevMgr();
+}
+
 extern "C" void app_main()
 {
     // Initialize the ESP NVS layer.
     esp_err_t err = nvs_flash_init();
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "nvs_flash_init() failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAGm, "nvs_flash_init() failed: %s", esp_err_to_name(err));
         return;
     }
     err = esp_event_loop_create_default();
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "esp_event_loop_create_default()  failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAGm, "esp_event_loop_create_default()  failed: %s", esp_err_to_name(err));
         return;
     }
 
@@ -428,7 +436,7 @@ extern "C" void app_main()
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     if (DeviceLayer::Internal::ESP32Utils::InitWiFiStack() != CHIP_NO_ERROR)
     {
-        ESP_LOGE(TAG, "Failed to initialize the Wi-Fi stack");
+        ESP_LOGE(TAGm, "Failed to initialize the Wi-Fi stack");
         return;
     }
 #endif
@@ -451,7 +459,7 @@ extern "C" void app_main()
     chip_err = deviceMgr.Init(&AppCallback);
     if (chip_err != CHIP_NO_ERROR)
     {
-        ESP_LOGE(TAG, "device.Init() failed: %" CHIP_ERROR_FORMAT, chip_err.Format());
+        ESP_LOGE(TAGm, "device.Init() failed: %" CHIP_ERROR_FORMAT, chip_err.Format());
         return;
     }
 
