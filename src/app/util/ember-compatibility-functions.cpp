@@ -1110,10 +1110,10 @@ void MatterReportingAttributeChangeCallback(EndpointId endpoint, ClusterId clust
 {
     // Attribute writes have asserted this already, but this assert should catch
     // applications notifying about changes from their end.
-    // assertChipStackLockedByCurrentThread();
+    assertChipStackLockedByCurrentThread();
 
     AttributePathParams info;
-    info.mClusterId   = clusterId;
+    info.mClusterId   = clusterId;add 
     info.mAttributeId = attributeId;
     info.mEndpointId  = endpoint;
 
@@ -1130,7 +1130,7 @@ void MatterReportingAttributeChangeCallback(EndpointId endpoint)
 {
     // Attribute writes have asserted this already, but this assert should catch
     // applications notifying about changes from their end.
-    // assertChipStackLockedByCurrentThread();
+    assertChipStackLockedByCurrentThread();
 
     AttributePathParams info;
     info.mEndpointId = endpoint;
