@@ -41,5 +41,5 @@ void TimerTick::TimerTickIncrement(uint32_t numMs)
 }
 static bool TimerTickMsbIsSet(TickType_t tick)
 {
-    return tick & (1 << (sizeof(TickType_t)*8  - 1))
+    return tick & (1 << (sizeof(TickType_t)*8  - 1));
 }

@@ -17,6 +17,7 @@
 
 #include "Device.h"
 #include "DeviceCallbacks.h"
+#include "AppTask.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "User.h"
@@ -63,7 +64,7 @@ chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 #endif // CONFIG_ENABLE_ESP32_DEVICE_INFO_PROVIDER
 } // namespace
 
-static const char * TAGm = "bridge-app";
+static const char * TAG = "bridge-app";
 
 using namespace ::chip;
 using namespace ::chip::DeviceManager;
@@ -417,13 +418,13 @@ extern "C" void app_main()
     esp_err_t err = nvs_flash_init();
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAGm, "nvs_flash_init() failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "nvs_flash_init() failed: %s", esp_err_to_name(err));
         return;
     }
     err = esp_event_loop_create_default();
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAGm, "esp_event_loop_create_default()  failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "esp_event_loop_create_default()  failed: %s", esp_err_to_name(err));
         return;
     }
 
@@ -436,7 +437,7 @@ extern "C" void app_main()
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     if (DeviceLayer::Internal::ESP32Utils::InitWiFiStack() != CHIP_NO_ERROR)
     {
-        ESP_LOGE(TAGm, "Failed to initialize the Wi-Fi stack");
+        ESP_LOGE(TAG, "Failed to initialize the Wi-Fi stack");
         return;
     }
 #endif
@@ -459,7 +460,7 @@ extern "C" void app_main()
     chip_err = deviceMgr.Init(&AppCallback);
     if (chip_err != CHIP_NO_ERROR)
     {
-        ESP_LOGE(TAGm, "device.Init() failed: %" CHIP_ERROR_FORMAT, chip_err.Format());
+        ESP_LOGE(TAG, "device.Init() failed: %" CHIP_ERROR_FORMAT, chip_err.Format());
         return;
     }
 
@@ -474,5 +475,10 @@ extern "C" void app_main()
 #endif // CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
 
     chip::DeviceLayer::PlatformMgr().ScheduleWork(InitServer, reinterpret_cast<intptr_t>(nullptr));
+    chip_err = GetAppTask().StartAppTask();
+    if (chip_err != CHIP_NO_ERROR)
+    {
+        ESP_LOGE(TAG, "GetAppTask().StartAppTask() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
+    }
     run();
 }
