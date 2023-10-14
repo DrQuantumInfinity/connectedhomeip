@@ -20,10 +20,19 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 
-#include "driver/rmt.h"
-#include "led_strip.h"
 #include "driver/ledc.h"
+#include "driver/rmt.h"
 #include "hal/ledc_types.h"
+#include "led_strip.h"
+
+class Led
+{
+public:
+    uint8_t gpio;
+    float temp;
+    float clamp;
+    Led(uint8_t gpio, float temp, float clamp);
+}
 
 class LEDWidget
 {
@@ -46,14 +55,13 @@ private:
     uint64_t mTurnOnTimeMs;
     bool mColor;
 
-
     uint8_t mHue;
     uint8_t mSaturation;
-// #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-//     led_strip_handle_t mStrip;
-// #else
+    // #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    //     led_strip_handle_t mStrip;
+    // #else
     led_strip_t * mStrip;
-// #endif
+    // #endif
     gpio_num_t mGPIONum;
     ledc_channel_t mLedcChannel;
 

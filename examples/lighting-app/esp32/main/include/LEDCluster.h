@@ -27,11 +27,27 @@
 #include "driver/ledc.h"
 #include "hal/ledc_types.h"
 #endif
-#include <vector>
 #include "LEDWidget.h"
+#include <vector>
 
-enum Mode { Mode_Mono, Mode_Color };
-
+enum Mode
+{
+    Mode_Mono,
+    Mode_Color
+};
+class Led
+{
+public:
+    uint8_t gpio;
+    float temp;
+    float clamp;
+    Led(uint8_t _gpio, float _temp, float _clamp)
+    {
+        gpio  = _gpio;
+        temp  = _temp;
+        clamp = _clamp;
+    }
+} 
 class LEDCluster
 {
 public:
@@ -46,7 +62,6 @@ public:
     uint8_t GetLevel(void);
     bool IsTurnedOn(void);
 
-
 private:
     bool mState;
     Mode mMode;
@@ -59,6 +74,7 @@ private:
     LEDWidget mColorLed;
     std::vector<float> mLedProp;
     std::vector<float> mTemps;
+    std::vector<uint8_t> mClamps;
 
     void DoSet(void);
 };
