@@ -168,13 +168,13 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
 exit:
     return;
 }
-
 CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err   = CHIP_NO_ERROR;
-    uint8_t gpios[3] = { 17, 18, 19 };
-    float temps[3]   = { 2600.0f, 3000.0f, 5000.0f };
-    AppLEDC.Init(gpios, temps, 3, 5);
+    Led leds[] = {new Led(17, 2600.0f, 1.0f), new Led(18, 3000.0f, 0.75f), new Led(19, 5000.0f, 0.75f)};
+    // uint8_t gpios[3] = { 17, 18, 19 };
+    // float temps[3]   = { 2600.0f, 3000.0f, 5000.0f };
+    AppLEDC.Init(leds, sizeof(leds), 5);
     mMode = AppMode_Normal;
     return err;
 }
