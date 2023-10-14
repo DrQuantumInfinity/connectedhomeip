@@ -23,19 +23,20 @@
 
 static const char * TAG = "LEDCluster";
 
-void LEDCluster::Init(uint8_t * gpios, float * temps, uint8_t size, uint8_t colorGpio)
+void LEDCluster::Init(Led * leds, uint8_t size, uint8_t colorGpio)
 {
     for (int ledIndex = 0; ledIndex < size; ledIndex++)
     {
         LEDWidget newLed;
-        newLed.InitMono((gpio_num_t) gpios[ledIndex], (ledc_channel_t) ledIndex);
+        newLed.InitMono((gpio_num_t) leds[ledIndex].gpio, (ledc_channel_t) ledIndex);
         mLeds.push_back(newLed);
         mLedProp.push_back(0.0f);
-        mTemps.push_back(temps[ledIndex]);
+        mTemps.push_back(leds[ledIndex].temp);
+        mClamps.push_back((uint8_t) (leds[ledIndex].clamp * 255));
         ESP_LOGI(TAG, "Created LED:");
-        ESP_LOGI(TAG, "GPIO %d:", gpios[ledIndex]);
+        ESP_LOGI(TAG, "GPIO %d:", leds[ledIndex].gpio);
         ESP_LOGI(TAG, "Channel %d", ledIndex);
-        ESP_LOGI(TAG, "Temp: %1.2f", temps[ledIndex]);
+        ESP_LOGI(TAG, "Temp: %1.2f", leds[ledIndex].temp);
     }
     ESP_LOGI(TAG, "Done creating");
     mColorLed.InitColor((gpio_num_t) colorGpio, (rmt_channel_t) 0);
@@ -118,7 +119,7 @@ void LEDCluster::SetColor(int16_t Hue, int16_t Saturation)
     }
     mHue        = Hue;
     mSaturation = Saturation;
-    mMode = Mode_Color;
+    mMode       = Mode_Color;
     DoSet();
 }
 
@@ -127,7 +128,7 @@ void LEDCluster::DoSet(void)
     for (int ledIndex = 0; ledIndex < mLeds.size(); ledIndex++)
     {
         mLeds[ledIndex].Set(mState && (mMode == Mode_Mono));
-        mLeds[ledIndex].SetBrightness((uint8_t) (mLedProp[ledIndex] * mBrightness));
+        mLeds[ledIndex].SetBrightness(MIN(mClamps[ledIndex], (uint8_t) (mLedProp[ledIndex] * mBrightness)));
     }
     mColorLed.SetColor(mHue, mSaturation);
     mColorLed.Set(mState && (mMode == Mode_Color));
