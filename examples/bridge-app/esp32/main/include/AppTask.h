@@ -29,6 +29,8 @@ private:
     friend AppTask & GetAppTask(void);
     CHIP_ERROR Init();
     void DispatchEvent(AppEvent * event);
+    TickType_t GetTimeoutTick(void);
+    void HandleTimeout(void);
 
     static AppTask sAppTask;
     TimerTick timerTick;

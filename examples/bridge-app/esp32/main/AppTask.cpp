@@ -43,6 +43,7 @@ CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     EspNowInit();
+    timerTick.TimerTickSetFromNow(10000);
     return err;
 }
 static bool EspNowInit(void)
@@ -120,14 +121,26 @@ void AppTask::AppTaskMain(void * pvParameter)
 
     while (true)
     {
-        BaseType_t eventReceived = xQueueReceive(sAppEventQueue, &event, pdMS_TO_TICKS(10));
+        BaseType_t eventReceived = xQueueReceive(sAppEventQueue, &event, sAppTask.GetTimeoutTick());
         if (eventReceived == pdTRUE)
         {
             sAppTask.DispatchEvent(&event);
         }
+        else
+        {
+            sAppTask.HandleTimeout();
+        }
     }
 }
-
+TickType_t AppTask::GetTimeoutTick(void)
+{
+    return sAppTask.timerTick.TimerTicksRemaining();
+}
+void AppTask::HandleTimeout(void)
+{
+    ESP_LOGI(TAG, "Handle timeout");
+    sAppTask.timerTick.TimerTickSetFromNow(30000);
+}
 void AppTask::PostEvent(const AppEvent * aEvent)
 {
     if (sAppEventQueue != NULL)

@@ -480,5 +480,5 @@ extern "C" void app_main()
     {
         ESP_LOGE(TAG, "GetAppTask().StartAppTask() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
     }
-    run();
+    //run();
 }

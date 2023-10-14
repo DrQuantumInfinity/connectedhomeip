@@ -1,7 +1,11 @@
 #include "TimerTick.h"
 
+#include <platform/CHIPDeviceLayer.h>
+using namespace chip;
+
 static bool TimerTickMsbIsSet(TickType_t tick);
 
+//TODO: rename these functions to avoid double name spacing. Make this look like c++ code.
 bool TimerTick::TimerTickHasElapsed(void)
 {
     bool hasElapsed = false;
