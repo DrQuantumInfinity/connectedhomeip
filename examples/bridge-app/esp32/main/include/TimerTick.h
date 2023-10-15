@@ -3,10 +3,10 @@
 class TimerTick
 {
     public:
-        bool TimerTickHasElapsed(void);
-        TickType_t TimerTicksRemaining(void);
-        void TimerTickSetFromNow(uint32_t msFromNow);
-        void TimerTickIncrement(uint32_t numMs);
+        bool HasElapsed(void);
+        TickType_t GetRemaining(void);
+        void SetFromNow(uint32_t msFromNow);
+        void Increment(uint32_t numMs);
 
     private:
         TickType_t _tick;

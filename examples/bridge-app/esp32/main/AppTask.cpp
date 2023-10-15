@@ -43,7 +43,7 @@ CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     EspNowInit();
-    timerTick.TimerTickSetFromNow(10000);
+    timerTick.SetFromNow(10000);
     return err;
 }
 static bool EspNowInit(void)
@@ -134,12 +134,12 @@ void AppTask::AppTaskMain(void * pvParameter)
 }
 TickType_t AppTask::GetTimeoutTick(void)
 {
-    return sAppTask.timerTick.TimerTicksRemaining();
+    return sAppTask.timerTick.GetRemaining();
 }
 void AppTask::HandleTimeout(void)
 {
     ESP_LOGI(TAG, "Handle timeout");
-    sAppTask.timerTick.TimerTickSetFromNow(30000);
+    sAppTask.timerTick.Increment(30000);
 }
 void AppTask::PostEvent(const AppEvent * aEvent)
 {

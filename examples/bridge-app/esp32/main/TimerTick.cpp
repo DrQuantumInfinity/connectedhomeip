@@ -3,10 +3,26 @@
 #include <platform/CHIPDeviceLayer.h>
 using namespace chip;
 
+/**************************************************************************
+ *                                  Constants
+ **************************************************************************/
+/**************************************************************************
+ *                                  Macros
+ **************************************************************************/
+/**************************************************************************
+ *                                  Types
+ **************************************************************************/
+/**************************************************************************
+ *                                  Prototypes
+ **************************************************************************/
 static bool TimerTickMsbIsSet(TickType_t tick);
-
-//TODO: rename these functions to avoid double name spacing. Make this look like c++ code.
-bool TimerTick::TimerTickHasElapsed(void)
+/**************************************************************************
+ *                                  Variables
+ **************************************************************************/
+/**************************************************************************
+ *                                  Global Functions
+ **************************************************************************/
+bool TimerTick::HasElapsed(void)
 {
     bool hasElapsed = false;
     if (_tick)
@@ -17,7 +33,7 @@ bool TimerTick::TimerTickHasElapsed(void)
     }
     return hasElapsed;
 }
-TickType_t TimerTick::TimerTicksRemaining(void)
+TickType_t TimerTick::GetRemaining(void)
 {
     TickType_t ticksRemaining = _tick - xTaskGetTickCount();
     //Is the MSB set? We would have underflow if the timer has elapsed.
@@ -27,7 +43,7 @@ TickType_t TimerTick::TimerTicksRemaining(void)
     }
     return ticksRemaining;
 }
-void TimerTick::TimerTickSetFromNow(uint32_t msFromNow)
+void TimerTick::SetFromNow(uint32_t msFromNow)
 {
     _tick = xTaskGetTickCount() + pdMS_TO_TICKS(msFromNow);
     if (_tick == 0)
@@ -35,14 +51,21 @@ void TimerTick::TimerTickSetFromNow(uint32_t msFromNow)
         _tick++;
     }
 }
-void TimerTick::TimerTickIncrement(uint32_t numMs)
+void TimerTick::Increment(uint32_t numMs)
 {
     _tick += pdMS_TO_TICKS(numMs);
     if (_tick == 0)
     {
         _tick++;
     }
+    if (HasElapsed())
+    {
+        SetFromNow(numMs);
+    }
 }
+/**************************************************************************
+ *                                  Private Functions
+ **************************************************************************/
 static bool TimerTickMsbIsSet(TickType_t tick)
 {
     return tick & (1 << (sizeof(TickType_t)*8  - 1));
