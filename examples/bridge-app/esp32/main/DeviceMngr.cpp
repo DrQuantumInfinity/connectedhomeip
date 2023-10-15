@@ -90,30 +90,22 @@ static const char * TAG = "device-mngr";
 static EndpointId gCurrentEndpointId;
 static EndpointId gFirstDynamicEndpointId;
 static Device * gDevices[CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT]; // number of dynamic endpoints count
-// 4 Bridged devices
-// static Device gLight1("Light 1", "Office");
-// static Device gLight2("Light 2", "Office");
-// static Device gLight3("Light 3", "Kitchen");
-// static Device gLight4("Light 4", "Den");
-
-// DataVersion gLight1DataVersions[ArraySize(bridgedLightClusters)];
-// DataVersion gLight2DataVersions[ArraySize(bridgedLightClusters)];
-// DataVersion gLight3DataVersions[ArraySize(bridgedLightClusters)];
-// DataVersion gLight4DataVersions[ArraySize(bridgedLightClusters)];
-
-/* REVISION definitions:
- */
-
-// bridge will have own database named gDevices.
-// Clear database
-// memset(gDevices, 0, sizeof(gDevices));
-
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
+static void AddDeviceEndpointWorker(intptr_t context)
+{
+    DEVICE_LIGHT *pDeviceData = reinterpret_cast<DEVICE_LIGHT *>(context);
+    AddDeviceEndpoint(pDeviceData->device, DeviceLightGetEndpoint(), DeviceLightGetTypes(), Span<DataVersion>(pDeviceData->dataVersions), 1);
+}
+void AddDeviceLightEndpointScheduler(DEVICE_LIGHT* pDeviceData)
+{
+    chip::DeviceLayer::PlatformMgr().ScheduleWork(AddDeviceEndpointWorker, reinterpret_cast<intptr_t>(pDeviceData));
+}
 int AddDeviceEndpoint(Device * dev, const EmberAfEndpointType * ep, const Span<const EmberAfDeviceType> & deviceTypeList,
                       const Span<DataVersion> & dataVersionStorage, chip::EndpointId parentEndpointId)
 {
+    ESP_LOGI(TAG, "Adding device %s to %s", dev->GetName(), dev->GetLocation());
     uint8_t index = 0;
     while (index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
     {

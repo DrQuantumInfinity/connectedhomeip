@@ -1,6 +1,7 @@
 
 #pragma once
 #include "Device.h"
+#include "DeviceLight.h"
 #include "DeviceCallbacks.h"
 #include <span>
 
@@ -29,6 +30,7 @@ using namespace ::chip::app::Clusters;
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
+void AddDeviceLightEndpointScheduler(DEVICE_LIGHT* pDeviceData);
 int AddDeviceEndpoint(Device * dev, const EmberAfEndpointType * ep, const Span<const EmberAfDeviceType> & deviceTypeList,
                       const Span<DataVersion> & dataVersionStorage, chip::EndpointId parentEndpointId);
 CHIP_ERROR RemoveDeviceEndpoint(Device * dev);

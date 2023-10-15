@@ -181,6 +181,23 @@ const EmberAfDeviceType bridgedOnOffDeviceTypes[] = {
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
+DEVICE_LIGHT* DeviceLightAllocate(const char* pName, const char* pLocation, Device::DeviceCallback_fn pfnChangedCallback)
+{
+    DEVICE_LIGHT* pDeviceLight = (DEVICE_LIGHT*)malloc(sizeof(DEVICE_LIGHT));
+    memset(pDeviceLight, 0x00, sizeof(DEVICE_LIGHT));
+
+    pDeviceLight->device = new Device(pName, pLocation);
+    pDeviceLight->device->SetReachable(true);
+    pDeviceLight->device->SetChangeCallback(pfnChangedCallback);
+
+    memset(pDeviceLight->dataVersions, 0x00, sizeof(pDeviceLight->dataVersions));
+
+    return pDeviceLight;
+}
+void DeviceLightFree(DEVICE_LIGHT* pDeviceLight)
+{
+    free(pDeviceLight);
+}
 const EmberAfEndpointType* DeviceLightGetEndpoint(void)
 {
     return &bridgedLightEndpoint;

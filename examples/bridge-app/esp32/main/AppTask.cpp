@@ -1,5 +1,8 @@
 
 #include "AppTask.h"
+#include "DeviceLight.h"
+#include "DeviceMngr.h"
+
 #include "esp_log.h"
 #include "esp_now.h"
 #include "freertos/FreeRTOS.h"
@@ -7,7 +10,7 @@
 
 #define APP_TASK_NAME "APP"
 #define APP_EVENT_QUEUE_SIZE 10
-#define APP_TASK_STACK_SIZE (3072)
+#define APP_TASK_STACK_SIZE (5000)
 #define ESPNOW_SERVER_MAC_ADDR  {0x18, 0xFE, 0x34, 0xD1, 0xB0, 0x77}
 
 using namespace chip;
@@ -43,7 +46,7 @@ CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     EspNowInit();
-    timerTick.SetFromNow(10000);
+    timerTick.SetFromNow(15000);
     return err;
 }
 static bool EspNowInit(void)
@@ -139,7 +142,14 @@ TickType_t AppTask::GetTimeoutTick(void)
 void AppTask::HandleTimeout(void)
 {
     ESP_LOGI(TAG, "Handle timeout");
-    sAppTask.timerTick.Increment(30000);
+
+    if (sAppTask.timerTick.HasElapsed())
+    {
+        ESP_LOGI(TAG, "Adding Light");
+        sAppTask.timerTick.Disable();
+        DEVICE_LIGHT *pLight = DeviceLightAllocate("Light 6", "nowhere", HandleDeviceStatusChanged);
+        AddDeviceLightEndpointScheduler(pLight);
+    }
 }
 void AppTask::PostEvent(const AppEvent * aEvent)
 {
