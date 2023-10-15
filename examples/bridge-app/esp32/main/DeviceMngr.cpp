@@ -61,69 +61,40 @@ chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 #endif // CONFIG_ENABLE_ESP32_DEVICE_INFO_PROVIDER
 } // namespace
 
+/**************************************************************************
+ *                                  Constants
+ **************************************************************************/
+#define ZCL_DESCRIPTOR_CLUSTER_REVISION (1u)
+#define ZCL_BRIDGED_DEVICE_BASIC_INFORMATION_CLUSTER_REVISION (2u)
+#define ZCL_FIXED_LABEL_CLUSTER_REVISION (1u)
+#define ZCL_ON_OFF_CLUSTER_REVISION (4u)
+// Device Version for dynamic endpoints:
+#define DEVICE_VERSION_DEFAULT 1
+
 static const char * TAG = "device-mngr";
 
+/**************************************************************************
+ *                                  Macros
+ **************************************************************************/
+/**************************************************************************
+ *                                  Types
+ **************************************************************************/
+/**************************************************************************
+ *                                  Prototypes
+ **************************************************************************/
+/**************************************************************************
+ *                                  Variables
+ **************************************************************************/
+
+
+static EndpointId gCurrentEndpointId;
+static EndpointId gFirstDynamicEndpointId;
+static Device * gDevices[CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT]; // number of dynamic endpoints count
 // 4 Bridged devices
 // static Device gLight1("Light 1", "Office");
 // static Device gLight2("Light 2", "Office");
 // static Device gLight3("Light 3", "Kitchen");
 // static Device gLight4("Light 4", "Den");
-
-// Declare On/Off cluster attributes
-// DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(onOffAttrs)
-// DECLARE_DYNAMIC_ATTRIBUTE(OnOff::Attributes::OnOff::Id, BOOLEAN, 1, 0), /* on/off */
-//     DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
-
-EmberAfAttributeMetadata onOffAttrs[] = {
-    { ZAP_EMPTY_DEFAULT(), OnOff::Attributes::OnOff::Id, 1, ZAP_TYPE(BOOLEAN), 0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
-    { ZAP_EMPTY_DEFAULT(), 0xFFFD, 2, ZAP_TYPE(INT16U), ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) }
-};
-// Declare Descriptor cluster attributes
-// DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(descriptorAttrs)
-// DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::DeviceTypeList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* device list */
-//     DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::ServerList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* server list */
-//     DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::ClientList::Id, ARRAY, kDescriptorAttributeArraySize, 0), /* client list */
-//     DECLARE_DYNAMIC_ATTRIBUTE(Descriptor::Attributes::PartsList::Id, ARRAY, kDescriptorAttributeArraySize, 0),  /* parts list */
-//     DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
-
-EmberAfAttributeMetadata descriptorAttrs[] = {
-    { ZAP_EMPTY_DEFAULT(), Descriptor::Attributes::DeviceTypeList::Id, kDescriptorAttributeArraySize, ZAP_TYPE(ARRAY),
-      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
-    { ZAP_EMPTY_DEFAULT(), Descriptor::Attributes::ServerList::Id, kDescriptorAttributeArraySize, ZAP_TYPE(ARRAY),
-      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
-    { ZAP_EMPTY_DEFAULT(), Descriptor::Attributes::ClientList::Id, kDescriptorAttributeArraySize, ZAP_TYPE(ARRAY),
-      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
-    { ZAP_EMPTY_DEFAULT(), Descriptor::Attributes::PartsList::Id, kDescriptorAttributeArraySize, ZAP_TYPE(ARRAY),
-      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
-    { ZAP_EMPTY_DEFAULT(), 0xFFFD, 2, ZAP_TYPE(INT16U), ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) }
-};
-
-// Declare Bridged Device Basic Information cluster attributes
-// DECLARE_DYNAMIC_ATTRIBUTE_LIST_BEGIN(bridgedDeviceBasicAttrs)
-// DECLARE_DYNAMIC_ATTRIBUTE(BridgedDeviceBasicInformation::Attributes::NodeLabel::Id, CHAR_STRING, kNodeLabelSize, 0), /* NodeLabel
-// */
-//     DECLARE_DYNAMIC_ATTRIBUTE(BridgedDeviceBasicInformation::Attributes::Reachable::Id, BOOLEAN, 1, 0),              /* Reachable
-//     */ DECLARE_DYNAMIC_ATTRIBUTE_LIST_END();
-
-EmberAfAttributeMetadata bridgedDeviceBasicAttrs[] = {
-    { ZAP_EMPTY_DEFAULT(), BridgedDeviceBasicInformation::Attributes::NodeLabel::Id, kNodeLabelSize, ZAP_TYPE(CHAR_STRING),
-      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
-    { ZAP_EMPTY_DEFAULT(), BridgedDeviceBasicInformation::Attributes::Reachable::Id, 1, ZAP_TYPE(BOOLEAN),
-      0 | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
-    { ZAP_EMPTY_DEFAULT(), 0xFFFD, 2, ZAP_TYPE(INT16U), ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) }
-};
-// DECLARE_DYNAMIC_CLUSTER_LIST_BEGIN(bridgedLightClusters)
-EmberAfCluster bridgedLightClusters[] = {
-    { OnOff::Id, onOffAttrs, ArraySize(onOffAttrs), 0, ZAP_CLUSTER_MASK(SERVER), NULL, onOffIncomingCommands, nullptr },
-    { Descriptor::Id, descriptorAttrs, ArraySize(descriptorAttrs), 0, ZAP_CLUSTER_MASK(SERVER), NULL, nullptr, nullptr },
-    { BridgedDeviceBasicInformation::Id, bridgedDeviceBasicAttrs, ArraySize(bridgedDeviceBasicAttrs), 0, ZAP_CLUSTER_MASK(SERVER),
-      NULL, nullptr, nullptr }
-};
-
-// Declare Bridged Light endpoint
-// DECLARE_DYNAMIC_ENDPOINT(bridgedLightEndpoint, bridgedLightClusters);
-EmberAfEndpointType bridgedLightEndpoint = { bridgedLightClusters, ArraySize(bridgedLightClusters), 0 };
-
 
 // DataVersion gLight1DataVersions[ArraySize(bridgedLightClusters)];
 // DataVersion gLight2DataVersions[ArraySize(bridgedLightClusters)];
@@ -133,15 +104,14 @@ EmberAfEndpointType bridgedLightEndpoint = { bridgedLightClusters, ArraySize(bri
 /* REVISION definitions:
  */
 
-#define ZCL_DESCRIPTOR_CLUSTER_REVISION (1u)
-#define ZCL_BRIDGED_DEVICE_BASIC_INFORMATION_CLUSTER_REVISION (2u)
-#define ZCL_FIXED_LABEL_CLUSTER_REVISION (1u)
-#define ZCL_ON_OFF_CLUSTER_REVISION (4u)
 // bridge will have own database named gDevices.
 // Clear database
 // memset(gDevices, 0, sizeof(gDevices));
 
-int AddDeviceEndpoint(Device * dev, EmberAfEndpointType * ep, const Span<const EmberAfDeviceType> & deviceTypeList,
+/**************************************************************************
+ *                                  Global Functions
+ **************************************************************************/
+int AddDeviceEndpoint(Device * dev, const EmberAfEndpointType * ep, const Span<const EmberAfDeviceType> & deviceTypeList,
                       const Span<DataVersion> & dataVersionStorage, chip::EndpointId parentEndpointId)
 {
     uint8_t index = 0;
@@ -346,6 +316,7 @@ const EmberAfDeviceType gAggregateNodeDeviceTypes[] = { { DEVICE_TYPE_BRIDGE, DE
 
 void InitDevMgr()
 {
+    ESP_LOGI(TAG, "Init");
     // Set starting endpoint id where dynamic endpoints will be assigned, which
     // will be the next consecutive endpoint id after the last fixed endpoint.
     gFirstDynamicEndpointId = static_cast<chip::EndpointId>(
@@ -359,23 +330,8 @@ void InitDevMgr()
     // A bridge has root node device type on EP0 and aggregate node device type (bridge) at EP1
     emberAfSetDeviceTypeList(0, Span<const EmberAfDeviceType>(gRootDeviceTypes));
     emberAfSetDeviceTypeList(1, Span<const EmberAfDeviceType>(gAggregateNodeDeviceTypes));
-
-    // // Add lights 1..3 --> will be mapped to ZCL endpoints 3, 4, 5
-    // AddDeviceEndpoint(&gLight1, &bridgedLightEndpoint, Span<const EmberAfDeviceType>(gBridgedOnOffDeviceTypes),
-    //                   Span<DataVersion>(gLight1DataVersions), 1);
-    // AddDeviceEndpoint(&gLight2, &bridgedLightEndpoint, Span<const EmberAfDeviceType>(gBridgedOnOffDeviceTypes),
-    //                   Span<DataVersion>(gLight2DataVersions), 1);
-    // AddDeviceEndpoint(&gLight3, &bridgedLightEndpoint, Span<const EmberAfDeviceType>(gBridgedOnOffDeviceTypes),
-    //                   Span<DataVersion>(gLight3DataVersions), 1);
-
-    // // Remove Light 2 -- Lights 1 & 3 will remain mapped to endpoints 3 & 5
-    // RemoveDeviceEndpoint(&gLight2);
-
-    // // Add Light 4 -- > will be mapped to ZCL endpoint 6
-    // AddDeviceEndpoint(&gLight4, &bridgedLightEndpoint, Span<const EmberAfDeviceType>(gBridgedOnOffDeviceTypes),
-    //                   Span<DataVersion>(gLight4DataVersions), 1);
-
-    // // Re-add Light 2 -- > will be mapped to ZCL endpoint 7
-    // AddDeviceEndpoint(&gLight2, &bridgedLightEndpoint, Span<const EmberAfDeviceType>(gBridgedOnOffDeviceTypes),
-    //                   Span<DataVersion>(gLight2DataVersions), 1);
 }
+
+/**************************************************************************
+ *                                  Private Functions
+ **************************************************************************/
