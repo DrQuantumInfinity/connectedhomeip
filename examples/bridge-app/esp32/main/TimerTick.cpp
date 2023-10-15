@@ -1,7 +1,6 @@
 #include "TimerTick.h"
 
 #include <platform/CHIPDeviceLayer.h>
-using namespace chip;
 
 /**************************************************************************
  *                                  Constants
@@ -29,17 +28,21 @@ bool TimerTick::HasElapsed(void)
     {
         TickType_t ticksRemaining = _tick - xTaskGetTickCount();
         //Is the MSB set? We would have underflow if the timer has elapsed.
-        hasElapsed = TimerTickMsbIsSet(ticksRemaining);
+        hasElapsed = TimerTickMsbIsSet(ticksRemaining) || ticksRemaining == 0;
     }
     return hasElapsed;
 }
 TickType_t TimerTick::GetRemaining(void)
 {
-    TickType_t ticksRemaining = _tick - xTaskGetTickCount();
-    //Is the MSB set? We would have underflow if the timer has elapsed.
-    if (TimerTickMsbIsSet(ticksRemaining))
+    TickType_t ticksRemaining = 0xFFFFFFFF;
+    if (_tick)
     {
-        ticksRemaining = 0;
+        ticksRemaining = _tick - xTaskGetTickCount();
+        //Is the MSB set? We would have underflow if the timer has elapsed.
+        if (TimerTickMsbIsSet(ticksRemaining))
+        {
+            ticksRemaining = 0;
+        }
     }
     return ticksRemaining;
 }
@@ -62,6 +65,10 @@ void TimerTick::Increment(uint32_t numMs)
     {
         SetFromNow(numMs);
     }
+}
+void TimerTick::Disable(void)
+{
+    _tick = 0;
 }
 /**************************************************************************
  *                                  Private Functions
