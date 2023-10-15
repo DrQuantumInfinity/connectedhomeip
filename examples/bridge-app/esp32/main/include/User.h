@@ -1,4 +1,4 @@
 #pragma once
 #include "Device.h"
 
-void run();
+void run(intptr_t context);

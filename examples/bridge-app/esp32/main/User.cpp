@@ -3,7 +3,8 @@
 #include "DeviceMngr.h"
 #include "DeviceLight.h"
 
-void run(){
+void run(intptr_t context)
+{
     static Device gLight1("Light 1", "Office");
     static Device gLight2("Light 2", "Office");
     static Device gLight3("Light 3", "Kitchen");
