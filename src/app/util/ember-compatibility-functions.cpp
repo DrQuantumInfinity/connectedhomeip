@@ -1113,7 +1113,7 @@ void MatterReportingAttributeChangeCallback(EndpointId endpoint, ClusterId clust
     assertChipStackLockedByCurrentThread();
 
     AttributePathParams info;
-    info.mClusterId   = clusterId;add 
+    info.mClusterId   = clusterId;
     info.mAttributeId = attributeId;
     info.mEndpointId  = endpoint;
 
