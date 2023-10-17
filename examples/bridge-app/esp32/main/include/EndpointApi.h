@@ -1,8 +1,10 @@
 
 #pragma once
+//TODO: can these be deleted?
 #include "Device.h"
 #include "DeviceLight.h"
 #include "DeviceCallbacks.h"
+#include <app/InteractionModelEngine.h>
 #include <span>
 
 using namespace ::chip;
@@ -21,13 +23,11 @@ using namespace ::chip::app::Clusters;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-typedef EmberAfStatus (*GOOGLE_READ_CALLBACK)(EndpointId endpoint, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
-typedef EmberAfStatus (*GOOGLE_WRITE_CALLBACK)(EndpointId endpoint, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
-//typedef EmberAfStatus (*GOOGLE_INSTANT_ACTION_CALLBACK)(app::CommandHandler* commandObj, const app::ConcreteCommandPath & commandPath, const Actions::Commands::InstantAction::DecodableType & commandData);
+typedef EmberAfStatus (*GOOGLE_READ_CALLBACK)(uint16_t index, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
+typedef EmberAfStatus (*GOOGLE_WRITE_CALLBACK)(uint16_t index, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+typedef bool (*GOOGLE_INSTANT_ACTION_CALLBACK)(app::CommandHandler* commandObj, const app::ConcreteCommandPath & commandPath, const Actions::Commands::InstantAction::DecodableType & commandData);
 typedef struct
 {
-    Device * dev;
-
     uint16_t index;
     char name[ENDPOINT_NAME_LENGTH];
     char location[ENDPOINT_LOCATION_LENGTH];

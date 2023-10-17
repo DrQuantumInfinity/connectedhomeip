@@ -16,29 +16,9 @@
  */
 
 #include "EndpointApi.h"
-#include "Device.h"
-#include "DeviceCallbacks.h"
-#include "esp_log.h"
-// #include "nvs_flash.h"
-#include <app-common/zap-generated/ids/Attributes.h>
-#include <app-common/zap-generated/ids/Clusters.h>
-#include <app/ConcreteAttributePath.h>
-// #include <app/clusters/identify-server/identify-server.h>
-#include <app/reporting/reporting.h>
-// #include <app/server/OnboardingCodesUtil.h>
-#include <app/util/attribute-storage.h>
-#include <common/Esp32AppServer.h>
-// #include <credentials/DeviceAttestationCredsProvider.h>
-// #include <credentials/examples/DeviceAttestationCredsExample.h>
-#include <lib/core/CHIPError.h>
-// #include <lib/support/CHIPMem.h>
-// #include <lib/support/CHIPMemString.h>
-#include <lib/support/ZclString.h>
-// #include <platform/ESP32/ESP32Utils.h>
+#include <app/reporting/reporting.h> //for MatterReportingAttributeChangeCallback()
 
-#include <app/InteractionModelEngine.h>
-#include <app/server/Server.h>
-
+//TODO: can these be deleted?
 #if CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
 #include <platform/ESP32/ESP32FactoryDataProvider.h>
 #endif // CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
@@ -49,17 +29,6 @@
 #include <DeviceInfoProviderImpl.h>
 #endif // CONFIG_ENABLE_ESP32_DEVICE_INFO_PROVIDER
 
-namespace {
-#if CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
-chip::DeviceLayer::ESP32FactoryDataProvider sFactoryDataProvider;
-#endif // CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
-
-#if CONFIG_ENABLE_ESP32_DEVICE_INFO_PROVIDER
-chip::DeviceLayer::ESP32DeviceInfoProvider gExampleDeviceInfoProvider;
-#else
-chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
-#endif // CONFIG_ENABLE_ESP32_DEVICE_INFO_PROVIDER
-} // namespace
 
 /**************************************************************************
  *                                  Constants
@@ -68,7 +37,7 @@ chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 #define ZCL_ON_OFF_CLUSTER_REVISION                             (4u)
 
 static const char * TAG = "endpoint-api";
-
+typedef bool (*GOOGLE_INSTANT_ACTION_CALLBACK)(app::CommandHandler* commandObj, const app::ConcreteCommandPath & commandPath, const Actions::Commands::InstantAction::DecodableType & commandData);
 // (taken from chip-devices.xml)
 #define DEVICE_TYPE_ROOT_NODE 0x0016
 // (taken from chip-devices.xml)
@@ -89,7 +58,7 @@ typedef struct
     uint16_t index;
     GOOGLE_READ_CALLBACK pfnReadCallback;
     GOOGLE_WRITE_CALLBACK pfnWriteCallback;
-//  GOOGLE_INSTANT_ACTION_CALLBACK pfnInstantActionCallback;
+    GOOGLE_INSTANT_ACTION_CALLBACK pfnInstantActionCallback;
 }ENDPOINT;
 
 
@@ -107,12 +76,6 @@ typedef struct
 static void EndpointAddWorker(intptr_t context);
 static void EndpointRemoveWorker(intptr_t context);
 static void EndpointReportUpdateWorker(intptr_t closure);
-
-//Read callback
-static EmberAfStatus HandleReadBridgedDeviceBasicAttribute(Device* dev, chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
-static EmberAfStatus HandleReadOnOffAttribute(Device* dev, chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
-//Write callback
-static EmberAfStatus HandleWriteOnOffAttribute(Device* dev, chip::AttributeId attributeId, uint8_t* buffer);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
@@ -120,7 +83,7 @@ static ENDPOINT_API endpointApi;
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-void EndpointApiInit(void/*Maybe inject some callbacks from the application*/)
+void EndpointApiInit(void)
 {
     ESP_LOGI(TAG, "Init");
     memset(&endpointApi, 0x00, sizeof(endpointApi));
@@ -158,42 +121,26 @@ void EndpointReportChange(uint16_t index, ClusterId cluster, AttributeId attribu
 EmberAfStatus emberAfExternalAttributeReadCallback(
     EndpointId endpoint, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength)
 {
+    EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+
     uint16_t index = emberAfGetDynamicIndexFromEndpoint(endpoint);
-/*
-    //TODO: consider calling up to the application with a callback here.
-
-    if (index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
+    if (endpointApi.endpoint[index].pfnReadCallback)
     {
-        Device * dev = gDevices[index];
-
-        if (clusterId == BridgedDeviceBasicInformation::Id)
-        {
-            return HandleReadBridgedDeviceBasicAttribute(dev, attributeMetadata->attributeId, buffer, maxReadLength);
-        }
-        else if (clusterId == OnOff::Id)
-        {
-            return HandleReadOnOffAttribute(dev, attributeMetadata->attributeId, buffer, maxReadLength);
-        }
-    }*/
-
-    return EMBER_ZCL_STATUS_FAILURE;
+        status = endpointApi.endpoint[index].pfnReadCallback(index, clusterId, attributeMetadata, buffer, maxReadLength);
+    }
+    return status;
 }
 EmberAfStatus emberAfExternalAttributeWriteCallback(
     EndpointId endpoint, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
 {
-    uint16_t endpointIndex = emberAfGetDynamicIndexFromEndpoint(endpoint);
-/*
-    if (endpointIndex < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
+    EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+    
+    uint16_t index = emberAfGetDynamicIndexFromEndpoint(endpoint);
+    if (endpointApi.endpoint[index].pfnWriteCallback)
     {
-        Device * dev = gDevices[endpointIndex];
-
-        if ((dev->IsReachable()) && (clusterId == OnOff::Id))
-        {
-            return HandleWriteOnOffAttribute(dev, attributeMetadata->attributeId, buffer);
-        }
+        status = endpointApi.endpoint[index].pfnWriteCallback(index, clusterId, attributeMetadata, buffer);
     }
-*/
-    return EMBER_ZCL_STATUS_FAILURE;
+    return status;
 }
 //Another magic callback. I think we want to use this. Review the path below for examples.
 //"/root/esp-matter/connectedhomeip/connectedhomeip/examples/bridge-app/linux/main.cpp"
@@ -201,9 +148,19 @@ bool emberAfActionsClusterInstantActionCallback(
     app::CommandHandler* commandObj, const app::ConcreteCommandPath & commandPath, 
     const Actions::Commands::InstantAction::DecodableType & commandData)
 {
-    // No actions are implemented, just return status NotFound.
-    commandObj->AddStatus(commandPath, Protocols::InteractionModel::Status::NotFound);
-    return true;
+    bool retVal = true;
+    
+    //TODO: how do I know what index received an instant action?
+/*  if (endpointApi.endpoint[index].pfnInstantActionCallback)
+    {
+        retVal = endpointApi.endpoint[index].pfnInstantActionCallback(commandObj, commandPath, commandData);
+    }
+    else*/
+    {
+        // No actions are implemented, just return status NotFound.
+        commandObj->AddStatus(commandPath, Protocols::InteractionModel::Status::NotFound);
+    }
+    return retVal;
 }
 /**************************************************************************
  *                                  Private Functions
@@ -217,9 +174,6 @@ static void EndpointAddWorker(intptr_t context)
     {
         while (true)
         {
-            //TODO: Is it necessary to do this before adding the endpoint?
-            //TODO: does the device need to know its endpoint?
-            pData->dev->SetEndpointId(endpointApi.currentEndpointId); 
             EmberAfStatus ret = emberAfSetDynamicEndpoint(pData->index, endpointApi.currentEndpointId, pData->ep, pData->dataVersionStorage, pData->deviceTypeList, pData->parentEndpointId);
             if (ret == EMBER_ZCL_STATUS_SUCCESS)
             {
