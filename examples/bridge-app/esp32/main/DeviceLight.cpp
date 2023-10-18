@@ -181,30 +181,27 @@ const EmberAfDeviceType bridgedOnOffDeviceTypes[] = {
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DEVICE_LIGHT* DeviceLightAllocate(const char* pName, const char* pLocation, Device::DeviceCallback_fn pfnChangedCallback)
+DeviceLight::DeviceLight(const char* pName, const char* pLocation, GOOGLE_WRITE_CALLBACK pfnWriteCallback)
 {
-    DEVICE_LIGHT* pDeviceLight = (DEVICE_LIGHT*)malloc(sizeof(DEVICE_LIGHT));
-    memset(pDeviceLight, 0x00, sizeof(DEVICE_LIGHT));
-
-    pDeviceLight->device = new Device(pName, pLocation);
-    pDeviceLight->device->SetReachable(true);
-    pDeviceLight->device->SetChangeCallback(pfnChangedCallback);
-
-    memset(pDeviceLight->dataVersions, 0x00, sizeof(pDeviceLight->dataVersions));
-
-    return pDeviceLight;
+    ENDPOINT_DATA endpointData = {
+        .index = 0/*base class index*/,
+        .pfnReadCallback = NULL /*local read function specific to a DeviceLight*/,
+        .pfnWriteCallback = pfnWriteCallback,
+        .pfnInstantActionCallback = NULL, //worry about this later
+        .name = {0},
+        .location = {0},
+        .ep = &bridgedLightEndpoint,
+        .deviceTypeList = Span<const EmberAfDeviceType>(bridgedOnOffDeviceTypes),
+        .dataVersionStorage = Span<DataVersion>(dataVersions),
+        .parentEndpointId = 1,
+    };
+    strcpy(endpointData.name, pName);
+    strcpy(endpointData.location, pLocation);
+    EndpointAdd(&endpointData);
 }
-void DeviceLightFree(DEVICE_LIGHT* pDeviceLight)
+void DeviceLight::Dispose(void)
 {
-    free(pDeviceLight);
-}
-const EmberAfEndpointType* DeviceLightGetEndpoint(void)
-{
-    return &bridgedLightEndpoint;
-}
-chip::Span<const EmberAfDeviceType> DeviceLightGetTypes(void)
-{
-    return Span<const EmberAfDeviceType>(bridgedOnOffDeviceTypes);
+    EndpointRemove(0/*TODO: pDeviceLight->base.index*/);
 }
 /**************************************************************************
  *                                  Private Functions

@@ -1,7 +1,6 @@
 
 #include "AppTask.h"
 #include "DeviceLight.h"
-#include "DeviceMngr.h"
 
 #include "esp_log.h"
 #include "esp_now.h"
@@ -147,8 +146,8 @@ void AppTask::HandleTimeout(void)
     {
         ESP_LOGI(TAG, "Adding Light");
         sAppTask.timerTick.Disable();
-        DEVICE_LIGHT *pLight = DeviceLightAllocate("Light 6", "nowhere", HandleDeviceStatusChanged);
-        AddDeviceLightEndpointScheduler(pLight);
+        //DEVICE_LIGHT *pLight = DeviceLightAllocate("Light 6", "nowhere", HandleDeviceStatusChanged);
+        //AddDeviceLightEndpointScheduler(pLight);
     }
 }
 void AppTask::PostEvent(const AppEvent * aEvent)
