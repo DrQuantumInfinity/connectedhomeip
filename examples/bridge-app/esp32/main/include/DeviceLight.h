@@ -1,29 +1,29 @@
 
 #pragma once
-#include "Device.h"
+#include "EndpointApi.h"
+
 #include <app/util/af-types.h>
 using namespace ::chip;
 /**************************************************************************
  *                                  Constants
  **************************************************************************/
-#define DEVICE_LIGHT_NUM_CLUSTERS   (3)
+#define DEVICE_LIGHT_NUM_CLUSTERS   (3) //ArraySize(bridgedLightClusters)
 /**************************************************************************
  *                                  Macros
  **************************************************************************/
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-
-typedef struct 
+class DeviceLight //Extend base class
 {
-    Device* device;
-    DataVersion dataVersions[DEVICE_LIGHT_NUM_CLUSTERS];
-}DEVICE_LIGHT;
+public:
+    DeviceLight(const char* pName, const char* pLocation, GOOGLE_WRITE_CALLBACK pfnWriteCallback);
+    void Dispose(void);
+    //TODO: Add commands for turning the light on and off
 
+private:
+    DataVersion dataVersions[DEVICE_LIGHT_NUM_CLUSTERS];
+};
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-DEVICE_LIGHT* DeviceLightAllocate(const char* pName, const char* pLocation, Device::DeviceCallback_fn pfnChangedCallback);
-void DeviceLightFree(DEVICE_LIGHT* pDeviceLight);
-const EmberAfEndpointType* DeviceLightGetEndpoint(void);
-chip::Span<const EmberAfDeviceType> DeviceLightGetTypes(void);

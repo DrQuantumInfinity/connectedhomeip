@@ -15,13 +15,11 @@
  *    limitations under the License.
  */
 
-#include "Device.h"
 #include "DeviceCallbacks.h"
 #include "AppTask.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "User.h"
-#include "DeviceMngr.h"
 #include <app-common/zap-generated/ids/Attributes.h>
 #include <app-common/zap-generated/ids/Clusters.h>
 #include <app/ConcreteAttributePath.h>
@@ -409,7 +407,7 @@ static void InitServer(intptr_t context)
     PrintOnboardingCodes(chip::RendezvousInformationFlags(CONFIG_RENDEZVOUS_MODE));
 
     Esp32AppServer::Init(); // Init ZCL Data Model and CHIP App Server AND Initialize device attestation config
-    InitDevMgr();
+    //InitDevMgr();
 }
 
 extern "C" void app_main()

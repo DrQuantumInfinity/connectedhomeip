@@ -1,10 +1,8 @@
 #include "User.h"
-// #include <DataModelTypes.h>
-#include "DeviceMngr.h"
 #include "DeviceLight.h"
 
 void run(intptr_t context)
-{
+{/*
     static Device gLight1("Light 1", "Office");
     static Device gLight2("Light 2", "Office");
     static Device gLight3("Light 3", "Kitchen");
@@ -45,5 +43,5 @@ void run(intptr_t context)
 
     // Re-add Light 2 -- > will be mapped to ZCL endpoint 7
     AddDeviceEndpoint(&gLight2, DeviceLightGetEndpoint(), DeviceLightGetTypes(),
-                      Span<DataVersion>(gLight2DataVersions), 1);
+                      Span<DataVersion>(gLight2DataVersions), 1);*/
 }
