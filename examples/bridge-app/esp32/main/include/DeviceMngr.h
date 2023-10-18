@@ -1,40 +1,31 @@
 
-#pragma once
-#include "Device.h"
-#include "DeviceLight.h"
-#include "DeviceCallbacks.h"
-#include <span>
+// #pragma once
+// #include "Device.h"
+// #include "DeviceLight.h"
+// #include "DeviceCallbacks.h"
 
-using namespace ::chip;
-// using namespace ::chip::DeviceManager;
-using namespace ::chip::Platform;
-using namespace ::chip::Credentials;
-using namespace ::chip::app::Clusters;
-/**************************************************************************
- *                                  Constants
- **************************************************************************/
+// /**************************************************************************
+//  *                                  Constants
+//  **************************************************************************/
+// /**************************************************************************
+//  *                                  Macros
+//  **************************************************************************/
+// /**************************************************************************
+//  *                                  Types
+//  **************************************************************************/
+// typedef enum{
+//     DeviceMngr_DevType_ONOFF_LIGHT;
+//     DeviceMngr_DevType_RGB_LIGHT;
+//     DeviceMngr_DevType_TEMP_LIGHT;
+//     DeviceMngr_DevType_TEMP_RGB_LIGHT;
+//     DeviceMngr_DevType_BUTTON;
+//     DeviceMngr_DevType_SWITCH;
+// } DeviceMngr_DevType;
 
-
-// (taken from chip-devices.xml)
-#define DEVICE_TYPE_ROOT_NODE 0x0016
-// (taken from chip-devices.xml)
-#define DEVICE_TYPE_BRIDGE 0x000e
-
-
-/**************************************************************************
- *                                  Macros
- **************************************************************************/
-/**************************************************************************
- *                                  Types
- **************************************************************************/
-/**************************************************************************
- *                                  Prototypes
- **************************************************************************/
-void AddDeviceLightEndpointScheduler(DEVICE_LIGHT* pDeviceData);
-int AddDeviceEndpoint(Device * dev, const EmberAfEndpointType * ep, const Span<const EmberAfDeviceType> & deviceTypeList,
-                      const Span<DataVersion> & dataVersionStorage, chip::EndpointId parentEndpointId);
-CHIP_ERROR RemoveDeviceEndpoint(Device * dev);
-void InitDevMgr();
-
-void HandleDeviceStatusChanged(Device * dev, Device::Changed_t itemChangedMask);
-                                                
+// typedef int16_t DeviceMngr_ID;
+// /**************************************************************************
+//  *                                  Prototypes
+//  **************************************************************************/
+// ID AddDevice(DeviceMngr_DevType devType);
+// void RemoveDevice(DeviceMngr_ID deviceId);
+// void InitDevMgr();
