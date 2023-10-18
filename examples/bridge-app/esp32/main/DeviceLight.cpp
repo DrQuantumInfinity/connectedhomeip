@@ -177,10 +177,13 @@ const EmberAfDeviceType bridgedOnOffDeviceTypes[] = {
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-//of type GOOGLE_WRITE_CALLBACK
+static EmberAfStatus GoogleReadCallback(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
+static EmberAfStatus ReadCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
+static EmberAfStatus ReadAttributeBasicInfo(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
+static EmberAfStatus ReadAttributeOnOff(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
 static EmberAfStatus GoogleWriteCallback(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
-static EmberAfStatus ProcessCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
-static EmberAfStatus ProcessAttributeOnOff(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer);
+static EmberAfStatus WriteCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+static EmberAfStatus WriteAttributeOnOff(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
@@ -191,9 +194,9 @@ DeviceLight::DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_
 {
     _pfnWriteCallback = pfnWriteCallback;
     ENDPOINT_DATA endpointData = {
-        .index = 0/*base class index*/,
+        .index = GetIndex(),
         .pObject = this,
-        .pfnReadCallback = NULL /*local read function specific to a DeviceLight*/,
+        .pfnReadCallback = GoogleReadCallback,
         .pfnWriteCallback = GoogleWriteCallback,
         .pfnInstantActionCallback = NULL, //worry about this later
         .name = {0},
@@ -207,9 +210,9 @@ DeviceLight::DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_
     strcpy(endpointData.location, pLocation);
     EndpointAdd(&endpointData);
 }
-void DeviceLight::Dispose(void)
+DeviceLight::~DeviceLight(void)
 {
-    EndpointRemove(0/*TODO: pDeviceLight->base.index*/);
+    EndpointRemove(GetIndex());
 }
 void DeviceLight::SetOn(bool on)
 {
@@ -219,28 +222,102 @@ void DeviceLight::SetOn(bool on)
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-//GoogleReadCallback
-static EmberAfStatus GoogleWriteCallback(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
+static EmberAfStatus GoogleReadCallback(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength)
 {
     DeviceLight *pDeviceLight = (DeviceLight*)pObject;
-    ProcessCluster(pDeviceLight, clusterId, attributeMetadata, buffer);
-    pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
-    return EMBER_ZCL_STATUS_SUCCESS;
+    return ReadCluster(pDeviceLight, clusterId, attributeMetadata, buffer, maxReadLength);
 }
-static EmberAfStatus ProcessCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
+static EmberAfStatus ReadCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength)
 {
-    EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
+    EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     if (pDeviceLight->IsReachable())
     {
         switch (clusterId)
         {
-        case OnOff::Id: status = ProcessAttributeOnOff(pDeviceLight, attributeMetadata->attributeId, buffer);   break;
-        default:        status = EMBER_ZCL_STATUS_SUCCESS;                                                      break;
+        case BridgedDeviceBasicInformation::Id: status = ReadAttributeBasicInfo(pDeviceLight, attributeMetadata->attributeId, buffer, maxReadLength);   break;
+        case OnOff::Id:                         status = ReadAttributeOnOff(pDeviceLight, attributeMetadata->attributeId, buffer, maxReadLength);       break;
+        default:                                status = EMBER_ZCL_STATUS_SUCCESS;                                                                      break;
         }
     }
     return status;
 }
-static EmberAfStatus ProcessAttributeOnOff(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer)
+
+#include <lib/support/ZclString.h>
+#define ZCL_BRIDGED_DEVICE_BASIC_INFORMATION_CLUSTER_REVISION (2u)
+#define ZCL_ON_OFF_CLUSTER_REVISION (4u)
+static EmberAfStatus ReadAttributeBasicInfo(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength)
+{
+    using namespace BridgedDeviceBasicInformation::Attributes;
+    //TODO: add debug
+//     ChipLogProgress(DeviceLayer, "HandleReadBridgedDeviceBasicAttribute: attrId=%" PRIu32 ", maxReadLength=%u", attributeId,
+//                     maxReadLength);
+
+    EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
+
+    if ((attributeId == Reachable::Id) && (maxReadLength == 1))
+    {
+        *buffer = pDeviceLight->IsReachable() ? 1 : 0;
+    }
+    else if ((attributeId == NodeLabel::Id) && (maxReadLength == 32))
+    {
+        MutableByteSpan zclNameSpan(buffer, maxReadLength);
+        MakeZclCharString(zclNameSpan, /*dev->GetName()*/"cat lol"); //TODO: get this from the info cluster
+    }
+    else if ((attributeId == ClusterRevision::Id) && (maxReadLength == 2))
+    {
+        uint16_t rev = ZCL_BRIDGED_DEVICE_BASIC_INFORMATION_CLUSTER_REVISION;
+        memcpy(buffer, &rev, sizeof(rev));
+    }
+    else
+    {
+        status = EMBER_ZCL_STATUS_FAILURE;
+    }
+
+    return status;
+}
+static EmberAfStatus ReadAttributeOnOff(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength)
+{
+    //TODO: debug
+//    ChipLogProgress(DeviceLayer, "HandleReadOnOffAttribute: attrId=%" PRIu32 ", maxReadLength=%u", attributeId, maxReadLength);
+    
+    EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
+
+    if ((attributeId == OnOff::Attributes::OnOff::Id) && (maxReadLength == 1))
+    {
+        *buffer = pDeviceLight->_isOn ? 1 : 0;
+    }
+    else if ((attributeId == OnOff::Attributes::ClusterRevision::Id) && (maxReadLength == 2))
+    {
+        uint16_t rev = ZCL_ON_OFF_CLUSTER_REVISION;
+        memcpy(buffer, &rev, sizeof(rev));
+    }
+    else
+    {
+        status = EMBER_ZCL_STATUS_FAILURE;
+    }
+    return status;
+}
+static EmberAfStatus GoogleWriteCallback(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
+{
+    DeviceLight *pDeviceLight = (DeviceLight*)pObject;
+    EmberAfStatus status = WriteCluster(pDeviceLight, clusterId, attributeMetadata, buffer);
+    pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
+    return status;
+}
+static EmberAfStatus WriteCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
+{
+    EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+    if (pDeviceLight->IsReachable())
+    {
+        switch (clusterId)
+        {
+        case OnOff::Id: status = WriteAttributeOnOff(pDeviceLight, attributeMetadata->attributeId, buffer); break;
+        default:        status = EMBER_ZCL_STATUS_SUCCESS;                                                  break;
+        }
+    }
+    return status;
+}
+static EmberAfStatus WriteAttributeOnOff(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer)
 {
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     switch (attributeId)

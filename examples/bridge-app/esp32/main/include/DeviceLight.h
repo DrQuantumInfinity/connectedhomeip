@@ -23,7 +23,7 @@ public:
 
 
     DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_WRITE_CALLBACK pfnWriteCallback);
-    void Dispose(void);
+    ~DeviceLight(void);
     void SetOn(bool on);
 
     //protected...

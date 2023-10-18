@@ -18,7 +18,7 @@ using namespace ::chip::app::Clusters;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-typedef EmberAfStatus (*GOOGLE_READ_CALLBACK)(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
+typedef EmberAfStatus (*GOOGLE_READ_CALLBACK)(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
 typedef EmberAfStatus (*GOOGLE_WRITE_CALLBACK)(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 typedef bool (*GOOGLE_INSTANT_ACTION_CALLBACK)(app::CommandHandler* commandObj, const app::ConcreteCommandPath & commandPath, const Actions::Commands::InstantAction::DecodableType & commandData);
 typedef struct

@@ -112,7 +112,7 @@ EmberAfStatus emberAfExternalAttributeReadCallback(
 
     if (endpointApi.endpoint[index].pfnReadCallback)
     {
-        status = endpointApi.endpoint[index].pfnReadCallback(clusterId, attributeMetadata, buffer, maxReadLength);
+        status = endpointApi.endpoint[index].pfnReadCallback(endpointApi.endpoint[index].pObject, clusterId, attributeMetadata, buffer, maxReadLength);
     }
     return status;
 }
