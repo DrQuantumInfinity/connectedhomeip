@@ -19,16 +19,18 @@
 #include <functional>
 #include <stdbool.h>
 #include <stdint.h>
-#define NUM_IDS 16
 
 class Device
 {
 public:
-    uint16_t GetId() {return id; }
     Device();
     virtual ~Device() {}
+    uint16_t GetIndex() {return _index;}
+    bool IsReachable(void) {return _reachable;}
+    void SetReachable(bool reachable);
 
 private:
-    uint16_t id;
-    static inline bool IDList[NUM_IDS] = {0};
+    uint16_t _index;
+    bool _reachable;
+    static inline bool _indexList[CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT] = {0};
 };

@@ -16,14 +16,21 @@
  */
 
 #include "Device.h"
+#include "EndpointApi.h"
 
 
-Device::Device(){
-    for (id = 0; id < NUM_IDS; id++)
+Device::Device(void)
+{
+    for (_index = 0; _index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT; _index++)
     {
-        if (!IDList[id])
+        if (!_indexList[_index])
         {
             return;
         }
     }
+}
+void Device::SetReachable(bool reachable)
+{
+    _reachable = reachable;
+    EndpointReportChange(_index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
 }

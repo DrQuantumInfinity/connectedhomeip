@@ -1,5 +1,6 @@
 
 #include "DeviceLight.h"
+#include "EndpointApi.h"
 
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
@@ -147,6 +148,7 @@ const EmberAfCluster bridgedLightClusters[] = {
         .eventCount = 0
     },
 };
+static_assert(ArraySize(bridgedLightClusters) == DEVICE_LIGHT_NUM_CLUSTERS);
 
 // Declare Bridged Light endpoint
 const EmberAfEndpointType bridgedLightEndpoint = { 
@@ -175,24 +177,30 @@ const EmberAfDeviceType bridgedOnOffDeviceTypes[] = {
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
+//of type GOOGLE_WRITE_CALLBACK
+static EmberAfStatus GoogleWriteCallback(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+static EmberAfStatus ProcessCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+static EmberAfStatus ProcessAttributeOnOff(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceLight::DeviceLight(const char* pName, const char* pLocation, GOOGLE_WRITE_CALLBACK pfnWriteCallback)
+DeviceLight::DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_WRITE_CALLBACK pfnWriteCallback)
 {
+    _pfnWriteCallback = pfnWriteCallback;
     ENDPOINT_DATA endpointData = {
         .index = 0/*base class index*/,
+        .pObject = this,
         .pfnReadCallback = NULL /*local read function specific to a DeviceLight*/,
-        .pfnWriteCallback = pfnWriteCallback,
+        .pfnWriteCallback = GoogleWriteCallback,
         .pfnInstantActionCallback = NULL, //worry about this later
         .name = {0},
         .location = {0},
         .ep = &bridgedLightEndpoint,
         .deviceTypeList = Span<const EmberAfDeviceType>(bridgedOnOffDeviceTypes),
-        .dataVersionStorage = Span<DataVersion>(dataVersions),
+        .dataVersionStorage = Span<DataVersion>(_dataVersions),
         .parentEndpointId = 1,
     };
     strcpy(endpointData.name, pName);
@@ -203,6 +211,42 @@ void DeviceLight::Dispose(void)
 {
     EndpointRemove(0/*TODO: pDeviceLight->base.index*/);
 }
+void DeviceLight::SetOn(bool on)
+{
+    _isOn = on;
+    EndpointReportChange(GetIndex(), OnOff::Id, OnOff::Attributes::OnOff::Id);
+}
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
+//GoogleReadCallback
+static EmberAfStatus GoogleWriteCallback(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
+{
+    DeviceLight *pDeviceLight = (DeviceLight*)pObject;
+    ProcessCluster(pDeviceLight, clusterId, attributeMetadata, buffer);
+    pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
+    return EMBER_ZCL_STATUS_SUCCESS;
+}
+static EmberAfStatus ProcessCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
+{
+    EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
+    if (pDeviceLight->IsReachable())
+    {
+        switch (clusterId)
+        {
+        case OnOff::Id: status = ProcessAttributeOnOff(pDeviceLight, attributeMetadata->attributeId, buffer);   break;
+        default:        status = EMBER_ZCL_STATUS_SUCCESS;                                                      break;
+        }
+    }
+    return status;
+}
+static EmberAfStatus ProcessAttributeOnOff(DeviceLight *pDeviceLight, chip::AttributeId attributeId, uint8_t* buffer)
+{
+    EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
+    switch (attributeId)
+    {
+    case OnOff::Attributes::OnOff::Id:  pDeviceLight->_isOn = (bool)buffer[0];   break;
+    default:                            status = EMBER_ZCL_STATUS_FAILURE;      break;
+    }
+    return status;
+}

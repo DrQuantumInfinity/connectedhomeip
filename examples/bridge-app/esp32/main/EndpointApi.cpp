@@ -41,6 +41,7 @@ const EmberAfDeviceType aggregateNodeDeviceTypes[] = { { DEVICE_TYPE_BRIDGE, DEV
 typedef struct
 {
     uint16_t index;
+    void *pObject;
     GOOGLE_READ_CALLBACK pfnReadCallback;
     GOOGLE_WRITE_CALLBACK pfnWriteCallback;
     GOOGLE_INSTANT_ACTION_CALLBACK pfnInstantActionCallback;
@@ -111,7 +112,7 @@ EmberAfStatus emberAfExternalAttributeReadCallback(
 
     if (endpointApi.endpoint[index].pfnReadCallback)
     {
-        status = endpointApi.endpoint[index].pfnReadCallback(index, clusterId, attributeMetadata, buffer, maxReadLength);
+        status = endpointApi.endpoint[index].pfnReadCallback(clusterId, attributeMetadata, buffer, maxReadLength);
     }
     return status;
 }
@@ -125,7 +126,7 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(
 
     if (endpointApi.endpoint[index].pfnWriteCallback)
     {
-        status = endpointApi.endpoint[index].pfnWriteCallback(index, clusterId, attributeMetadata, buffer);
+        status = endpointApi.endpoint[index].pfnWriteCallback(endpointApi.endpoint[index].pObject, clusterId, attributeMetadata, buffer);
     }
     return status;
 }
@@ -162,6 +163,7 @@ static void EndpointAddWorker(intptr_t context)
         if (endpointApi.endpoint[pData->index].index == 0)
         {
             endpointApi.endpoint[pData->index].index = pData->index;
+            endpointApi.endpoint[pData->index].pObject = pData->pObject;
             endpointApi.endpoint[pData->index].pfnReadCallback = pData->pfnReadCallback;
             endpointApi.endpoint[pData->index].pfnWriteCallback = pData->pfnWriteCallback;
             endpointApi.endpoint[pData->index].pfnInstantActionCallback = pData->pfnInstantActionCallback;
