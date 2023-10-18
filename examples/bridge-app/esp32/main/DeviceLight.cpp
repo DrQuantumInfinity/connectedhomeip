@@ -211,6 +211,7 @@ DeviceLight::DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_
     strcpy(endpointData.location, pLocation);
     
     memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
+    SetReachable(true);
     EndpointAdd(&_endpointData);
 }
 DeviceLight::~DeviceLight(void)

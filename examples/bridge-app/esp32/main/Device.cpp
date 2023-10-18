@@ -18,8 +18,6 @@
 #include "Device.h"
 #include "EndpointApi.h"
 
-static const char * TAG = "device-class";
-
 Device::Device(void)
 {
     for (_index = 0; _index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT; _index++)
