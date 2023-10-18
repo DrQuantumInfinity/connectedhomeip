@@ -18,6 +18,7 @@
 #include "Device.h"
 #include "EndpointApi.h"
 
+static const char * TAG = "device-class";
 
 Device::Device(void)
 {
@@ -25,9 +26,21 @@ Device::Device(void)
     {
         if (!_indexList[_index])
         {
-            return;
+            break;
         }
     }
+}
+Device::~Device(void)
+{
+    _indexList[_index] = false;
+}
+uint16_t Device::GetIndex(void)
+{
+    return _index;
+}
+bool Device::IsReachable(void) 
+{
+    return _reachable;
 }
 void Device::SetReachable(bool reachable)
 {

@@ -45,7 +45,7 @@ CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     EspNowInit();
-    timerTick.SetFromNow(15000);
+    timerTick.SetFromNow(3000);
     return err;
 }
 static bool EspNowInit(void)
@@ -138,6 +138,7 @@ TickType_t AppTask::GetTimeoutTick(void)
 {
     return sAppTask.timerTick.GetRemaining();
 }
+static DeviceLight *deviceLight;
 void AppTask::HandleTimeout(void)
 {
     ESP_LOGI(TAG, "Handle timeout");
@@ -146,8 +147,7 @@ void AppTask::HandleTimeout(void)
     {
         ESP_LOGI(TAG, "Adding Light");
         sAppTask.timerTick.Disable();
-        //DEVICE_LIGHT *pLight = DeviceLightAllocate("Light 6", "nowhere", HandleDeviceStatusChanged);
-        //AddDeviceLightEndpointScheduler(pLight);
+        deviceLight = new DeviceLight("Light 6", "nowhere", NULL);
     }
 }
 void AppTask::PostEvent(const AppEvent * aEvent)

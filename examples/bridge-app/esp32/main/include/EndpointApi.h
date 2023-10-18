@@ -32,8 +32,10 @@ typedef struct
     char name[ENDPOINT_NAME_LENGTH];
     char location[ENDPOINT_LOCATION_LENGTH];
     const EmberAfEndpointType* ep;
-    const Span<const EmberAfDeviceType> & deviceTypeList;
-    const Span<DataVersion> & dataVersionStorage;
+    const EmberAfDeviceType *pDeviceTypeList;
+    uint32_t deviceTypeListLength;
+    DataVersion *pDataVersionStorage;
+    uint32_t dataVersionStorageLength;
     chip::EndpointId parentEndpointId;
 }ENDPOINT_DATA;
 

@@ -170,7 +170,12 @@ static void EndpointAddWorker(intptr_t context)
 
             while (true)
             {
-                EmberAfStatus ret = emberAfSetDynamicEndpoint(pData->index, endpointApi.currentEndpointId, pData->ep, pData->dataVersionStorage, pData->deviceTypeList, pData->parentEndpointId);
+                Span<DataVersion> dataVersion = Span<DataVersion>(pData->pDataVersionStorage, pData->dataVersionStorageLength);
+                Span<const EmberAfDeviceType> deviceTypeList= Span<const EmberAfDeviceType>(pData->pDeviceTypeList, pData->deviceTypeListLength);
+                EmberAfStatus ret = emberAfSetDynamicEndpoint(
+                    pData->index, endpointApi.currentEndpointId, pData->ep, 
+                    dataVersion, deviceTypeList, 
+                    pData->parentEndpointId);
                 if (ret == EMBER_ZCL_STATUS_SUCCESS)
                 {
                     ChipLogProgress(DeviceLayer, "Added device %u: %s at dynamic endpoint %u", pData->index, pData->name, endpointApi.currentEndpointId);

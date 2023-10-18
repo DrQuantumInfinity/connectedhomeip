@@ -1,6 +1,5 @@
 
 #include "DeviceLight.h"
-#include "EndpointApi.h"
 
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
@@ -202,13 +201,17 @@ DeviceLight::DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_
         .name = {0},
         .location = {0},
         .ep = &bridgedLightEndpoint,
-        .deviceTypeList = Span<const EmberAfDeviceType>(bridgedOnOffDeviceTypes),
-        .dataVersionStorage = Span<DataVersion>(_dataVersions),
+        .pDeviceTypeList = bridgedOnOffDeviceTypes,
+        .deviceTypeListLength = ArraySize(bridgedOnOffDeviceTypes),
+        .pDataVersionStorage = _dataVersions,
+        .dataVersionStorageLength = ArraySize(_dataVersions),
         .parentEndpointId = 1,
     };
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
-    EndpointAdd(&endpointData);
+    
+    memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
+    EndpointAdd(&_endpointData);
 }
 DeviceLight::~DeviceLight(void)
 {

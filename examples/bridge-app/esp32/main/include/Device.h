@@ -23,10 +23,10 @@
 class Device
 {
 public:
-    Device();
-    virtual ~Device() {}
-    uint16_t GetIndex() {return _index;}
-    bool IsReachable(void) {return _reachable;}
+    Device(void);
+    virtual ~Device(void);
+    uint16_t GetIndex(void);
+    bool IsReachable(void);
     void SetReachable(bool reachable);
 
 private:
