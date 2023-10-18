@@ -1,16 +1,11 @@
 
 #pragma once
 //TODO: can these be deleted?
-#include "Device.h"
-#include "DeviceLight.h"
-#include "DeviceCallbacks.h"
 #include <app/InteractionModelEngine.h>
+#include <app/util/af-types.h>
 #include <span>
 
 using namespace ::chip;
-// using namespace ::chip::DeviceManager;
-using namespace ::chip::Platform;
-using namespace ::chip::Credentials;
 using namespace ::chip::app::Clusters;
 /**************************************************************************
  *                                  Constants
@@ -29,6 +24,10 @@ typedef bool (*GOOGLE_INSTANT_ACTION_CALLBACK)(app::CommandHandler* commandObj, 
 typedef struct
 {
     uint16_t index;
+    GOOGLE_READ_CALLBACK pfnReadCallback;
+    GOOGLE_WRITE_CALLBACK pfnWriteCallback;
+    GOOGLE_INSTANT_ACTION_CALLBACK pfnInstantActionCallback;
+
     char name[ENDPOINT_NAME_LENGTH];
     char location[ENDPOINT_LOCATION_LENGTH];
     const EmberAfEndpointType* ep;
@@ -41,11 +40,7 @@ typedef struct
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-void AddDeviceLightEndpointScheduler(DEVICE_LIGHT* pDeviceData);
-int AddDeviceEndpoint(Device * dev, const EmberAfEndpointType * ep, const Span<const EmberAfDeviceType> & deviceTypeList,
-                      const Span<DataVersion> & dataVersionStorage, chip::EndpointId parentEndpointId);
-CHIP_ERROR RemoveDeviceEndpoint(Device * dev);
-void InitDevMgr();
-
-void HandleDeviceStatusChanged(Device * dev, Device::Changed_t itemChangedMask);
-                                                
+void EndpointApiInit(void);
+void EndpointAdd(ENDPOINT_DATA *pData);
+void EndpointRemove(uint16_t index);
+void EndpointReportChange(uint16_t index, ClusterId cluster, AttributeId attribute);
