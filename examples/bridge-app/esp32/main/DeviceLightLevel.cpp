@@ -107,8 +107,10 @@ DeviceLightLevel::DeviceLightLevel(const char* pName, const char* pLocation, DEV
         .name = {0},
         .location = {0},
         .ep = &bridgedLightEndpoint,
-        .deviceTypeList = Span<const EmberAfDeviceType>(bridgedOnOffDeviceTypes),
-        .dataVersionStorage = Span<DataVersion>(_dataVersions),
+        .pDeviceTypeList = bridgedOnOffDeviceTypes,
+        .deviceTypeListLength = ArraySize(bridgedOnOffDeviceTypes),
+        .pDataVersionStorage = _dataVersions,
+        .dataVersionStorageLength = ArraySize(_dataVersions),
         .parentEndpointId = 1,
     };
     strcpy(endpointData.name, pName);
