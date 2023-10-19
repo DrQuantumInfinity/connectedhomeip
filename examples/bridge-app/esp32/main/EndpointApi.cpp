@@ -58,6 +58,7 @@ typedef struct
  *                                  Prototypes
  **************************************************************************/
 //workers
+static void EndpointApiInitWorker(intptr_t context);
 static void EndpointAddWorker(intptr_t context);
 static void EndpointRemoveWorker(intptr_t context);
 static void EndpointReportUpdateWorker(intptr_t closure);
@@ -70,21 +71,7 @@ static ENDPOINT_API endpointApi;
  **************************************************************************/
 void EndpointApiInit(void)
 {
-    ESP_LOGI(TAG, "Init");
-    memset(&endpointApi, 0x00, sizeof(endpointApi));
-
-    // Set starting endpoint id where dynamic endpoints will be assigned, which
-    // will be the next consecutive endpoint id after the last fixed endpoint.
-    endpointApi.firstDynamicEndpointId = static_cast<chip::EndpointId>(static_cast<int>(emberAfEndpointFromIndex(static_cast<uint16_t>(emberAfFixedEndpointCount() - 1))) + 1);
-    endpointApi.currentEndpointId = endpointApi.firstDynamicEndpointId;
-
-    // Disable last fixed endpoint, which is used as a placeholder for all of the
-    // supported clusters so that ZAP will generated the requisite code.
-    emberAfEndpointEnableDisable(emberAfEndpointFromIndex(static_cast<uint16_t>(emberAfFixedEndpointCount() - 1)), false);
-
-    // A bridge has root node device type on EP0 and aggregate node device type (bridge) at EP1
-    emberAfSetDeviceTypeList(0, Span<const EmberAfDeviceType>(rootDeviceTypes));
-    emberAfSetDeviceTypeList(1, Span<const EmberAfDeviceType>(aggregateNodeDeviceTypes));
+    chip::DeviceLayer::PlatformMgr().ScheduleWork(EndpointApiInitWorker);
 }
 void EndpointAdd(ENDPOINT_DATA *pData)
 {
@@ -153,6 +140,27 @@ bool emberAfActionsClusterInstantActionCallback(
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
+static void EndpointApiInitWorker(intptr_t context)
+{
+    // Silence complaints about unused variable.
+    UNUSED_VAR(context);
+
+    ESP_LOGI(TAG, "Init");
+    memset(&endpointApi, 0x00, sizeof(endpointApi));
+
+    // Set starting endpoint id where dynamic endpoints will be assigned, which
+    // will be the next consecutive endpoint id after the last fixed endpoint.
+    endpointApi.firstDynamicEndpointId = static_cast<chip::EndpointId>(static_cast<int>(emberAfEndpointFromIndex(static_cast<uint16_t>(emberAfFixedEndpointCount() - 1))) + 1);
+    endpointApi.currentEndpointId = endpointApi.firstDynamicEndpointId;
+
+    // Disable last fixed endpoint, which is used as a placeholder for all of the
+    // supported clusters so that ZAP will generated the requisite code.
+    emberAfEndpointEnableDisable(emberAfEndpointFromIndex(static_cast<uint16_t>(emberAfFixedEndpointCount() - 1)), false);
+
+    // A bridge has root node device type on EP0 and aggregate node device type (bridge) at EP1
+    emberAfSetDeviceTypeList(0, Span<const EmberAfDeviceType>(rootDeviceTypes));
+    emberAfSetDeviceTypeList(1, Span<const EmberAfDeviceType>(aggregateNodeDeviceTypes));
+}
 static void EndpointAddWorker(intptr_t context)
 {
     ENDPOINT_DATA *pData = reinterpret_cast<ENDPOINT_DATA *>(context);
@@ -232,6 +240,7 @@ static void EndpointRemoveWorker(intptr_t context)
 static void EndpointReportUpdateWorker(intptr_t closure)
 {
     auto path = reinterpret_cast<app::ConcreteAttributePath *>(closure);
+    ESP_LOGI(TAG, "Update endpoint/cluster/attr %u/%lu/%lu", path->mEndpointId, path->mClusterId, path->mAttributeId);
     MatterReportingAttributeChangeCallback(*path);
     Platform::Delete(path);
 }

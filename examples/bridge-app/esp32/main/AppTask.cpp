@@ -45,7 +45,7 @@ CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     EspNowInit();
-    timerTick.SetFromNow(3000);
+    timerTick.SetFromNow(10000);
     return err;
 }
 static bool EspNowInit(void)
