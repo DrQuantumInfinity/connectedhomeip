@@ -1,5 +1,6 @@
 #pragma once
 #include <app/util/attribute-metadata.h>
+#include "Cluster.h"
 
 #include <app/util/attribute-storage.h>
 
@@ -18,15 +19,16 @@ static const CommandId onOffIncomingCommands[] = {
 };
 
 
-class OnOffCluster{
+class OnOffCluster : Cluster {
     public:
     bool _isOn;
     void SetOn(bool on, uint16_t index);
-    EmberAfStatus ProcessAttributeOnOff(chip::AttributeId attributeId, uint8_t* buffer);
-
+    EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer);
+    EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
+    
     // Declare On/Off cluster attributes
 
-    static constexpr EmberAfAttributeMetadata onOffAttrs[2] = {
+    static constexpr EmberAfAttributeMetadata onOffAttrs[] = {
         { //onOff attribute
             .defaultValue = ZAP_EMPTY_DEFAULT(),
             .attributeId = OnOff::Attributes::OnOff::Id,
