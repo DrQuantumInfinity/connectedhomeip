@@ -9,7 +9,7 @@ using namespace ::chip;
 using namespace ::chip::app::Clusters;
 
 
-class LevelControlCluster : Cluster {
+class LevelControlCluster : public Cluster {
     public:
     
     bool _level;

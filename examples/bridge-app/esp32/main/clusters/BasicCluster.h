@@ -10,9 +10,10 @@ using namespace ::chip::app::Clusters;
 
 #define NODE_LABEL_SIZE             (32)
 
-class BasicCluster : Cluster {
+class BasicCluster {
     public:
-    bool _isReachable;
+    void SetReachable(bool reachable, uint16_t index);
+    bool _reachable;
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer);
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
     static constexpr EmberAfAttributeMetadata BasicAttrs[] = {

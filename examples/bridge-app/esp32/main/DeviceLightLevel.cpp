@@ -69,10 +69,11 @@ static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, con
 DeviceLightLevel::DeviceLightLevel(const char * pName, const char * pLocation, DEVICE_LIGHT_LEVEL_WRITE_CALLBACK pfnWriteCallback)
 {
     _pfnWriteCallback          = pfnWriteCallback;
+    DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedLightClusters));
     ENDPOINT_DATA endpointData = {
         .index                    = 0 /*base class index*/,
         .pObject                  = this,
-        .pfnReadCallback          = NULL /*local read function specific to a DeviceLightLevel*/,
+        .pfnReadCallback          = GoogleReadCallback /*local read function specific to a DeviceLightLevel*/,
         .pfnWriteCallback         = GoogleWriteCallback,
         .pfnInstantActionCallback = NULL, // worry about this later
         .name                     = { 0 },
@@ -80,17 +81,28 @@ DeviceLightLevel::DeviceLightLevel(const char * pName, const char * pLocation, D
         .ep                       = &bridgedLightEndpoint,
         .pDeviceTypeList          = bridgedOnOffDeviceTypes,
         .deviceTypeListLength     = ArraySize(bridgedOnOffDeviceTypes),
-        .pDataVersionStorage      = _dataVersions,
-        .dataVersionStorageLength = ArraySize(_dataVersions),
+        .pDataVersionStorage      = pDataVersions,
+        .dataVersionStorageLength = ArraySize(bridgedLightClusters),
         .parentEndpointId         = 1,
     };
+
+    // _clusters.push_back(std::make_unique<DescriptorCluster());
+    // _clusters.push_back(std::make_unique<OnOffCluster());
+    // _clusters.push_back(std::make_unique<LevelControlCluster());
+    // AddCluster( &descriptorCluster, 0);
+    // AddCluster( &onOffCluster, 1);
+    AddCluster(&levelControlCluster, 2);
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
-    EndpointAdd(&endpointData);
+
+    memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
+    EndpointAdd(&_endpointData);
+    basicCluster.SetReachable(true, GetIndex());
 }
 DeviceLightLevel::~DeviceLightLevel()
-{
-    EndpointRemove(0 /*TODO: pDeviceLight->base.index*/);
+{   
+    free(_endpointData.pDataVersionStorage);
+    EndpointRemove(GetIndex());
 }
 
 // void DeviceLightLevel::SetOn(bool on)
@@ -107,56 +119,59 @@ static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, con
     DeviceLightLevel * pDeviceLight = (DeviceLightLevel *) pObject;
     return pDeviceLight->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
 }
-EmberAfStatus DeviceLightLevel::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
-                          uint16_t maxReadLength)
-{
-    EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
-    if (basicCluster._isReachable)
-    {
-        switch (clusterId)
-        {
-        case BridgedDeviceBasicInformation::Id:
-            status = basicCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
-            break;
-        case OnOff::Id:
-            status = onOffCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
-            break;
-        case LevelControl::Id:
-            status = levelControlCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
-            break;
-        default:
-            status = EMBER_ZCL_STATUS_SUCCESS;
-            break;
-        }
-    }
-    return status;
-}
+// EmberAfStatus DeviceLightLevel::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
+//                           uint16_t maxReadLength)
+// {
+//     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+//     if (basicCluster._isReachable)
+//     {
+//         switch (clusterId)
+//         {
+//         case BridgedDeviceBasicInformation::Id:
+//             status = basicCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+//             break;
+//         case OnOff::Id:
+//             status = onOffCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+//             break;
+//         case LevelControl::Id:
+//             status = levelControlCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+//             break;
+//         default:
+//             status = EMBER_ZCL_STATUS_SUCCESS;
+//             break;
+//         }
+//     }
+//     return status;
+// }
 static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
                                          uint8_t * buffer)
 {
     DeviceLightLevel * pDeviceLight = (DeviceLightLevel *) pObject;
-    pDeviceLight->WriteCluster(clusterId, attributeMetadata, buffer);
-    pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
-    return EMBER_ZCL_STATUS_SUCCESS;
-}
-EmberAfStatus DeviceLightLevel::WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                             uint8_t * buffer)
-{
-    EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
-    if (basicCluster._isReachable)
+    EmberAfStatus status = pDeviceLight->WriteCluster(clusterId, attributeMetadata, buffer);
+    if (pDeviceLight->_pfnWriteCallback)
     {
-        switch (clusterId)
-        {
-        case OnOff::Id:
-            status = onOffCluster.Write(attributeMetadata->attributeId, buffer);
-            break;
-        case LevelControl::Id:
-            status = levelControlCluster.Write(attributeMetadata->attributeId, buffer);
-            break;
-        default:
-            status = EMBER_ZCL_STATUS_SUCCESS;
-            break;
-        }
+        pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
     }
     return status;
 }
+// EmberAfStatus DeviceLightLevel::WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                              uint8_t * buffer)
+// {
+//     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+//     if (basicCluster._isReachable)
+//     {
+//         switch (clusterId)
+//         {
+//         case OnOff::Id:
+//             status = onOffCluster.Write(attributeMetadata->attributeId, buffer);
+//             break;
+//         case LevelControl::Id:
+//             status = levelControlCluster.Write(attributeMetadata->attributeId, buffer);
+//             break;
+//         default:
+//             status = EMBER_ZCL_STATUS_SUCCESS;
+//             break;
+//         }
+//     }
+//     return status;
+// }

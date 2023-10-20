@@ -4,6 +4,7 @@
 #include "../clusters/BasicCluster.h"
 #include "../clusters/LevelControlCluster.h"
 #include "../clusters/DescriptorCluster.h"
+#include "EndpointApi.h"
 #include "Device.h"
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
@@ -21,26 +22,25 @@ using namespace ::chip;
 class DeviceLightLevel; //forward declare
 typedef void (*DEVICE_LIGHT_LEVEL_WRITE_CALLBACK)(DeviceLightLevel *deviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 
-class DeviceLightLevel
+class DeviceLightLevel : public Device
 {
 public:
-
-
     DeviceLightLevel(const char* pName, const char* pLocation, DEVICE_LIGHT_LEVEL_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceLightLevel();
-    EmberAfStatus ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
-    EmberAfStatus WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+    // EmberAfStatus ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
+    // EmberAfStatus WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
     
     //protected...
     DEVICE_LIGHT_LEVEL_WRITE_CALLBACK _pfnWriteCallback;
-    bool _isOn;
-    
-private:
-    DataVersion _dataVersions[DEVICE_LIGHT_LEV_NUM_CLUSTERS];
+    // bool _isOn;
     
     OnOffCluster onOffCluster;
     LevelControlCluster levelControlCluster;
-    BasicCluster basicCluster;
+    DescriptorCluster descriptorCluster;
+    // BasicCluster basicCluster;
+
+private:
+    ENDPOINT_DATA _endpointData;
 };
 /**************************************************************************
  *                                  Prototypes

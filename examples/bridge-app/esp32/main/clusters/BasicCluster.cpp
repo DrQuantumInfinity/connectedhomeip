@@ -2,7 +2,17 @@
 #include "EndpointApi.h"
 
 
-static EmberAfStatus BasicCluster::Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength)
+
+void BasicCluster::SetReachable(bool reachable, uint16_t index ){
+    _reachable = reachable;
+    EndpointReportChange(index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
+}
+EmberAfStatus BasicCluster::Write(chip::AttributeId attributeId, uint8_t* buffer)
+{
+    return EMBER_ZCL_STATUS_FAILURE;
+}
+
+EmberAfStatus BasicCluster::Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength)
 {
     using namespace BridgedDeviceBasicInformation::Attributes;
     //TODO: add debug
@@ -13,7 +23,7 @@ static EmberAfStatus BasicCluster::Read(chip::AttributeId attributeId, uint8_t* 
 
     if ((attributeId == Reachable::Id) && (maxReadLength == 1))
     {
-        *buffer = _isReachable() ? 1 : 0;
+        *buffer = _reachable ? 1 : 0;
     }
     else if ((attributeId == NodeLabel::Id) && (maxReadLength == 32))
     {
@@ -32,19 +42,3 @@ static EmberAfStatus BasicCluster::Read(chip::AttributeId attributeId, uint8_t* 
 
     return status;
 }
-// void OnOffCluster::SetOn(bool on, uint16_t index)
-// {
-//     _isOn = on;
-//     EndpointReportChange(index, OnOff::Id, OnOff::Attributes::OnOff::Id);
-// }
-
-// EmberAfStatus OnOffCluster::ProcessAttributeOnOff(chip::AttributeId attributeId, uint8_t* buffer)
-// {
-//     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
-//     switch (attributeId)
-//     {
-//     case OnOff::Attributes::OnOff::Id:  _isOn = (bool)buffer[0];   break;
-//     default:                            status = EMBER_ZCL_STATUS_FAILURE;      break;
-//     }
-//     return status;
-// }

@@ -7,6 +7,7 @@ using namespace ::chip::app::Clusters;
 
 class Cluster{
     public:
-        virtual EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer);
-        virtual EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
+        ClusterId _id;
+        virtual EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer) = 0;
+        virtual EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength) = 0;
 };

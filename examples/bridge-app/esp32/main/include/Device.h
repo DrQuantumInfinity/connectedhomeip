@@ -19,6 +19,8 @@
 #include <functional>
 #include <stdbool.h>
 #include <stdint.h>
+#include "../clusters/Cluster.h"
+#include "../clusters/BasicCluster.h"
 
 class Device
 {
@@ -26,11 +28,18 @@ public:
     Device(void);
     virtual ~Device(void);
     uint16_t GetIndex(void);
-    bool IsReachable(void);
-    void SetReachable(bool reachable);
-
+    EmberAfStatus ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
+    EmberAfStatus WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+    // bool IsReachable(void);
+    // void SetReachable(bool reachable);
+    BasicCluster basicCluster;
+protected:
+    void AddCluster(Cluster* newCluster, int ind);
 private:
     uint16_t _index;
-    bool _reachable;
+    // std::vector<std::shared_ptr<Cluster>> _clusters;
+    Cluster* _clusters[8];
+    // bool _reachable;
     static inline bool _indexList[CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT] = {0};
+
 };

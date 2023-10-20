@@ -27,21 +27,90 @@ Device::Device(void)
             break;
         }
     }
+    basicCluster._reachable = true;
+    // basicCluster.SetReachable(true, GetIndex());
 }
 Device::~Device(void)
 {
     _indexList[_index] = false;
 }
+
 uint16_t Device::GetIndex(void)
 {
     return _index;
 }
-bool Device::IsReachable(void) 
-{
-    return _reachable;
+
+void Device::AddCluster(Cluster* newCluster, int ind){
+    _clusters[ind] = newCluster;
+    // _clusters.push_back(std::make_shared<Cluster>(std::move(newCluster)));
 }
-void Device::SetReachable(bool reachable)
+
+EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
+                          uint16_t maxReadLength)
 {
-    _reachable = reachable;
-    EndpointReportChange(_index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
+    EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+    if (basicCluster._reachable)
+    {
+        status = EMBER_ZCL_STATUS_SUCCESS;
+        // for(auto& cluster : _clusters){
+        for(int ind = 0; ind < 2; ind++){
+            if(_clusters[ind]->_id == clusterId){
+                status = _clusters[ind]->Read(attributeMetadata->attributeId, buffer, maxReadLength);
+            }
+        }
+        // switch (clusterId)
+        // {
+        // case BridgedDeviceBasicInformation::Id:
+        //     status = basicCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+        //     break;
+        // case OnOff::Id:
+        //     status = onOffCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+        //     break;
+        // case LevelControl::Id:
+        //     status = levelControlCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+        //     break;
+        // default:
+        //     status = EMBER_ZCL_STATUS_SUCCESS;
+        //     break;
+        // }
+    }
+    return status;
 }
+EmberAfStatus Device::WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+                                             uint8_t * buffer)
+{
+    EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+    if (basicCluster._reachable)
+    {
+        status = EMBER_ZCL_STATUS_SUCCESS;
+        // for(auto& cluster : _clusters){
+        for(int ind = 0; ind < 2; ind++){
+       
+            if(_clusters[ind]->_id == clusterId){
+                status = _clusters[ind]->Write(attributeMetadata->attributeId, buffer);
+            }
+        }
+        // switch (clusterId)
+        // {
+        // case OnOff::Id:
+        //     status = onOffCluster.Write(attributeMetadata->attributeId, buffer);
+        //     break;
+        // case LevelControl::Id:
+        //     status = levelControlCluster.Write(attributeMetadata->attributeId, buffer);
+        //     break;
+        // default:
+        //     status = EMBER_ZCL_STATUS_SUCCESS;
+        //     break;
+        // }
+    }
+    return status;
+}
+// bool Device::IsReachable(void) 
+// {
+//     return _reachable;
+// }
+// void Device::SetReachable(bool reachable)
+// {
+//     _reachable = reachable;
+//     EndpointReportChange(_index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
+// }

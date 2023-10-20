@@ -19,7 +19,7 @@ static const CommandId onOffIncomingCommands[] = {
 };
 
 
-class OnOffCluster : Cluster {
+class OnOffCluster {
     public:
     bool _isOn;
     void SetOn(bool on, uint16_t index);

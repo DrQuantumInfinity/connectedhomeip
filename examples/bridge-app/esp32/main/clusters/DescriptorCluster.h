@@ -10,8 +10,12 @@ using namespace ::chip::app::Clusters;
 
 #define DESCRIPTION_ATTR_ARRAY_LEN  (254) //max
 
-class DescriptorCluster : Cluster {
+class DescriptorCluster {
     public:
+    int dummy = 0;
+
+    EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer);
+    EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
     static constexpr EmberAfAttributeMetadata descriptorAttrs[] = {
         { //device list
             .defaultValue = ZAP_EMPTY_DEFAULT(),
