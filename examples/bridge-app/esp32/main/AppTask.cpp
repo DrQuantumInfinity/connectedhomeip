@@ -64,7 +64,7 @@ static void UartInit(void)
     };
     ESP_ERROR_CHECK(uart_param_config(UART_NUM_2, &uartConfig));
     ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, sizeof(uartRxBuf), sizeof(uartTxBuf), 10, &uartQueue, 0));
+    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 300, 300, 10, &uartQueue, 0));
 
     #define HELLO_WORLD "Yo Paul! I got serial tx working :)"
     uart_write_bytes(UART_NUM_2, HELLO_WORLD, strlen(HELLO_WORLD));
