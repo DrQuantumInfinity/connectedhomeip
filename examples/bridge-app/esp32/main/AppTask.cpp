@@ -2,6 +2,7 @@
 #include "AppTask.h"
 #include "DeviceLight.h"
 
+#include "driver/uart.h"
 #include "esp_log.h"
 #include "esp_now.h"
 #include "freertos/FreeRTOS.h"
@@ -14,6 +15,7 @@
 
 using namespace chip;
 
+static void UartInit(void);
 static bool EspNowInit(void);
 static void EspNowSendCallback(const uint8_t *mac_addr, esp_now_send_status_t status);
 
@@ -24,6 +26,7 @@ namespace {
     TaskHandle_t sAppTaskHandle;
 } // namespace
 
+static QueueHandle_t uartQueue;
 AppTask AppTask::sAppTask;
 
 CHIP_ERROR AppTask::StartAppTask()
@@ -44,9 +47,27 @@ CHIP_ERROR AppTask::StartAppTask()
 CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
+    UartInit();
     EspNowInit();
     timerTick.SetFromNow(10000);
     return err;
+}
+static void UartInit(void)
+{
+    uart_config_t uartConfig = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .rx_flow_ctrl_thresh = 122
+    };
+    ESP_ERROR_CHECK(uart_param_config(UART_NUM_2, &uartConfig));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, sizeof(uartRxBuf), sizeof(uartTxBuf), 10, &uartQueue, 0));
+
+    #define HELLO_WORLD "Yo Paul! I got serial tx working :)"
+    uart_write_bytes(UART_NUM_2, HELLO_WORLD, strlen(HELLO_WORLD));
 }
 static bool EspNowInit(void)
 {

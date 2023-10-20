@@ -15,8 +15,11 @@
 #    limitations under the License.
 
 idf_component_register(PRIV_INCLUDE_DIRS
-                        "${CMAKE_CURRENT_LIST_DIR}/include"
+                      "${CMAKE_CURRENT_LIST_DIR}/include"
                       "${CMAKE_SOURCE_DIR}/third_party/connectedhomeip/examples/providers"
+                      "$ENV{IDF_PATH}/components/driver/uart/include"
+                      "$ENV{IDF_PATH}/components/driver/gpio/include"
+                      "$ENV{IDF_PATH}/components/esp_ringbuf/include"
                       SRC_DIRS
                       "${CMAKE_CURRENT_LIST_DIR}"
                       "${CMAKE_SOURCE_DIR}/third_party/connectedhomeip/zzz_generated/app-common/app-common/zap-generated/attributes"
@@ -49,6 +52,7 @@ idf_component_register(PRIV_INCLUDE_DIRS
                       "${CMAKE_SOURCE_DIR}/third_party/connectedhomeip/src/app/clusters/general-commissioning-server"
                       "${CMAKE_SOURCE_DIR}/third_party/connectedhomeip/examples/platform/esp32/common"
                       "${CMAKE_SOURCE_DIR}/third_party/connectedhomeip/examples/providers"
+                      "$ENV{IDF_PATH}/components/driver/uart"
                       PRIV_REQUIRES chip QRCode bt nvs_flash)
 
 get_filename_component(CHIP_ROOT ${CMAKE_SOURCE_DIR}/third_party/connectedhomeip REALPATH)
