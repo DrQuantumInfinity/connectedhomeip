@@ -278,6 +278,8 @@ EmberAfStatus emberAfExternalAttributeReadCallback(EndpointId endpoint, ClusterI
 {
     uint16_t endpointIndex = emberAfGetDynamicIndexFromEndpoint(endpoint);
 
+    ChipLogProgress(DeviceLayer, "Read: endpoint %u, index %u, cluster %04lX, attr %04lX", endpoint, endpointIndex, clusterId, attributeMetadata->attributeId);
+
     if ((endpointIndex < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT) && (gDevices[endpointIndex] != NULL))
     {
         Device * dev = gDevices[endpointIndex];
@@ -299,6 +301,8 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(EndpointId endpoint, Cluster
                                                     const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer)
 {
     uint16_t endpointIndex = emberAfGetDynamicIndexFromEndpoint(endpoint);
+    
+    ChipLogProgress(DeviceLayer, "Write: endpoint %u, index %u, cluster %04lX, attr %04lX", endpoint, endpointIndex, clusterId, attributeMetadata->attributeId);
 
     if (endpointIndex < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
     {
@@ -371,6 +375,7 @@ static void InitServer(intptr_t context)
     gFirstDynamicEndpointId = static_cast<chip::EndpointId>(
         static_cast<int>(emberAfEndpointFromIndex(static_cast<uint16_t>(emberAfFixedEndpointCount() - 1))) + 1);
     gCurrentEndpointId = gFirstDynamicEndpointId;
+    ChipLogProgress(DeviceLayer, "First dynamic %u", gFirstDynamicEndpointId);
 
     // Disable last fixed endpoint, which is used as a placeholder for all of the
     // supported clusters so that ZAP will generated the requisite code.
