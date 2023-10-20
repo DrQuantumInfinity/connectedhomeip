@@ -95,11 +95,18 @@ EmberAfStatus emberAfExternalAttributeReadCallback(
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
 
     uint16_t index = emberAfGetDynamicIndexFromEndpoint(endpoint);
-    ESP_LOGI(TAG, "Read callback for %u", index);
+    ESP_LOGI(TAG, "Read callback for %u, %u", index, endpoint);
 
-    if (endpointApi.endpoint[index].pfnReadCallback)
+    if (index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
     {
-        status = endpointApi.endpoint[index].pfnReadCallback(endpointApi.endpoint[index].pObject, clusterId, attributeMetadata, buffer, maxReadLength);
+        if (endpointApi.endpoint[index].pfnReadCallback)
+        {
+            status = endpointApi.endpoint[index].pfnReadCallback(endpointApi.endpoint[index].pObject, clusterId, attributeMetadata, buffer, maxReadLength);
+        }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Read invalid index %u, %u", index, endpoint);
     }
     return status;
 }
@@ -109,11 +116,18 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     
     uint16_t index = emberAfGetDynamicIndexFromEndpoint(endpoint);
-    ESP_LOGI(TAG, "Write callback for %u", index);
+    ESP_LOGI(TAG, "Write callback for %u, %u", index, endpoint);
 
-    if (endpointApi.endpoint[index].pfnWriteCallback)
+    if (index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
     {
-        status = endpointApi.endpoint[index].pfnWriteCallback(endpointApi.endpoint[index].pObject, clusterId, attributeMetadata, buffer);
+        if (endpointApi.endpoint[index].pfnWriteCallback)
+        {
+            status = endpointApi.endpoint[index].pfnWriteCallback(endpointApi.endpoint[index].pObject, clusterId, attributeMetadata, buffer);
+        }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Write invalid index %u, %u", index, endpoint);
     }
     return status;
 }
