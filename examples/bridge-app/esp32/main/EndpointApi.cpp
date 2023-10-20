@@ -95,7 +95,7 @@ EmberAfStatus emberAfExternalAttributeReadCallback(
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
 
     uint16_t index = emberAfGetDynamicIndexFromEndpoint(endpoint);
-    ESP_LOGI(TAG, "Read callback for %u, %u", index, endpoint);
+    ESP_LOGI(TAG, "Read callback for index %u, cluster %04lX, attr %04lX", index, clusterId, attributeMetadata->attributeId);
 
     if (index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
     {
@@ -116,7 +116,7 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     
     uint16_t index = emberAfGetDynamicIndexFromEndpoint(endpoint);
-    ESP_LOGI(TAG, "Write callback for %u, %u", index, endpoint);
+    ESP_LOGI(TAG, "Write callback for index %u, cluster %04lX, attr %04lX", index, clusterId, attributeMetadata->attributeId);
 
     if (index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
     {
