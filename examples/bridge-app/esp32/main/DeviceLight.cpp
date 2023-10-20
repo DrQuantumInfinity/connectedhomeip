@@ -305,7 +305,10 @@ static EmberAfStatus GoogleWriteCallback(void *pObject, ClusterId clusterId, con
 {
     DeviceLight *pDeviceLight = (DeviceLight*)pObject;
     EmberAfStatus status = WriteCluster(pDeviceLight, clusterId, attributeMetadata, buffer);
-    pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
+    if (pDeviceLight->_pfnWriteCallback)
+    {
+        pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
+    }
     return status;
 }
 static EmberAfStatus WriteCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
