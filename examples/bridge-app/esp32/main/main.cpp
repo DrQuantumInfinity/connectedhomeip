@@ -19,6 +19,7 @@
 #include "AppTask.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
+#include "EndpointApi.h"
 #include "User.h"
 #include <app-common/zap-generated/ids/Attributes.h>
 #include <app-common/zap-generated/ids/Clusters.h>
@@ -478,5 +479,6 @@ extern "C" void app_main()
     {
         ESP_LOGE(TAG, "GetAppTask().StartAppTask() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
     }
+    EndpointApiInit();
     chip::DeviceLayer::PlatformMgr().ScheduleWork(run, reinterpret_cast<intptr_t>(nullptr));
 }

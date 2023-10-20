@@ -23,14 +23,14 @@ const CommandId onOffIncomingCommands[] = {
 
 // Declare On/Off cluster attributes
 const EmberAfAttributeMetadata onOffAttrs[] = {
-    [0] = { //onOff attribute
+    { //onOff attribute
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = OnOff::Attributes::OnOff::Id,
         .size = 1,
         .attributeType = ZAP_TYPE(BOOLEAN),
         .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
     },
-    [1] = { //end?
+    { //end?
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = 0xFFFD,
         .size = 2,
@@ -41,35 +41,35 @@ const EmberAfAttributeMetadata onOffAttrs[] = {
 
 // Declare Descriptor cluster attributes
 const EmberAfAttributeMetadata descriptorAttrs[] = {
-    [0] = { //device list
+    { //device list
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = Descriptor::Attributes::DeviceTypeList::Id,
         .size = DESCRIPTION_ATTR_ARRAY_LEN,
         .attributeType = ZAP_TYPE(ARRAY),
         .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
     },
-    [1] = { //server list
+    { //server list
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = Descriptor::Attributes::ServerList::Id,
         .size = DESCRIPTION_ATTR_ARRAY_LEN,
         .attributeType = ZAP_TYPE(ARRAY),
         .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
     },
-    [2] = { //client list
+    { //client list
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = Descriptor::Attributes::ClientList::Id,
         .size = DESCRIPTION_ATTR_ARRAY_LEN,
         .attributeType = ZAP_TYPE(ARRAY),
         .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
     },
-    [3] = { //parts list
+    { //parts list
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = Descriptor::Attributes::PartsList::Id,
         .size = DESCRIPTION_ATTR_ARRAY_LEN,
         .attributeType = ZAP_TYPE(ARRAY),
         .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
     },
-    [4] = { //end?
+    { //end?
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = 0xFFFD,
         .size = 2,
@@ -80,21 +80,21 @@ const EmberAfAttributeMetadata descriptorAttrs[] = {
 
 // Declare Bridged Device Basic Information cluster attributes
 const EmberAfAttributeMetadata bridgedDeviceBasicAttrs[] = {
-    [0] = { //node label
+    { //node label
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = BridgedDeviceBasicInformation::Attributes::NodeLabel::Id,
         .size = NODE_LABEL_SIZE,
         .attributeType = ZAP_TYPE(CHAR_STRING),
         .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
     },
-    [1] = { //reachable
+    { //reachable
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = BridgedDeviceBasicInformation::Attributes::Reachable::Id,
         .size = 1,
         .attributeType = ZAP_TYPE(BOOLEAN),
         .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
     },
-    [2] = { //end?
+    { //end?
         .defaultValue = ZAP_EMPTY_DEFAULT(),
         .attributeId = 0xFFFD,
         .size = 2,
@@ -110,7 +110,7 @@ const EmberAfAttributeMetadata bridgedDeviceBasicAttrs[] = {
    - Bridged Device Basic Information
 */
 const EmberAfCluster bridgedLightClusters[] = {
-    [0] = { 
+    { 
         .clusterId = OnOff::Id, 
         .attributes = onOffAttrs, 
         .attributeCount = ArraySize(onOffAttrs), 
@@ -122,7 +122,7 @@ const EmberAfCluster bridgedLightClusters[] = {
         .eventList = nullptr,
         .eventCount = 0
     },
-    [1] = { 
+    { 
         .clusterId = Descriptor::Id, 
         .attributes = descriptorAttrs, 
         .attributeCount = ArraySize(descriptorAttrs), 
@@ -134,7 +134,7 @@ const EmberAfCluster bridgedLightClusters[] = {
         .eventList = nullptr,
         .eventCount = 0
     },
-    [2] = { 
+    { 
         .clusterId = BridgedDeviceBasicInformation::Id, 
         .attributes = bridgedDeviceBasicAttrs, 
         .attributeCount = ArraySize(bridgedDeviceBasicAttrs), 
@@ -147,7 +147,6 @@ const EmberAfCluster bridgedLightClusters[] = {
         .eventCount = 0
     },
 };
-static_assert(ArraySize(bridgedLightClusters) == DEVICE_LIGHT_NUM_CLUSTERS);
 
 // Declare Bridged Light endpoint
 const EmberAfEndpointType bridgedLightEndpoint = { 
@@ -192,6 +191,7 @@ static EmberAfStatus WriteAttributeOnOff(DeviceLight *pDeviceLight, chip::Attrib
 DeviceLight::DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_WRITE_CALLBACK pfnWriteCallback)
 {
     _pfnWriteCallback = pfnWriteCallback;
+    DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedLightClusters));
     ENDPOINT_DATA endpointData = {
         .index = GetIndex(),
         .pObject = this,
@@ -203,19 +203,20 @@ DeviceLight::DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_
         .ep = &bridgedLightEndpoint,
         .pDeviceTypeList = bridgedOnOffDeviceTypes,
         .deviceTypeListLength = ArraySize(bridgedOnOffDeviceTypes),
-        .pDataVersionStorage = _dataVersions,
-        .dataVersionStorageLength = ArraySize(_dataVersions),
+        .pDataVersionStorage = pDataVersions,
+        .dataVersionStorageLength = ArraySize(bridgedLightClusters),
         .parentEndpointId = 1,
     };
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
     
     memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
-    SetReachable(true);
     EndpointAdd(&_endpointData);
+    SetReachable(true);
 }
 DeviceLight::~DeviceLight(void)
 {
+    free(_endpointData.pDataVersionStorage);
     EndpointRemove(GetIndex());
 }
 void DeviceLight::SetOn(bool on)
@@ -305,7 +306,10 @@ static EmberAfStatus GoogleWriteCallback(void *pObject, ClusterId clusterId, con
 {
     DeviceLight *pDeviceLight = (DeviceLight*)pObject;
     EmberAfStatus status = WriteCluster(pDeviceLight, clusterId, attributeMetadata, buffer);
-    pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
+    if (pDeviceLight->_pfnWriteCallback)
+    {
+        pDeviceLight->_pfnWriteCallback(pDeviceLight, clusterId, attributeMetadata, buffer);
+    }
     return status;
 }
 static EmberAfStatus WriteCluster(DeviceLight *pDeviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)

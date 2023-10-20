@@ -91,6 +91,7 @@ ActionsAttrAccess gAttrAccess;
 
 CHIP_ERROR ActionsAttrAccess::Read(const ConcreteReadAttributePath & aPath, AttributeValueEncoder & aEncoder)
 {
+    ESP_LOGI(TAG, "Read %lu, %lu", aPath.mClusterId, aPath.mAttributeId);
     VerifyOrDie(aPath.mClusterId == Actions::Id);
 
     switch (aPath.mAttributeId)
