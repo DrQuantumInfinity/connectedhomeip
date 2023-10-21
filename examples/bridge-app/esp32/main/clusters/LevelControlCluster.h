@@ -14,8 +14,8 @@ class LevelControlCluster : public Cluster {
     
     bool _level;
     void SetLevel(uint8_t level, uint16_t index);
-    EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer);
-    EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
+    EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer) override;
+    EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength) override;
 
     static constexpr EmberAfAttributeMetadata levelAttrs[] = {
     {

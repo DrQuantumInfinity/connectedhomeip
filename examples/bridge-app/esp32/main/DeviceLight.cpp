@@ -216,8 +216,8 @@ DeviceLight::DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_
     };
     // _clusters.push_back(std::make_unique<DescriptorCluster>());
     // _clusters.push_back(std::make_unique<OnOffCluster>());
-    // AddCluster( &descriptorCluster, 0);
-    // AddCluster( &onOffCluster, 1);
+    AddCluster( &descriptorCluster, 0);
+    AddCluster( &onOffCluster, 1);
     // AddCluster(std::make_unique<DescriptorCluster>());
     // AddCluster(std::make_unique<OnOffCluster>());
     strcpy(endpointData.name, pName);

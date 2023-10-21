@@ -19,12 +19,12 @@ static const CommandId onOffIncomingCommands[] = {
 };
 
 
-class OnOffCluster {
+class OnOffCluster : public Cluster{
     public:
     bool _isOn;
     void SetOn(bool on, uint16_t index);
-    EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer);
-    EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength);
+    EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer) override;
+    EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength) override;
     
     // Declare On/Off cluster attributes
 

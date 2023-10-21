@@ -114,3 +114,78 @@ EmberAfStatus Device::WriteCluster(ClusterId clusterId, const EmberAfAttributeMe
 //     _reachable = reachable;
 //     EndpointReportChange(_index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
 // }
+
+
+
+
+
+
+// EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
+//                           uint16_t maxReadLength)
+// {
+//     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+//     if (basicCluster._reachable)
+//     {
+//         status = EMBER_ZCL_STATUS_SUCCESS;
+//         for(auto& cluster : _clusters){
+//         // for(int ind = 0; ind < 2; ind++){
+//             if(cluster->_id == clusterId){
+//                 status = cluster->Read(attributeMetadata->attributeId, buffer, maxReadLength);
+//             }
+//         }
+//         // switch (clusterId)
+//         // {
+//         // case BridgedDeviceBasicInformation::Id:
+//         //     status = basicCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+//         //     break;
+//         // case OnOff::Id:
+//         //     status = onOffCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+//         //     break;
+//         // case LevelControl::Id:
+//         //     status = levelControlCluster.Read(attributeMetadata->attributeId, buffer, maxReadLength);
+//         //     break;
+//         // default:
+//         //     status = EMBER_ZCL_STATUS_SUCCESS;
+//         //     break;
+//         // }
+//     }
+//     return status;
+// }
+// EmberAfStatus Device::WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                              uint8_t * buffer)
+// {
+//     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
+//     if (basicCluster._reachable)
+//     {
+//         status = EMBER_ZCL_STATUS_SUCCESS;
+//         for(auto& cluster : _clusters){
+//         // for(int ind = 0; ind < 2; ind++){
+       
+//             if(cluster->_id == clusterId){
+//                 status = cluster->Write(attributeMetadata->attributeId, buffer);
+//             }
+//         }
+//         // switch (clusterId)
+//         // {
+//         // case OnOff::Id:
+//         //     status = onOffCluster.Write(attributeMetadata->attributeId, buffer);
+//         //     break;
+//         // case LevelControl::Id:
+//         //     status = levelControlCluster.Write(attributeMetadata->attributeId, buffer);
+//         //     break;
+//         // default:
+//         //     status = EMBER_ZCL_STATUS_SUCCESS;
+//         //     break;
+//         // }
+//     }
+//     return status;
+// }
+// // bool Device::IsReachable(void) 
+// // {
+// //     return _reachable;
+// // }
+// // void Device::SetReachable(bool reachable)
+// // {
+// //     _reachable = reachable;
+// //     EndpointReportChange(_index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
+// // }

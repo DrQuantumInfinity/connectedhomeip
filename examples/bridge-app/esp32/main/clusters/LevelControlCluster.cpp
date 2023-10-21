@@ -1,10 +1,15 @@
 #include "LevelControlCluster.h"
 #include "EndpointApi.h"
 
+#include <app/util/attribute-storage.h>
+using namespace ::chip;
+using namespace ::chip::app::Clusters;
+
+#define ZCL_ON_OFF_CLUSTER_REVISION (4u)
 void LevelControlCluster::SetLevel(uint8_t level, uint16_t index)
 {
     _level = level;
-    EndpointReportChange(index, LevelControl::Id, LevelControl::Attributes::LevelControl::Id);
+    EndpointReportChange(index, LevelControl::Id, LevelControl::Attributes::CurrentLevel::Id);
 }
 
 EmberAfStatus LevelControlCluster::Write(chip::AttributeId attributeId, uint8_t * buffer)
@@ -12,7 +17,7 @@ EmberAfStatus LevelControlCluster::Write(chip::AttributeId attributeId, uint8_t 
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     switch (attributeId)
     {
-    case LevelControl::Attributes::LevelControl::Id:
+    case LevelControl::Attributes::CurrentLevel::Id:
         _level = (uint8_t) buffer[0];
         break;
     default:
