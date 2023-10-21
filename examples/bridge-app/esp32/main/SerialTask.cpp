@@ -2,6 +2,8 @@
 #include "SerialTask.h"
 #include "TaskMessage.h"
 #include "TimerTick.h"
+#include "Crc16.h"
+#include "EspNowData.h"
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 
@@ -15,8 +17,14 @@ static const char * TAG =               "serial-task";
 #define SERIAL_TASK_NAME                "SERIAL"
 #define SERIAL_TASK_STACK_SIZE          (2000)
 
+#if SOC_UART_NUM > 2
+#define SERIAL_UART                     (UART_NUM_2)
+#else
+#define SERIAL_UART                     (UART_NUM_1)
+#endif
 #define SERIAL_TX_MAX_SIZE              (300)
 #define SERIAL_TX_QUEUE_DEPTH           (10)
+#define SERIAL_RX_MAX_SIZE              (300)
 
 // Application-defined error codes in the CHIP_ERROR space.
 #define ERROR_EVENT_QUEUE_FAILED        CHIP_APPLICATION_ERROR(0x01)
@@ -28,15 +36,28 @@ static const char * TAG =               "serial-task";
 /**************************************************************************
  *                                  Macros
  **************************************************************************/
+#ifndef MAX
+#define MAX(x, y)   ( ((x) > (y))? (x) : (y) )
+#endif
+#ifndef MIN
+#define MIN(x, y)   ( ((x) < (y))? (x) : (y) )
+#endif
 /**************************************************************************
  *                                  Types
  **************************************************************************/
+typedef struct
+{
+    uint32_t offset;
+    uint8_t data[SERIAL_RX_MAX_SIZE];
+}RX_FRAMING;
+
 typedef struct
 {
     QueueHandle_t publicQueue;
     TaskHandle_t task;
     TimerTick timerTick;
     QueueHandle_t uartQueue;
+    RX_FRAMING rxFraming;
 }SERIAL_TASK;
 /**************************************************************************
  *                                  Prototypes
@@ -48,6 +69,8 @@ static void SerialUartInit(void);
 //Timer Handling
 static TickType_t SerialGetTimeoutTick(void);
 static void SerialHandleTimeout(void);
+static void SerialFetchRxData(void);
+static void SerialParseEspNowFrame(void);
 //Message Processing
 static void SerialProcessMyMsg(const MSG_HEADER* pMsg);
 static void SerialTxMsg(const void* pData, uint32_t dataLength);
@@ -120,9 +143,9 @@ static void SerialUartInit(void)
         .rx_flow_ctrl_thresh = 122, //dummy number
         .source_clk = (uart_sclk_t)0, //dummy number
     };
-    ESP_ERROR_CHECK(uart_param_config(UART_NUM_2, &uartConfig));
-    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, SERIAL_TX_MAX_SIZE, 300, SERIAL_TX_QUEUE_DEPTH, &serialTask.uartQueue, 0));
+    ESP_ERROR_CHECK(uart_param_config(SERIAL_UART, &uartConfig));
+    ESP_ERROR_CHECK(uart_set_pin(SERIAL_UART, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+    ESP_ERROR_CHECK(uart_driver_install(SERIAL_UART, SERIAL_TX_MAX_SIZE, SERIAL_RX_MAX_SIZE, SERIAL_TX_QUEUE_DEPTH, &serialTask.uartQueue, 0));
 }
 //Timer Handling
 static TickType_t SerialGetTimeoutTick(void)
@@ -133,7 +156,82 @@ static void SerialHandleTimeout(void)
 {
     if (serialTask.timerTick.HasElapsed())
     {
-        serialTask.timerTick.Disable();
+        serialTask.timerTick.Increment(100);
+        SerialFetchRxData();
+    }
+}
+static void SerialFetchRxData(void)
+{
+    uint8_t* pData = &serialTask.rxFraming.data[serialTask.rxFraming.offset];
+    uint32_t spaceRemaining = sizeof(serialTask.rxFraming.data) - serialTask.rxFraming.offset;
+    int readLength = uart_read_bytes(SERIAL_UART, pData, spaceRemaining, 0);
+    if (readLength > 0)
+    {
+        serialTask.rxFraming.offset += readLength;
+        SerialParseEspNowFrame();
+    }
+}
+static void SerialParseEspNowFrame(void)
+{
+    static const uint32_t startKey = 0x1f5a3db9;
+
+    static uint8_t* pRxBuf = serialTask.rxFraming.data;
+    static uint32_t rxBufOffset = serialTask.rxFraming.offset;
+/*
+    int numRxBytes = Serial.available();
+    int numBytesToRead = MIN(rxBufOffset - sizeof(rxBuf), (uint8_t)numRxBytes);
+    numRxBytes -= numBytesToRead;
+
+    while (numBytesToRead--) {
+      rxBuf[rxBufOffset++] = Serial.read();
+    }
+*/
+    while (rxBufOffset) 
+    {
+        int consumeSize = 1;
+        int parseOffset = 0;
+        if (rxBufOffset >= sizeof(startKey)) 
+        {
+            if (memcmp(&startKey, &pRxBuf[parseOffset], sizeof(startKey)) == 0) 
+            {
+                parseOffset += sizeof(startKey);
+                if (rxBufOffset >= parseOffset + sizeof(uint8_t)) 
+                {
+                    uint8_t len = pRxBuf[sizeof(startKey)];
+                    parseOffset += sizeof(len);
+                    if (rxBufOffset >= parseOffset + len + sizeof(uint16_t)) 
+                    {
+                        ESP_NOW_DATA *pEspData = (ESP_NOW_DATA *)&pRxBuf[parseOffset];
+                        uint16_t crc = Crc16Block(0, &pRxBuf[parseOffset], len);
+                        parseOffset += len;
+                        if (memcmp(&crc, &pRxBuf[parseOffset], sizeof(crc)) == 0) 
+                        {
+                            parseOffset += sizeof(crc);
+                            consumeSize = parseOffset;
+
+                            ESP_LOGI(TAG, "Parsed EspNow message");
+                            //TODO: send (pEspData, len) to the MatterTask
+                        }
+                    } 
+                    else 
+                    {
+                        break;
+                    }
+                }   
+                else 
+                {
+                    break;
+                }
+            }
+        } 
+        else 
+        {
+            break;
+        }
+
+        rxBufOffset -= consumeSize;
+        serialTask.rxFraming.offset = rxBufOffset;
+        memmove(&pRxBuf[0], &pRxBuf[consumeSize], rxBufOffset);
     }
 }
 //Message Processing
