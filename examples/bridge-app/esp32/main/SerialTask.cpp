@@ -25,6 +25,7 @@ static const char * TAG =               "serial-task";
 #define SERIAL_TX_MAX_SIZE              (300)
 #define SERIAL_TX_QUEUE_DEPTH           (10)
 #define SERIAL_RX_MAX_SIZE              (300)
+const uint32_t startKey =               0x1f5a3db9;
 
 // Application-defined error codes in the CHIP_ERROR space.
 #define ERROR_EVENT_QUEUE_FAILED        CHIP_APPLICATION_ERROR(0x01)
@@ -173,19 +174,9 @@ static void SerialFetchRxData(void)
 }
 static void SerialParseEspNowFrame(void)
 {
-    static const uint32_t startKey = 0x1f5a3db9;
+    uint8_t* pRxBuf = serialTask.rxFraming.data;
+    uint32_t rxBufOffset = serialTask.rxFraming.offset;
 
-    static uint8_t* pRxBuf = serialTask.rxFraming.data;
-    static uint32_t rxBufOffset = serialTask.rxFraming.offset;
-/*
-    int numRxBytes = Serial.available();
-    int numBytesToRead = MIN(rxBufOffset - sizeof(rxBuf), (uint8_t)numRxBytes);
-    numRxBytes -= numBytesToRead;
-
-    while (numBytesToRead--) {
-      rxBuf[rxBufOffset++] = Serial.read();
-    }
-*/
     while (rxBufOffset) 
     {
         int consumeSize = 1;

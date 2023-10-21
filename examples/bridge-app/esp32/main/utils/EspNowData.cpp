@@ -18,9 +18,9 @@ char const * const pDeviceTypeStrings[ESP_NOW_DEVICE_TYPE_COUNT] = {
  **************************************************************************/
 typedef struct toggleDev 
 {
-  struct toggleDev *nextDev;
-  uint8_t macShort[6];
-  bool value;
+    struct toggleDev *nextDev;
+    uint8_t macShort[6];
+    bool value;
 } TOGGLE_DEV;
 
 /**************************************************************************
