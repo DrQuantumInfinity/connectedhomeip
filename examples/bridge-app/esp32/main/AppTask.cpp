@@ -2,23 +2,36 @@
 #include "AppTask.h"
 #include "DeviceLight.h"
 
-#include "driver/uart.h"
 #include "esp_log.h"
 #include "esp_now.h"
 #include "freertos/FreeRTOS.h"
 
 
+/**************************************************************************
+ *                                  Constants
+ **************************************************************************/
 #define APP_TASK_NAME "APP"
 #define APP_EVENT_QUEUE_SIZE 10
 #define APP_TASK_STACK_SIZE (5000)
 #define ESPNOW_SERVER_MAC_ADDR  {0x18, 0xFE, 0x34, 0xD1, 0xB0, 0x77}
 
+/**************************************************************************
+ *                                  Macros
+ **************************************************************************/
+/**************************************************************************
+ *                                  Types
+ **************************************************************************/
 using namespace chip;
 
-static void UartInit(void);
+/**************************************************************************
+ *                                  Prototypes
+ **************************************************************************/
 static bool EspNowInit(void);
 static void EspNowSendCallback(const uint8_t *mac_addr, esp_now_send_status_t status);
 
+/**************************************************************************
+ *                                  Variables
+ **************************************************************************/
 static const char * TAG = "app-task";
 
 namespace {
@@ -26,9 +39,11 @@ namespace {
     TaskHandle_t sAppTaskHandle;
 } // namespace
 
-static QueueHandle_t uartQueue;
 AppTask AppTask::sAppTask;
 
+/**************************************************************************
+ *                                  Global Functions
+ **************************************************************************/
 CHIP_ERROR AppTask::StartAppTask()
 {
     sAppEventQueue = xQueueCreate(APP_EVENT_QUEUE_SIZE, sizeof(AppEvent));
@@ -43,31 +58,15 @@ CHIP_ERROR AppTask::StartAppTask()
     xReturned = xTaskCreate(AppTaskMain, APP_TASK_NAME, APP_TASK_STACK_SIZE, NULL, 1, &sAppTaskHandle);
     return (xReturned == pdPASS) ? CHIP_NO_ERROR : APP_ERROR_CREATE_TASK_FAILED;
 }
-
+/**************************************************************************
+ *                                  Private Functions
+ **************************************************************************/
 CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-    UartInit();
     EspNowInit();
     timerTick.SetFromNow(10000);
     return err;
-}
-static void UartInit(void)
-{
-    uart_config_t uartConfig = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 122
-    };
-    ESP_ERROR_CHECK(uart_param_config(UART_NUM_2, &uartConfig));
-    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 300, 300, 10, &uartQueue, 0));
-
-    #define HELLO_WORLD "Yo Paul! I got serial tx working :)"
-    uart_write_bytes(UART_NUM_2, HELLO_WORLD, strlen(HELLO_WORLD));
 }
 static bool EspNowInit(void)
 {
