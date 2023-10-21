@@ -3,7 +3,6 @@
 //TODO: can these be deleted?
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
-#include <span>
 
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
