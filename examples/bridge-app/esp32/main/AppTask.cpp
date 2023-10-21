@@ -1,22 +1,38 @@
 
 #include "AppTask.h"
 #include "DeviceLight.h"
+#include "SerialTask.h"
 
 #include "esp_log.h"
 #include "esp_now.h"
 #include "freertos/FreeRTOS.h"
 
 
+/**************************************************************************
+ *                                  Constants
+ **************************************************************************/
 #define APP_TASK_NAME "APP"
 #define APP_EVENT_QUEUE_SIZE 10
 #define APP_TASK_STACK_SIZE (5000)
 #define ESPNOW_SERVER_MAC_ADDR  {0x18, 0xFE, 0x34, 0xD1, 0xB0, 0x77}
 
+/**************************************************************************
+ *                                  Macros
+ **************************************************************************/
+/**************************************************************************
+ *                                  Types
+ **************************************************************************/
 using namespace chip;
 
+/**************************************************************************
+ *                                  Prototypes
+ **************************************************************************/
 static bool EspNowInit(void);
 static void EspNowSendCallback(const uint8_t *mac_addr, esp_now_send_status_t status);
 
+/**************************************************************************
+ *                                  Variables
+ **************************************************************************/
 static const char * TAG = "app-task";
 
 namespace {
@@ -26,6 +42,9 @@ namespace {
 
 AppTask AppTask::sAppTask;
 
+/**************************************************************************
+ *                                  Global Functions
+ **************************************************************************/
 CHIP_ERROR AppTask::StartAppTask()
 {
     sAppEventQueue = xQueueCreate(APP_EVENT_QUEUE_SIZE, sizeof(AppEvent));
@@ -40,7 +59,9 @@ CHIP_ERROR AppTask::StartAppTask()
     xReturned = xTaskCreate(AppTaskMain, APP_TASK_NAME, APP_TASK_STACK_SIZE, NULL, 1, &sAppTaskHandle);
     return (xReturned == pdPASS) ? CHIP_NO_ERROR : APP_ERROR_CREATE_TASK_FAILED;
 }
-
+/**************************************************************************
+ *                                  Private Functions
+ **************************************************************************/
 CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
@@ -145,9 +166,11 @@ void AppTask::HandleTimeout(void)
 
     if (sAppTask.timerTick.HasElapsed())
     {
-        ESP_LOGI(TAG, "Adding Light");
+        /*ESP_LOGI(TAG, "Adding Light");
         sAppTask.timerTick.Disable();
-        deviceLight = new DeviceLight("Light 6", "nowhere", NULL);
+        deviceLight = new DeviceLight("Light 6", "nowhere", NULL);*/
+        sAppTask.timerTick.Disable();
+        SerialTransmit("Hey Paul", strlen("Hey Paul") + 1);
     }
 }
 void AppTask::PostEvent(const AppEvent * aEvent)
