@@ -4,6 +4,7 @@
 #include "TimerTick.h"
 #include "EspNowData.h"
 #include "freertos/FreeRTOS.h"
+#include "DeviceButton.h"
 
 using namespace chip;
 
@@ -77,7 +78,8 @@ static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
-MATTER_TASK matterTask;
+static MATTER_TASK matterTask;
+static DeviceButton* deviceButton;
 /**************************************************************************
  *                                  OS Functions
  **************************************************************************/
@@ -130,6 +132,7 @@ static void MatterMain(void* pvParameter)
 static void MatterSetup(void)
 {
     matterTask.timerTick.Disable();
+    deviceButton = new DeviceButton("Light 6", "nowhere", NULL);
 }
 //Timer Handling
 static TickType_t MatterGetTimeoutTick(void)
@@ -187,5 +190,6 @@ static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
     ESP_LOGI(TAG, "Toggle from %02X:%02X:%02X:%02X:%02X:%02X", 
         pEspMsg->macAddr[0], pEspMsg->macAddr[1], pEspMsg->macAddr[2], 
         pEspMsg->macAddr[3], pEspMsg->macAddr[4], pEspMsg->macAddr[5]);
+        deviceButton->Toggle();
     
 }
