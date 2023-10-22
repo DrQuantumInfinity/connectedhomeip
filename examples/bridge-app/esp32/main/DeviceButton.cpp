@@ -11,8 +11,6 @@ using namespace ::chip::app::Clusters;
 /**************************************************************************
  *                                  Constants
  **************************************************************************/
-// #define NODE_LABEL_SIZE             (32)
-// #define DESCRIPTION_ATTR_ARRAY_LEN  (254) //max
 
 const EmberAfCluster bridgedClusters[] = {
     OnOffCluster::cluster,
@@ -22,7 +20,7 @@ const EmberAfCluster bridgedClusters[] = {
 
 // Declare Bridged Light endpoint
 const EmberAfEndpointType bridgedEndpoint = { 
-    .cluster = bridgedLightClusters, 
+    .cluster = bridgedClusters, 
     .clusterCount = ArraySize(bridgedClusters), 
     .endpointSize = 0 
 };
@@ -34,7 +32,7 @@ const EmberAfEndpointType bridgedEndpoint = {
 #define DEVICE_TYPE_LO_ON_OFF_LIGHT 0x0100
 // Device Version for dynamic endpoints:
 #define DEVICE_VERSION_DEFAULT 1
-const EmberAfDeviceType bridgedOnOffDeviceTypes[] = { 
+const EmberAfDeviceType bridgedDeviceTypes[] = { 
     [0] = {.deviceId = DEVICE_TYPE_LO_ON_OFF_LIGHT, .deviceVersion = DEVICE_VERSION_DEFAULT},
     [1] = {.deviceId = DEVICE_TYPE_BRIDGED_NODE,    .deviceVersion = DEVICE_VERSION_DEFAULT} 
 };
@@ -68,8 +66,8 @@ DeviceButton::DeviceButton(const char* pName, const char* pLocation, DEVICE_BUTT
         .name = {0},
         .location = {0},
         .ep = &bridgedEndpoint,
-        .pDeviceTypeList = bridgedOnOffDeviceTypes,
-        .deviceTypeListLength = ArraySize(bridgedOnOffDeviceTypes),
+        .pDeviceTypeList = bridgedDeviceTypes,
+        .deviceTypeListLength = ArraySize(bridgedDeviceTypes),
         .pDataVersionStorage = pDataVersions,
         .dataVersionStorageLength = ArraySize(bridgedClusters),
         .parentEndpointId = 1,
@@ -83,7 +81,7 @@ DeviceButton::DeviceButton(const char* pName, const char* pLocation, DEVICE_BUTT
     EndpointAdd(&_endpointData);
 }
 
-DeviceLight::~DeviceLight(void)
+DeviceButton::~DeviceButton(void)
 {
     free(_endpointData.pDataVersionStorage);
     EndpointRemove(GetIndex());
@@ -100,8 +98,8 @@ static EmberAfStatus GoogleReadCallback(void *pObject, ClusterId clusterId, cons
 static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
                                          uint8_t * buffer)
 {
-    DeviceButton * pDevice = (DeviceLight *) pObject;
-    EmberAfStatus status = DeviceButton->WriteCluster(clusterId, attributeMetadata, buffer);
+    DeviceButton * pDevice = (DeviceButton *) pObject;
+    EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
     if (pDevice->_pfnWriteCallback)
     {
         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);

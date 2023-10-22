@@ -25,12 +25,10 @@ class DeviceButton : public Device
 public:
     DeviceButton(const char * pName, const char * pLocation, DEVICE_BUTTON_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceButton(void);
-    void Toggle(void) { OnOffCluster.SetOn(!OnOffCluster._isOn, GetIndex()); }
-    // OnOffCluster GetOnOffCluster(void) { return onOffCluster; }
-    // DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
+    void Toggle(void) { onOffCluster.SetOn(!onOffCluster._isOn, GetIndex()); }
 
     // protected...
-    DEVICE_LIGHT_WRITE_CALLBACK _pfnWriteCallback;
+    DEVICE_BUTTON_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     OnOffCluster onOffCluster;

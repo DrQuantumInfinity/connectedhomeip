@@ -1,6 +1,7 @@
 
 #include "AppTask.h"
 #include "DeviceLight.h"
+#include "DeviceButton.h"
 // #include "SerialTask.h"
 
 #include "esp_log.h"
@@ -160,6 +161,7 @@ TickType_t AppTask::GetTimeoutTick(void)
     return sAppTask.timerTick.GetRemaining();
 }
 static DeviceLight *deviceLight;
+static DeviceButton *deviceButton;
 void AppTask::HandleTimeout(void)
 {
     ESP_LOGI(TAG, "Handle timeout");
@@ -169,6 +171,7 @@ void AppTask::HandleTimeout(void)
         ESP_LOGI(TAG, "Adding Light");
         sAppTask.timerTick.Disable();
         deviceLight = new DeviceLight("Light 6", "nowhere", NULL);
+        deviceButton = new DeviceButton("Light 6", "nowhere", NULL);
         sAppTask.timerTick.Disable();
         // SerialTransmit("Hey Paul", strlen("Hey Paul") + 1);
     }
