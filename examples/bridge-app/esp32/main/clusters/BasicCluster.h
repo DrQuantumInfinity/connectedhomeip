@@ -14,12 +14,13 @@ class BasicCluster : public Cluster
 {
 public:
     BasicCluster();
-    virtual ~BasicCluster()=default;
-    // ClusterId _id = BridgedDeviceBasicInformation::Id;
+    virtual ~BasicCluster() = default;
     void SetReachable(bool reachable, uint16_t index);
+    void SetName(char * name, uint16_t index);
     bool _reachable;
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) override;
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) override;
+
     static constexpr EmberAfAttributeMetadata BasicAttrs[] = {
         { // node label
           .defaultValue  = ZAP_EMPTY_DEFAULT(),
@@ -51,4 +52,7 @@ public:
                                                 .generatedCommandList = nullptr,
                                                 .eventList            = nullptr,
                                                 .eventCount           = 0 };
+
+private:
+    char _name[32] = "cat lol";
 };

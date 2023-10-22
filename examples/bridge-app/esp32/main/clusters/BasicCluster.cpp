@@ -2,16 +2,24 @@
 #include "EndpointApi.h"
 #include "esp_log.h"
 #include <lib/support/ZclString.h>
+#include <string.h>
 #define ZCL_BRIDGED_DEVICE_BASIC_INFORMATION_CLUSTER_REVISION (2u)
 static const char * TAG = "BasicCluster";
 
-BasicCluster::BasicCluster(void){
+BasicCluster::BasicCluster(void)
+{
     _id = BridgedDeviceBasicInformation::Id;
 }
 
 void BasicCluster::SetReachable(bool reachable, uint16_t index)
 {
     _reachable = reachable;
+    EndpointReportChange(index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
+}
+
+void BasicCluster::SetName(char * name, uint16_t index)
+{
+    snprintf(_name, 32, "%s", name);
     EndpointReportChange(index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
 }
 
@@ -38,7 +46,7 @@ EmberAfStatus BasicCluster::Read(chip::AttributeId attributeId, uint8_t * buffer
     else if ((attributeId == NodeLabel::Id) && (maxReadLength == 32))
     {
         MutableByteSpan zclNameSpan(buffer, maxReadLength);
-        MakeZclCharString(zclNameSpan, /*dev->GetName()*/ "cat lol"); // TODO: get this from the info cluster
+        MakeZclCharString(zclNameSpan, _name); // TODO: get this from the info cluster
     }
     else if ((attributeId == ClusterRevision::Id) && (maxReadLength == 2))
     {

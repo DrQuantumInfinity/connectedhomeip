@@ -170,7 +170,7 @@ void AppTask::HandleTimeout(void)
     {
         ESP_LOGI(TAG, "Adding Light");
         sAppTask.timerTick.Disable();
-        deviceLight = new DeviceLight("Light 6", "nowhere", NULL);
+        // deviceLight = new DeviceLight("Light 6", "nowhere", NULL);
         deviceButton = new DeviceButton("Light 6", "nowhere", NULL);
         sAppTask.timerTick.Disable();
         // SerialTransmit("Hey Paul", strlen("Hey Paul") + 1);

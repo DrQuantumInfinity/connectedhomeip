@@ -21,14 +21,12 @@ static const CommandId onOffIncomingCommands[] = {
 
 class OnOffCluster : public Cluster{
     public:
-    ClusterId _id = OnOff::Id;
     bool _isOn;
     void SetOn(bool on, uint16_t index);
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer) override;
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength) override;
     
-    // Declare On/Off cluster attributes
-
+    
     static constexpr EmberAfAttributeMetadata onOffAttrs[] = {
         { //onOff attribute
             .defaultValue = ZAP_EMPTY_DEFAULT(),
