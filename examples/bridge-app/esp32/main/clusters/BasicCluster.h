@@ -13,8 +13,10 @@ using namespace ::chip::app::Clusters;
 class BasicCluster : public Cluster
 {
 public:
-    void SetReachable(bool reachable, uint16_t index);
+    BasicCluster();
     virtual ~BasicCluster()=default;
+    // ClusterId _id = BridgedDeviceBasicInformation::Id;
+    void SetReachable(bool reachable, uint16_t index);
     bool _reachable;
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) override;
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) override;

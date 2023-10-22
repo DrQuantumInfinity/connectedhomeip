@@ -89,9 +89,10 @@ DeviceLightLevel::DeviceLightLevel(const char * pName, const char * pLocation, D
     // _clusters.push_back(std::make_unique<DescriptorCluster());
     // _clusters.push_back(std::make_unique<OnOffCluster());
     // _clusters.push_back(std::make_unique<LevelControlCluster());
-    AddCluster( &descriptorCluster, 0);
-    AddCluster( &onOffCluster, 1);
-    AddCluster(&levelControlCluster, 2);
+    AddCluster( &basicCluster, 0);
+    AddCluster( &descriptorCluster, 1);
+    AddCluster( &onOffCluster, 2);
+    AddCluster(&levelControlCluster, 3);
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
 

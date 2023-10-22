@@ -12,7 +12,7 @@ using namespace ::chip::app::Clusters;
 
 class DescriptorCluster : public Cluster{
     public:
-
+    ClusterId _id = Descriptor::Id;
     // EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer) override;
     // EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength) override;
     static constexpr EmberAfAttributeMetadata descriptorAttrs[] = {

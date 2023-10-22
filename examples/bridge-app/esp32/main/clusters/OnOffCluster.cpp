@@ -1,8 +1,10 @@
 #include "OnOffCluster.h"
 #include "EndpointApi.h"
 
+#include "esp_log.h"
 #include <lib/support/ZclString.h>
 #define ZCL_ON_OFF_CLUSTER_REVISION (4u)
+static const char * TAG = "OnOffCluster";
 
 void OnOffCluster::SetOn(bool on, uint16_t index)
 {
@@ -12,6 +14,7 @@ void OnOffCluster::SetOn(bool on, uint16_t index)
 
 EmberAfStatus OnOffCluster::Write(chip::AttributeId attributeId, uint8_t* buffer)
 {
+    ESP_LOGI(TAG, "OnOffCluster Write called");
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     switch (attributeId)
     {
@@ -22,6 +25,8 @@ EmberAfStatus OnOffCluster::Write(chip::AttributeId attributeId, uint8_t* buffer
 }
 
 EmberAfStatus OnOffCluster::Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength){
+
+    ESP_LOGI(TAG, "OnOffCluster Read called");
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     if ((attributeId == OnOff::Attributes::OnOff::Id) && (maxReadLength == 1))
     {

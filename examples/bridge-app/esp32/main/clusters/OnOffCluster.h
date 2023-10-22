@@ -21,6 +21,7 @@ static const CommandId onOffIncomingCommands[] = {
 
 class OnOffCluster : public Cluster{
     public:
+    ClusterId _id = OnOff::Id;
     bool _isOn;
     void SetOn(bool on, uint16_t index);
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer) override;

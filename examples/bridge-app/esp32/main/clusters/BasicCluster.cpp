@@ -1,7 +1,13 @@
 #include "BasicCluster.h"
 #include "EndpointApi.h"
+#include "esp_log.h"
 #include <lib/support/ZclString.h>
 #define ZCL_BRIDGED_DEVICE_BASIC_INFORMATION_CLUSTER_REVISION (2u)
+static const char * TAG = "BasicCluster";
+
+BasicCluster::BasicCluster(void){
+    _id = BridgedDeviceBasicInformation::Id;
+}
 
 void BasicCluster::SetReachable(bool reachable, uint16_t index)
 {
@@ -16,6 +22,8 @@ EmberAfStatus BasicCluster::Write(chip::AttributeId attributeId, uint8_t * buffe
 
 EmberAfStatus BasicCluster::Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength)
 {
+    ESP_LOGI(TAG, "BasicCluster Read called");
+
     using namespace BridgedDeviceBasicInformation::Attributes;
     // TODO: add debug
     //     ChipLogProgress(DeviceLayer, "HandleReadBridgedDeviceBasicAttribute: attrId=%" PRIu32 ", maxReadLength=%u", attributeId,

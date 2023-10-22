@@ -120,9 +120,9 @@ static void SerialUartInit(void)
         .rx_flow_ctrl_thresh = 122, //dummy number
         .source_clk = (uart_sclk_t)0, //dummy number
     };
-    ESP_ERROR_CHECK(uart_param_config(UART_NUM_2, &uartConfig));
-    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, SERIAL_TX_MAX_SIZE, 300, SERIAL_TX_QUEUE_DEPTH, &serialTask.uartQueue, 0));
+    ESP_ERROR_CHECK(uart_param_config(UART_NUM_1, &uartConfig));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_1, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_1, SERIAL_TX_MAX_SIZE, 300, SERIAL_TX_QUEUE_DEPTH, &serialTask.uartQueue, 0));
 }
 //Timer Handling
 static TickType_t SerialGetTimeoutTick(void)
@@ -147,5 +147,5 @@ static void SerialProcessMyMsg(const MSG_HEADER* pMsg)
 }
 static void SerialTxMsg(const void* pData, uint32_t dataLength)
 {
-    uart_write_bytes(UART_NUM_2, pData, dataLength);
+    uart_write_bytes(UART_NUM_1, pData, dataLength);
 }
