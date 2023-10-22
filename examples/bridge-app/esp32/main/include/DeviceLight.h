@@ -24,15 +24,15 @@ class DeviceLight : public Device
 public:
     DeviceLight(const char* pName, const char* pLocation, DEVICE_LIGHT_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceLight(void);
-    // void SetOn(bool on);
 
-    OnOffCluster onOffCluster;
-    DescriptorCluster descriptorCluster;
+    void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }
+
     //protected...
     DEVICE_LIGHT_WRITE_CALLBACK _pfnWriteCallback;
-    // bool _isOn;
-
-private:
+ 
+private:    
+    OnOffCluster onOffCluster;
+    DescriptorCluster descriptorCluster;
     ENDPOINT_DATA _endpointData;
 };
 /**************************************************************************

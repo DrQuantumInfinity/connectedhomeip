@@ -12,12 +12,6 @@ public:
     virtual ~Cluster() = default;
     ClusterId _id = 0;
     ClusterId GetId() { return _id; }
-    virtual EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) { 
-        ESP_LOGE("cluster", "Base cluster Write called. This shouldn't happen");
-        return EMBER_ZCL_STATUS_FAILURE; }
-    virtual EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength)
-    {
-        ESP_LOGE("cluster", "Base cluster Read called. This shouldn't happen");
-        return EMBER_ZCL_STATUS_FAILURE;
-    }
+    virtual EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) =0;
+    virtual EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) = 0;
 };

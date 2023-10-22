@@ -29,10 +29,8 @@ Device::Device(void)
             break;
         }
     }
-    std::unique_ptr<BasicCluster> basic = std::make_unique<BasicCluster>();
-    basicCluster = basic.get();
-    AddCluster(std::move(basic));
-    basicCluster->_reachable = true;
+    AddCluster(&basicCluster);
+    basicCluster._reachable = true;
 }
 Device::~Device(void)
 {
@@ -44,8 +42,8 @@ uint16_t Device::GetIndex(void)
     return _index;
 }
 
-void Device::AddCluster(std::unique_ptr<Cluster> newCluster){
-    _clusters.push_back(std::move(newCluster));
+void Device::AddCluster(Cluster* newCluster){
+    _clusters.push_back(newCluster);
 }
 
 EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
@@ -53,7 +51,7 @@ EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMet
 {
     ESP_LOGI(TAG, "Device Read called");
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
-    if (basicCluster->_reachable)
+    if (basicCluster._reachable)
     {
         ESP_LOGI(TAG, "Device Reachable");
         status = EMBER_ZCL_STATUS_SUCCESS;
@@ -74,7 +72,7 @@ EmberAfStatus Device::WriteCluster(ClusterId clusterId, const EmberAfAttributeMe
 {
     ESP_LOGI(TAG, "Device write called");
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
-    if (basicCluster->_reachable)
+    if (basicCluster._reachable)
     {
         ESP_LOGI(TAG, "Device reachable for write");
         status = EMBER_ZCL_STATUS_SUCCESS;

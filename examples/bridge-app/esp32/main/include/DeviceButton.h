@@ -1,8 +1,6 @@
 
 #pragma once
-#include "../clusters/BasicCluster.h"
 #include "../clusters/DescriptorCluster.h"
-#include "../clusters/LevelControlCluster.h"
 #include "../clusters/OnOffCluster.h"
 #include "Device.h"
 #include "EndpointApi.h"
@@ -12,34 +10,30 @@ using namespace ::chip;
 /**************************************************************************
  *                                  Constants
  **************************************************************************/
-#define DEVICE_LIGHT_LEV_NUM_CLUSTERS (4) // ArraySize(bridgedLightClusters)
 /**************************************************************************
  *                                  Macros
  **************************************************************************/
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-class DeviceLightLevel; // forward declare
-typedef void (*DEVICE_LIGHT_LEVEL_WRITE_CALLBACK)(DeviceLightLevel * deviceLight, ClusterId clusterId,
-                                                  const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
+class DeviceButton;
+typedef void (*DEVICE_BUTTON_WRITE_CALLBACK)(DeviceButton * deviceButton, ClusterId clusterId,
+                                             const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
 
-class DeviceLightLevel : public Device
+class DeviceButton : public Device
 {
 public:
-    DeviceLightLevel(const char * pName, const char * pLocation, DEVICE_LIGHT_LEVEL_WRITE_CALLBACK pfnWriteCallback);
-    ~DeviceLightLevel(void);
+    DeviceButton(const char * pName, const char * pLocation, DEVICE_BUTTON_WRITE_CALLBACK pfnWriteCallback);
+    ~DeviceButton(void);
+    void Toggle(void) { OnOffCluster.SetOn(!OnOffCluster._isOn, GetIndex()); }
+    // OnOffCluster GetOnOffCluster(void) { return onOffCluster; }
+    // DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
 
-    void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }
-    void SetLevel(uint8_t level) { levelControlCluster.SetLevel(level, GetIndex()); }
-    OnOffCluster GetOnOffCluster(void) { return onOffCluster; }
-    LevelControlCluster GetLevelControlCluster(void) { return levelControlCluster; }
-    DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
     // protected...
-    DEVICE_LIGHT_LEVEL_WRITE_CALLBACK _pfnWriteCallback;
+    DEVICE_LIGHT_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     OnOffCluster onOffCluster;
-    LevelControlCluster levelControlCluster;
     DescriptorCluster descriptorCluster;
     ENDPOINT_DATA _endpointData;
 };

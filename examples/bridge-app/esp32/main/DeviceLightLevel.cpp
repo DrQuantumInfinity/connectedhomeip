@@ -80,15 +80,14 @@ DeviceLightLevel::DeviceLightLevel(const char * pName, const char * pLocation, D
         .parentEndpointId         = 1,
     };
     
-    AddCluster(std::make_unique<DescriptorCluster>());
-    AddCluster(std::make_unique<OnOffCluster>());
-    AddCluster(std::make_unique<LevelControlCluster>());
+    AddCluster(&descriptorCluster);
+    AddCluster(&descriptorCluster);
+    AddCluster(&levelControlCluster);
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
 
     memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
     EndpointAdd(&_endpointData);
-    basicCluster->SetReachable(true, GetIndex());
 }
 DeviceLightLevel::~DeviceLightLevel()
 {   

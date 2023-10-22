@@ -30,12 +30,12 @@ public:
     uint16_t GetIndex(void);
     EmberAfStatus ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
     EmberAfStatus WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
-    BasicCluster* basicCluster;
+    BasicCluster basicCluster;
 protected:
-    void AddCluster(std::unique_ptr<Cluster> newCluster);
+    void AddCluster(Cluster* newCluster);
 private:
     uint16_t _index;
     static inline bool _indexList[CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT] = {0};
-    std::vector<std::unique_ptr<Cluster>> _clusters;
+    std::vector<Cluster*> _clusters;
 };
 
