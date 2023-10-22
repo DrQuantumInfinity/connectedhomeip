@@ -1,5 +1,6 @@
 
 #include "SerialTask.h"
+#include "MatterTask.h"
 #include "TaskMessage.h"
 #include "TimerTick.h"
 #include "Crc16.h"
@@ -201,7 +202,7 @@ static void SerialParseEspNowFrame(void)
                             consumeSize = parseOffset;
 
                             ESP_LOGI(TAG, "Parsed EspNow message");
-                            //TODO: send (pEspData, len) to the MatterTask
+                            MatterProcessEspNowMessage(pEspData, len);
                         }
                     } 
                     else 

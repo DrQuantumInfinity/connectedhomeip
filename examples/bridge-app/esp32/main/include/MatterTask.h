@@ -1,7 +1,9 @@
+
 #pragma once
-#include <stdlib.h>
-#include "freertos/FreeRTOS.h"
+
+#include <stdint.h>
 #include <platform/CHIPDeviceLayer.h>
+#include "EspNowData.h"
 
 /**************************************************************************
  *                                  Constants
@@ -12,24 +14,11 @@
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-typedef enum
-{
-    MID_DUMMY,
-    MID_SERIAL_TX,
-    MID_SERIAL_RX,
-    MID_MATTER_PROCESS_ESP_NOW,
-    MID_COUNT
-}MID;
-
-typedef struct
-{
-    MID mid;
-    TickType_t timeTick;
-    uint32_t length;
-    uint8_t data[];
-}MSG_HEADER;
-
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-void MsgPost(QueueHandle_t queue, MID mid, const void* pData, uint32_t dataLength);
+//OS function
+CHIP_ERROR MatterTaskStart(void);
+
+//Message Poster
+void MatterProcessEspNowMessage(const ESP_NOW_DATA *pEspMsg, uint32_t dataLength);

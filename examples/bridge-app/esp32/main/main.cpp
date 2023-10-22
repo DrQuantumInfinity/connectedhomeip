@@ -18,6 +18,7 @@
 #include "DeviceCallbacks.h"
 #include "AppTask.h"
 #include "SerialTask.h"
+#include "MatterTask.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "EndpointApi.h"
@@ -480,11 +481,16 @@ extern "C" void app_main()
     {
         ESP_LOGE(TAG, "GetAppTask().StartAppTask() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
     }
-    // chip_err = SerialTaskStart();
-    // if (chip_err != CHIP_NO_ERROR)
-    // {
-    //     ESP_LOGE(TAG, "SerialTaskStart() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
-    // }
+    chip_err = SerialTaskStart();
+    if (chip_err != CHIP_NO_ERROR)
+    {
+        ESP_LOGE(TAG, "SerialTaskStart() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
+    }
+    chip_err = MatterTaskStart();
+    if (chip_err != CHIP_NO_ERROR)
+    {
+        ESP_LOGE(TAG, "MatterTaskStart() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
+    }
     EndpointApiInit();
     chip::DeviceLayer::PlatformMgr().ScheduleWork(run, reinterpret_cast<intptr_t>(nullptr));
 }
