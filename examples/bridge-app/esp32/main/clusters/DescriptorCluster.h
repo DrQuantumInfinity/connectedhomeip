@@ -13,6 +13,7 @@ using namespace ::chip::app::Clusters;
 class DescriptorCluster : public Cluster
 {
 public:
+    DescriptorCluster(void) { _id = Descriptor::Id; }
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer)
     {
         ESP_LOGE("cluster", "Base cluster Write called. This shouldn't happen");

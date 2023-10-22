@@ -56,8 +56,8 @@ EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMet
         ESP_LOGI(TAG, "Device Reachable");
         status = EMBER_ZCL_STATUS_SUCCESS;
         for(auto& cluster : _clusters){
-            ESP_LOGI(TAG, "ClusterId of message: %lu", clusterId);
-            ESP_LOGI(TAG, "Checking clusterId: %lu", cluster->_id);
+            ESP_LOGI(TAG, "ClusterId of message:  %04lX", clusterId);
+            ESP_LOGI(TAG, "Checking clusterId:  %04lX", cluster->_id);
             if(cluster->_id == clusterId){
             ESP_LOGI(TAG, "Device with clusterId found");
                 status = cluster->Read(attributeMetadata->attributeId, buffer, maxReadLength);
