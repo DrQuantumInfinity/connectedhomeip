@@ -480,11 +480,11 @@ extern "C" void app_main()
     {
         ESP_LOGE(TAG, "GetAppTask().StartAppTask() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
     }
-    chip_err = SerialTaskStart();
-    if (chip_err != CHIP_NO_ERROR)
-    {
-        ESP_LOGE(TAG, "SerialTaskStart() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
-    }
+    // chip_err = SerialTaskStart();
+    // if (chip_err != CHIP_NO_ERROR)
+    // {
+    //     ESP_LOGE(TAG, "SerialTaskStart() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
+    // }
     EndpointApiInit();
     chip::DeviceLayer::PlatformMgr().ScheduleWork(run, reinterpret_cast<intptr_t>(nullptr));
 }

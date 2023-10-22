@@ -1,6 +1,10 @@
 
 #pragma once
-#include "OnOffCluster.h"
+#include "../clusters/OnOffCluster.h"
+#include "../clusters/BasicCluster.h"
+#include "../clusters/LevelControlCluster.h"
+#include "../clusters/DescriptorCluster.h"
+#include "EndpointApi.h"
 #include "Device.h"
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
@@ -21,21 +25,22 @@ typedef void (*DEVICE_LIGHT_LEVEL_WRITE_CALLBACK)(DeviceLightLevel *deviceLight,
 class DeviceLightLevel : public Device
 {
 public:
-
-
     DeviceLightLevel(const char* pName, const char* pLocation, DEVICE_LIGHT_LEVEL_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceLightLevel();
-    void SetOn(bool on);
-    EmberAfStatus ProcessCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+    // EmberAfStatus ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
+    // EmberAfStatus WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
     
     //protected...
     DEVICE_LIGHT_LEVEL_WRITE_CALLBACK _pfnWriteCallback;
-    bool _isOn;
+    // bool _isOn;
     
+    OnOffCluster onOffCluster;
+    LevelControlCluster levelControlCluster;
+    DescriptorCluster descriptorCluster;
+    // BasicCluster basicCluster;
+
 private:
-    DataVersion _dataVersions[DEVICE_LIGHT_LEV_NUM_CLUSTERS];
-    
-    OnOffCluster onOffcluster;
+    ENDPOINT_DATA _endpointData;
 };
 /**************************************************************************
  *                                  Prototypes

@@ -1,7 +1,7 @@
 
 #include "AppTask.h"
 #include "DeviceLight.h"
-#include "SerialTask.h"
+// #include "SerialTask.h"
 
 #include "esp_log.h"
 #include "esp_now.h"
@@ -166,11 +166,11 @@ void AppTask::HandleTimeout(void)
 
     if (sAppTask.timerTick.HasElapsed())
     {
-        /*ESP_LOGI(TAG, "Adding Light");
+        ESP_LOGI(TAG, "Adding Light");
         sAppTask.timerTick.Disable();
-        deviceLight = new DeviceLight("Light 6", "nowhere", NULL);*/
+        deviceLight = new DeviceLight("Light 6", "nowhere", NULL);
         sAppTask.timerTick.Disable();
-        SerialTransmit("Hey Paul", strlen("Hey Paul") + 1);
+        // SerialTransmit("Hey Paul", strlen("Hey Paul") + 1);
     }
 }
 void AppTask::PostEvent(const AppEvent * aEvent)

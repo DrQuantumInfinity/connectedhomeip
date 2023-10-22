@@ -236,5 +236,5 @@ static void SerialProcessMyMsg(const MSG_HEADER* pMsg)
 }
 static void SerialTxMsg(const void* pData, uint32_t dataLength)
 {
-    uart_write_bytes(UART_NUM_2, pData, dataLength);
+    uart_write_bytes(UART_NUM_1, pData, dataLength);
 }
