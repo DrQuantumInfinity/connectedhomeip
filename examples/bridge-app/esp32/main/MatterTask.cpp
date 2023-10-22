@@ -56,8 +56,7 @@ typedef struct
     QueueHandle_t publicQueue;
     TaskHandle_t task;
     TimerTick timerTick;
-    QueueHandle_t uartQueue;
-    RX_FRAMING rxFraming;
+    ESP_NOW_DEVICE_LIST* pDeviceList;
 }MATTER_TASK;
 /**************************************************************************
  *                                  Prototypes
@@ -131,6 +130,7 @@ static void MatterMain(void* pvParameter)
 //Setup
 static void MatterSetup(void)
 {
+    matterTask.pDeviceList = EspNowCreateDeviceList();
     matterTask.timerTick.Disable();
     deviceButton = new DeviceButton("Light 6", "nowhere", NULL);
 }
@@ -158,6 +158,10 @@ static void MatterProcessMyMsg(const MSG_HEADER* pMsg)
 }
 static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 {
+    ESP_LOGI(TAG, "%s from %02X:%02X:%02X:%02X:%02X:%02X", EspNowGetName(pEspMsg),
+        pEspMsg->macAddr[0], pEspMsg->macAddr[1], pEspMsg->macAddr[2], 
+        pEspMsg->macAddr[3], pEspMsg->macAddr[4], pEspMsg->macAddr[5]);
+
     switch (pEspMsg->type)
     {
     case ESP_NOW_DEVICE_TYPE_DHT:       MatterEspNowDht(pEspMsg, dataLength);                   break;
@@ -169,27 +173,15 @@ static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 }
 static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 {
-    ESP_LOGI(TAG, "DHT from %02X:%02X:%02X:%02X:%02X:%02X", 
-        pEspMsg->macAddr[0], pEspMsg->macAddr[1], pEspMsg->macAddr[2], 
-        pEspMsg->macAddr[3], pEspMsg->macAddr[4], pEspMsg->macAddr[5]);
 }
 static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 {
-    ESP_LOGI(TAG, "Motion from %02X:%02X:%02X:%02X:%02X:%02X", 
-        pEspMsg->macAddr[0], pEspMsg->macAddr[1], pEspMsg->macAddr[2], 
-        pEspMsg->macAddr[3], pEspMsg->macAddr[4], pEspMsg->macAddr[5]);
 }
 static void MatterEspNowBool(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 {
-    ESP_LOGI(TAG, "Bool from %02X:%02X:%02X:%02X:%02X:%02X", 
-        pEspMsg->macAddr[0], pEspMsg->macAddr[1], pEspMsg->macAddr[2], 
-        pEspMsg->macAddr[3], pEspMsg->macAddr[4], pEspMsg->macAddr[5]);
 }
 static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 {
-    ESP_LOGI(TAG, "Toggle from %02X:%02X:%02X:%02X:%02X:%02X", 
-        pEspMsg->macAddr[0], pEspMsg->macAddr[1], pEspMsg->macAddr[2], 
-        pEspMsg->macAddr[3], pEspMsg->macAddr[4], pEspMsg->macAddr[5]);
-        deviceButton->Toggle();
+    deviceButton->Toggle();
     
 }

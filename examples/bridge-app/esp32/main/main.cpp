@@ -476,11 +476,12 @@ extern "C" void app_main()
 #endif // CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
 
     chip::DeviceLayer::PlatformMgr().ScheduleWork(InitServer, reinterpret_cast<intptr_t>(nullptr));
-    chip_err = GetAppTask().StartAppTask();
+    EndpointApiInit();
+    /*chip_err = GetAppTask().StartAppTask();
     if (chip_err != CHIP_NO_ERROR)
     {
         ESP_LOGE(TAG, "GetAppTask().StartAppTask() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
-    }
+    }*/
     chip_err = SerialTaskStart();
     if (chip_err != CHIP_NO_ERROR)
     {
@@ -491,6 +492,5 @@ extern "C" void app_main()
     {
         ESP_LOGE(TAG, "MatterTaskStart() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
     }
-    EndpointApiInit();
     chip::DeviceLayer::PlatformMgr().ScheduleWork(run, reinterpret_cast<intptr_t>(nullptr));
 }

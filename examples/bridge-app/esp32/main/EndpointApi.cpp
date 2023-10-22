@@ -68,7 +68,7 @@ void EndpointRemove(uint16_t index)
 }
 void EndpointReportChange(uint16_t index, ClusterId cluster, AttributeId attribute)
 {
-    auto * path = Platform::New<app::ConcreteAttributePath>(emberAfEndpointFromIndex(index), cluster, attribute);
+    auto * path = Platform::New<app::ConcreteAttributePath>(emberAfEndpointFromIndex(index + FIXED_ENDPOINT_COUNT), cluster, attribute);
     DeviceLayer::PlatformMgr().ScheduleWork(EndpointReportUpdateWorker, reinterpret_cast<intptr_t>(path));
 }
 /**************************************************************************
@@ -239,7 +239,7 @@ static void EndpointRemoveWorker(intptr_t context)
 static void EndpointReportUpdateWorker(intptr_t closure)
 {
     auto path = reinterpret_cast<app::ConcreteAttributePath *>(closure);
-    ESP_LOGI(TAG, "Update endpoint/cluster/attr %u/%lu/%lu", path->mEndpointId, path->mClusterId, path->mAttributeId);
+    ESP_LOGI(TAG, "Update endpoint/cluster/attr %u/%04lX/%04lX", path->mEndpointId, path->mClusterId, path->mAttributeId);
     MatterReportingAttributeChangeCallback(*path);
     Platform::Delete(path);
 }
