@@ -21,7 +21,7 @@ public:
         { .defaultValue  = ZAP_EMPTY_DEFAULT(),
           .attributeId   = TemperatureMeasurement::Attributes::MeasuredValue::Id,
           .size          = 2,
-          .attributeType = ZAP_TYPE(INT16),
+          .attributeType = ZAP_TYPE(INT16S),
           .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
         { .defaultValue  = ZAP_EMPTY_DEFAULT(),
           .attributeId   = 0xFFFD,
