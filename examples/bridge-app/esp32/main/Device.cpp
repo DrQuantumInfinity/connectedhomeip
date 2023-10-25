@@ -26,6 +26,7 @@ Device::Device(void)
     {
         if (!_indexList[_index])
         {
+            _indexList[_index] = true;
             break;
         }
     }
