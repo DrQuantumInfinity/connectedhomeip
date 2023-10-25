@@ -3,6 +3,9 @@
 #include "TaskMessage.h"
 #include "TimerTick.h"
 #include "EspNowData.h"
+#include "Device.h"
+#include "DeviceLight.h"
+#include "DynamicList.h"
 #include "freertos/FreeRTOS.h"
 #include "DeviceButton.h"
 
@@ -47,6 +50,13 @@ const uint32_t startKey =               0x1f5a3db9;
  **************************************************************************/
 typedef struct
 {
+    Device *pDevice;
+    uint8_t macAddr[6];
+}LIST_ITEM;
+
+
+typedef struct
+{
     uint32_t offset;
     uint8_t data[MATTER_RX_MAX_SIZE];
 }RX_FRAMING;
@@ -56,7 +66,7 @@ typedef struct
     QueueHandle_t publicQueue;
     TaskHandle_t task;
     TimerTick timerTick;
-    ESP_NOW_DEVICE_LIST* pDeviceList;
+    DYNAMIC_LIST* pList;
 }MATTER_TASK;
 /**************************************************************************
  *                                  Prototypes
@@ -64,16 +74,17 @@ typedef struct
 static void MatterMain(void* pvParameter);
 //Setup
 static void MatterSetup(void);
+static bool MatterListItemMatcher(const void* pItem1, const void* pItem2);
 //Timer Handling
 static TickType_t MatterGetTimeoutTick(void);
 static void MatterHandleTimeout(void);
 //Message Processing
 static void MatterProcessMyMsg(const MSG_HEADER* pMsg);
 static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength);
-static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength);
-static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength);
-static void MatterEspNowBool(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength);
-static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength);
+static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
+static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
+static void MatterEspNowBool(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
+static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
@@ -130,9 +141,15 @@ static void MatterMain(void* pvParameter)
 //Setup
 static void MatterSetup(void)
 {
-    matterTask.pDeviceList = EspNowCreateDeviceList();
+    matterTask.pList = DynamicListCreate(MatterListItemMatcher, sizeof(LIST_ITEM));
     matterTask.timerTick.Disable();
-    deviceButton = new DeviceButton("Light 6", "nowhere", NULL);
+    deviceButton = new DeviceButton("Button", "nowhere", NULL);
+}
+static bool MatterListItemMatcher(const void* pItemNew, const void* pItemStored)
+{
+    const LIST_ITEM* pItem11 = (const LIST_ITEM*)pItemNew;
+    const LIST_ITEM* pItem22 = (const LIST_ITEM*)pItemStored;
+    return (memcmp(pItem11->macAddr, pItem22->macAddr, sizeof(pItem11->macAddr)) == 0); //0 == MEM_CMP_MATCH
 }
 //Timer Handling
 static TickType_t MatterGetTimeoutTick(void)
@@ -158,30 +175,49 @@ static void MatterProcessMyMsg(const MSG_HEADER* pMsg)
 }
 static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 {
-    ESP_LOGI(TAG, "%s from %02X:%02X:%02X:%02X:%02X:%02X", EspNowGetName(pEspMsg),
+    char nameBuf[32];
+    sprintf(nameBuf, "%s %02X:%02X:%02X:%02X:%02X:%02X", EspNowGetName(pEspMsg),
         pEspMsg->macAddr[0], pEspMsg->macAddr[1], pEspMsg->macAddr[2], 
         pEspMsg->macAddr[3], pEspMsg->macAddr[4], pEspMsg->macAddr[5]);
 
+    ESP_LOGI(TAG, "From %s", nameBuf);
+    
+    LIST_ITEM item = {
+        .pDevice = NULL,
+        .macAddr = {0},
+    };
+    memcpy(item.macAddr, pEspMsg->macAddr, sizeof(item.macAddr));
+    LIST_ITEM* pItem = (LIST_ITEM*)DynamicListAddFetchItem(matterTask.pList, &item);
+
     switch (pEspMsg->type)
     {
-    case ESP_NOW_DEVICE_TYPE_DHT:       MatterEspNowDht(pEspMsg, dataLength);                   break;
-    case ESP_NOW_DEVICE_TYPE_MOTION:    MatterEspNowMotion(pEspMsg, dataLength);                break;
-    case ESP_NOW_DEVICE_TYPE_BOOL:      MatterEspNowBool(pEspMsg, dataLength);                  break;
-    case ESP_NOW_DEVICE_TYPE_TOGGLE:    MatterEspNowToggle(pEspMsg, dataLength);                break;
-    default:                            ESP_LOGI(TAG, "invalid EspNow type %u", pEspMsg->type); break;
+    case ESP_NOW_DEVICE_TYPE_DHT:       MatterEspNowDht(pEspMsg, dataLength, pItem, nameBuf);       break;
+    case ESP_NOW_DEVICE_TYPE_MOTION:    MatterEspNowMotion(pEspMsg, dataLength, pItem, nameBuf);    break;
+    case ESP_NOW_DEVICE_TYPE_BOOL:      MatterEspNowBool(pEspMsg, dataLength, pItem, nameBuf);      break;
+    case ESP_NOW_DEVICE_TYPE_TOGGLE:    MatterEspNowToggle(pEspMsg, dataLength, pItem, nameBuf);    break;
+    default:                            ESP_LOGI(TAG, "invalid EspNow type %u", pEspMsg->type);     break;
     }
 }
-static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
+static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {
 }
-static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
+static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {
 }
-static void MatterEspNowBool(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
+static void MatterEspNowBool(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {
 }
-static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
+static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {
-    deviceButton->Toggle();
-    
+    DeviceButton *pButton;
+    if (pItem->pDevice == NULL)
+    {
+        pButton = new DeviceButton(pName, "Z", NULL);
+        pItem->pDevice = pButton;
+    }
+    else
+    {
+        DeviceButton* pButton = (DeviceButton*)pItem->pDevice;
+        pButton->Toggle();
+    }
 }

@@ -56,20 +56,10 @@ typedef struct __attribute__((packed))
     ESP_NOW_DEVICE_TYPE type;
     ESP_NOW_DATA_UNION data;
 }ESP_NOW_DATA;
-
-typedef void ESP_NOW_DEVICE_LIST;
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
-extern char const * const pDeviceTypeStrings[ESP_NOW_DEVICE_TYPE_COUNT];
-
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-ESP_NOW_DEVICE_LIST* EspNowCreateDeviceList(void);
-void EspNowDestroyDeviceList(ESP_NOW_DEVICE_LIST* pList);
 const char* EspNowGetName(const ESP_NOW_DATA* pDev);
-
-ESP_NOW_DATA* AddOrUpdateDev(ESP_NOW_DEVICE_LIST* pList, ESP_NOW_DATA* pDev);
-void RemoveDev(ESP_NOW_DEVICE_LIST* pList, ESP_NOW_DATA* pDev);
-ESP_NOW_DATA* GetDevByDevMac(ESP_NOW_DEVICE_LIST* pList, const ESP_NOW_DATA* pDev);
