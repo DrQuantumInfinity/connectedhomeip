@@ -1,10 +1,11 @@
 
-#include "DeviceLightLevel.h"
+#include "DeviceLightRGB.h"
 #include "AttrList.h"
 #include "EndpointApi.h"
 #include "clusters/BasicCluster.h"
 #include "clusters/DescriptorCluster.h"
 #include "clusters/LevelControlCluster.h"
+#include "clusters/ColourCluster.h"
 #include "clusters/OnOffCluster.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
@@ -16,6 +17,7 @@ using namespace ::chip::app::Clusters;
 const EmberAfCluster bridgedClusters[] = {
     OnOffCluster::cluster,
     LevelControlCluster::cluster,
+    ColourCluster::hsCluster,
     DescriptorCluster::cluster,
     BasicCluster::cluster,
 };
@@ -56,7 +58,7 @@ static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, con
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceLightLevel::DeviceLightLevel(const char * pName, const char * pLocation, DEVICE_LIGHT_LEVEL_WRITE_CALLBACK pfnWriteCallback)
+DeviceLightRGB::DeviceLightRGB(const char * pName, const char * pLocation, DEVICE_LIGHT_RGB_WRITE_CALLBACK pfnWriteCallback)
 {
     _pfnWriteCallback          = pfnWriteCallback;
     DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedClusters));
@@ -79,13 +81,14 @@ DeviceLightLevel::DeviceLightLevel(const char * pName, const char * pLocation, D
     AddCluster(&descriptorCluster);
     AddCluster(&onOffCluster);
     AddCluster(&levelControlCluster);
+    AddCluster(&colourCluster);
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
 
     memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
     EndpointAdd(&_endpointData);
 }
-DeviceLightLevel::~DeviceLightLevel()
+DeviceLightRGB::~DeviceLightRGB()
 {   
     free(_endpointData.pDataVersionStorage);
     EndpointRemove(GetIndex());
@@ -97,14 +100,14 @@ DeviceLightLevel::~DeviceLightLevel()
 static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
                                         uint8_t * buffer, uint16_t maxReadLength)
 {
-    DeviceLightLevel * pDevice = (DeviceLightLevel *) pObject;
+    DeviceLightRGB * pDevice = (DeviceLightRGB *) pObject;
     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
 }
 
 static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
                                          uint8_t * buffer)
 {
-    DeviceLightLevel * pDevice = (DeviceLightLevel *) pObject;
+    DeviceLightRGB * pDevice = (DeviceLightRGB *) pObject;
     EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
     if (pDevice->_pfnWriteCallback)
     {
