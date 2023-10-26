@@ -100,7 +100,8 @@ DeviceLightTemp::~DeviceLightTemp()
 static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
                                         uint8_t * buffer, uint16_t maxReadLength)
 {
-    DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
+    // DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
+    Device * pDevice = (Device *) pObject;
     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
 }
 
