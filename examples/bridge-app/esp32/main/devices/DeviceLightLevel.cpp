@@ -2,10 +2,10 @@
 #include "DeviceLightLevel.h"
 #include "AttrList.h"
 #include "EndpointApi.h"
-#include "clusters/BasicCluster.h"
-#include "clusters/DescriptorCluster.h"
-#include "clusters/LevelControlCluster.h"
-#include "clusters/OnOffCluster.h"
+#include "BasicCluster.h"
+#include "DescriptorCluster.h"
+#include "LevelControlCluster.h"
+#include "OnOffCluster.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
 using namespace ::chip::app::Clusters;

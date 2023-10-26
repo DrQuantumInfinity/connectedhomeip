@@ -19,8 +19,8 @@
 #include <functional>
 #include <stdbool.h>
 #include <stdint.h>
-#include "../clusters/Cluster.h"
-#include "../clusters/BasicCluster.h"
+#include "Cluster.h"
+#include "BasicCluster.h"
 
 class Device
 {

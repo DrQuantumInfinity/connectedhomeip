@@ -1,7 +1,7 @@
 
 #pragma once
-#include "../clusters/DescriptorCluster.h"
-#include "../clusters/OnOffCluster.h"
+#include "DescriptorCluster.h"
+#include "OnOffCluster.h"
 #include "Device.h"
 #include "EndpointApi.h"
 #include <app/InteractionModelEngine.h>

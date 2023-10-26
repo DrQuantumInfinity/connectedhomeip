@@ -1,9 +1,9 @@
 
 #include "DeviceLight.h"
 
-#include "clusters/BasicCluster.h"
-#include "clusters/DescriptorCluster.h"
-#include "clusters/OnOffCluster.h"
+#include "BasicCluster.h"
+#include "DescriptorCluster.h"
+#include "OnOffCluster.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
 using namespace ::chip::app::Clusters;

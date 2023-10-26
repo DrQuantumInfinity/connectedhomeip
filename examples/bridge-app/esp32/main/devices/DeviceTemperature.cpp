@@ -1,9 +1,9 @@
 
 #include "DeviceTemperature.h"
 
-#include "clusters/BasicCluster.h"
-#include "clusters/DescriptorCluster.h"
-#include "clusters/TempCluster.h"
+#include "BasicCluster.h"
+#include "DescriptorCluster.h"
+#include "TempCluster.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
 using namespace ::chip::app::Clusters;

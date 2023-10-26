@@ -2,8 +2,8 @@
 #pragma once
 #include "Device.h"
 #include "EndpointApi.h"
-#include "../clusters/DescriptorCluster.h"
-#include "../clusters/OnOffCluster.h"
+#include "DescriptorCluster.h"
+#include "OnOffCluster.h"
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
 using namespace ::chip;

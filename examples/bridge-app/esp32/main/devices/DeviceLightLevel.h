@@ -1,9 +1,9 @@
 
 #pragma once
-#include "../clusters/BasicCluster.h"
-#include "../clusters/DescriptorCluster.h"
-#include "../clusters/LevelControlCluster.h"
-#include "../clusters/OnOffCluster.h"
+#include "BasicCluster.h"
+#include "DescriptorCluster.h"
+#include "LevelControlCluster.h"
+#include "OnOffCluster.h"
 #include "Device.h"
 #include "EndpointApi.h"
 #include <app/InteractionModelEngine.h>
