@@ -18,6 +18,11 @@ typedef enum __attribute__((packed))
     ESP_NOW_DEVICE_TYPE_MOTION,
     ESP_NOW_DEVICE_TYPE_BOOL,
     ESP_NOW_DEVICE_TYPE_TOGGLE,
+    ESP_NOW_DEVICE_TYPE_LIGHT_ON_OFF,
+    ESP_NOW_DEVICE_TYPE_LIGHT_DIMMER,
+    ESP_NOW_DEVICE_TYPE_LIGHT_RGB,
+    ESP_NOW_DEVICE_TYPE_LIGHT_TEMP,
+    ESP_NOW_DEVICE_TYPE_LIGHT_TEMP_RGB,
     ESP_NOW_DEVICE_TYPE_COUNT
 }ESP_NOW_DEVICE_TYPE;
 
@@ -42,12 +47,51 @@ typedef struct __attribute__((packed))
     bool onOff;
 }ESP_NOW_DATA_ON_OFF;
 
+typedef struct __attribute__((packed))
+{
+    bool onOff;
+}ESP_NOW_DATA_LIGHT_ON_OFF;
+
+typedef struct __attribute__((packed))
+{
+    bool onOff;
+    uint8_t brightness;
+}ESP_NOW_DATA_LIGHT_DIMMER;
+
+typedef struct __attribute__((packed))
+{
+    bool onOff;
+    uint8_t hue;
+    uint8_t saturation;
+    uint8_t brightness;
+}ESP_NOW_DATA_LIGHT_RGB;
+
+typedef struct __attribute__((packed))
+{
+    bool onOff;
+    uint16_t tempKelvin;
+}ESP_NOW_DATA_LIGHT_TEMP;
+
+typedef struct __attribute__((packed))
+{
+    bool onOff;
+    uint8_t hue;
+    uint8_t saturation;
+    uint8_t brightness;
+    uint16_t tempKelvin;
+}ESP_NOW_DATA_LIGHT_TEMP_RGB;
+
 typedef union __attribute__((packed))
 {
     ESP_NOW_DATA_DHT dht;
     ESP_NOW_DATA_MOTION motion;
     ESP_NOW_DATA_ON_OFF onOff;
     ESP_NOW_DATA_TOGGLE toggle;
+    ESP_NOW_DATA_LIGHT_ON_OFF lightOnOff;
+    ESP_NOW_DATA_LIGHT_DIMMER lightDimmer;
+    ESP_NOW_DATA_LIGHT_RGB lightRgb;
+    ESP_NOW_DATA_LIGHT_TEMP lightTemp;
+    ESP_NOW_DATA_LIGHT_TEMP_RGB lightTempRgb;
 }ESP_NOW_DATA_UNION;
 
 typedef struct __attribute__((packed))
