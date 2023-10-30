@@ -29,11 +29,13 @@ public:
 
     //protected...
     DEVICE_LIGHT_WRITE_CALLBACK _pfnWriteCallback;
+    
  
 private:    
     OnOffCluster onOffCluster;
     DescriptorCluster descriptorCluster;
     ENDPOINT_DATA _endpointData;
+    void sendEspNowMessage(void);
 };
 /**************************************************************************
  *                                  Prototypes

@@ -42,6 +42,7 @@ private:
     LevelControlCluster levelControlCluster;
     DescriptorCluster descriptorCluster;
     ENDPOINT_DATA _endpointData;
+    void sendEspNowMessage(void);
 };
 /**************************************************************************
  *                                  Prototypes

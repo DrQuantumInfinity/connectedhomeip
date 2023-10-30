@@ -7,6 +7,7 @@
 #include "LevelControlCluster.h"
 #include "ColourCluster.h"
 #include "OnOffCluster.h"
+#include "SerialTask.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
@@ -108,10 +109,20 @@ static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, co
                                          uint8_t * buffer)
 {
     DeviceLightRGB * pDevice = (DeviceLightRGB *) pObject;
-    EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+    EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+    pDevice->sendEspNowMessage();
     if (pDevice->_pfnWriteCallback)
     {
         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
     }
     return status;
+}
+
+void DeviceLightRGB::sendEspNowMessage()
+{
+    _espNowData.data.lightRgb.onOff = onOffCluster._isOn;
+    _espNowData.data.lightRgb.brightness = levelControlCluster._level;
+    _espNowData.data.lightRgb.hue = colourCluster._hue;
+    _espNowData.data.lightRgb.saturation = colourCluster._sat;
+    SerialTransmit(&_espNowData, sizeof(_espNowData));
 }

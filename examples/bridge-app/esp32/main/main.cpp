@@ -22,7 +22,6 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "EndpointApi.h"
-#include "User.h"
 #include <app-common/zap-generated/ids/Attributes.h>
 #include <app-common/zap-generated/ids/Clusters.h>
 #include <app/ConcreteAttributePath.h>
@@ -465,6 +464,13 @@ extern "C" void app_main()
         return;
     }
 
+    //  err = app::Clusters::ModeSelect::StaticSupportedModesManager::getStaticSupportedModesManagerInstance().InitEndpointArray(
+    //     FIXED_ENDPOINT_COUNT);
+    // if (err != CHIP_NO_ERROR)
+    // {
+    //     ESP_LOGE(TAG, "Failed to initialize endpoint array for supported-modes, err:%" CHIP_ERROR_FORMAT, err.Format());
+    // }
+
 #if CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
     SetCommissionableDataProvider(&sFactoryDataProvider);
     SetDeviceAttestationCredentialsProvider(&sFactoryDataProvider);
@@ -492,5 +498,4 @@ extern "C" void app_main()
     {
         ESP_LOGE(TAG, "MatterTaskStart() failed : %" CHIP_ERROR_FORMAT, chip_err.Format());
     }
-    chip::DeviceLayer::PlatformMgr().ScheduleWork(run, reinterpret_cast<intptr_t>(nullptr));
 }

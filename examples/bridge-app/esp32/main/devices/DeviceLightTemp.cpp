@@ -7,6 +7,7 @@
 #include "LevelControlCluster.h"
 #include "ColourCluster.h"
 #include "OnOffCluster.h"
+#include "SerialTask.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
@@ -100,8 +101,7 @@ DeviceLightTemp::~DeviceLightTemp()
 static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
                                         uint8_t * buffer, uint16_t maxReadLength)
 {
-    // DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
-    Device * pDevice = (Device *) pObject;
+    DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
 }
 
@@ -109,10 +109,21 @@ static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, co
                                          uint8_t * buffer)
 {
     DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
-    EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+    EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+    pDevice->sendEspNowMessage();
     if (pDevice->_pfnWriteCallback)
     {
         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
     }
     return status;
+}
+
+void DeviceLightTemp::sendEspNowMessage()
+{
+    _espNowData.data.lightTempRgb.onOff = onOffCluster._isOn;
+    _espNowData.data.lightTempRgb.brightness = levelControlCluster._level;
+    _espNowData.data.lightTempRgb.hue = colourCluster._hue;
+    _espNowData.data.lightTempRgb.saturation = colourCluster._sat;
+    _espNowData.data.lightTempRgb.tempKelvin = 1000_000 / colourCluster._temp;
+    SerialTransmit(&_espNowData, sizeof(_espNowData));
 }

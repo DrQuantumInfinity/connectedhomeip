@@ -6,6 +6,7 @@
 #include "DescriptorCluster.h"
 #include "LevelControlCluster.h"
 #include "OnOffCluster.h"
+#include "SerialTask.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
@@ -105,10 +106,18 @@ static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, co
                                          uint8_t * buffer)
 {
     DeviceLightLevel * pDevice = (DeviceLightLevel *) pObject;
-    EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+    EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+    pDevice->sendEspNowMessage();
     if (pDevice->_pfnWriteCallback)
     {
         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
     }
     return status;
+}
+
+void DeviceLightLevel::sendEspNowMessage()
+{
+    _espNowData.data.lightDimmer.onOff = onOffCluster._isOn;
+    _espNowData.data.lightDimmer.brightness = levelControlCluster._level;
+    SerialTransmit(&_espNowData, sizeof(_espNowData));
 }
