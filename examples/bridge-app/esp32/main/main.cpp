@@ -29,6 +29,8 @@
 
 #include <app/server/Server.h>
 
+#include "StaticModeManager.h"
+
 
 #if CONFIG_ENABLE_ESP32_DEVICE_INFO_PROVIDER
 #include <platform/ESP32/ESP32DeviceInfoProvider.h>
@@ -84,6 +86,13 @@ extern "C" void app_main()
     DeviceLayer::SetDeviceInfoProvider(&gExampleDeviceInfoProvider);
 
     CHIPDeviceManager & deviceMgr = CHIPDeviceManager::GetInstance();
+
+    // app::Clusters::ModeSelect::StaticSupportedModesManager manager = app::Clusters::ModeSelect::StaticSupportedModesManager::getStaticSupportedModesManagerInstance();
+
+    // if (err != ESP_OK)
+    // {
+    //     ESP_LOGE(TAG, "Failed to initialize endpoint array for supported-modes, err:%" CHIP_ERROR_FORMAT, err.Format());
+    // }
 
     chip_err = deviceMgr.Init(&AppCallback);
     if (chip_err != CHIP_NO_ERROR)

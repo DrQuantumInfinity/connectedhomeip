@@ -1,75 +1,89 @@
-// /*
-//  *
-//  *    Copyright (c) 2021 Project CHIP Authors
-//  *    All rights reserved.
-//  *
-//  *    Licensed under the Apache License, Version 2.0 (the "License");
-//  *    you may not use this file except in compliance with the License.
-//  *    You may obtain a copy of the License at
-//  *
-//  *        http://www.apache.org/licenses/LICENSE-2.0
-//  *
-//  *    Unless required by applicable law or agreed to in writing, software
-//  *    distributed under the License is distributed on an "AS IS" BASIS,
-//  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  *    See the License for the specific language governing permissions and
-//  *    limitations under the License.
-//  */
+/*
+ *
+ *    Copyright (c) 2021 Project CHIP Authors
+ *    All rights reserved.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 
-// #pragma once
+#pragma once
 
-// #include <app/clusters/mode-select-server/supported-modes-manager.h>
-// #include <app/util/af.h>
-// #include <app/util/config.h>
-// #include <cstring>
+#include <app/clusters/mode-select-server/supported-modes-manager.h>
+#include <app/util/af.h>
+#include <app/util/config.h>
+#include <cstring>
+#define EMBER_AF_MODE_SELECT_CLUSTER_SERVER_ENDPOINT_COUNT (1)
 
-// namespace chip {
-// namespace app {
-// namespace Clusters {
-// namespace ModeSelect {
+namespace chip {
+namespace app {
+namespace Clusters {
+namespace ModeSelect {
 
-// /**
-//  * This implementation statically defines the options.
-//  */
+/**
+ * This implementation statically defines the options.
+ */
 
-// class StaticSupportedModesManager : public chip::app::Clusters::ModeSelect::SupportedModesManager
-// {
-//     using ModeOptionStructType = Structs::ModeOptionStruct::Type;
-//     using storage_value_type   = const ModeOptionStructType;
+class StaticSupportedModesManager : public chip::app::Clusters::ModeSelect::SupportedModesManager
+{
+    using ModeOptionStructType = Structs::ModeOptionStruct::Type;
+    using storage_value_type   = const ModeOptionStructType;
 
-//     struct EndpointSpanPair
-//     {
-//         const EndpointId mEndpointId;
-//         const Span<storage_value_type> mSpan;
+    // // InitEndpointArray should be called only once in the application. Memory allocated to the
+    // // epModeOptionsProviderList will be needed for the lifetime of the program, so it's never deallocated.
+    // static CHIP_ERROR InitEndpointArray(int size);
 
-//         EndpointSpanPair(const EndpointId aEndpointId, const Span<storage_value_type> && aSpan) :
-//             mEndpointId(aEndpointId), mSpan(aSpan)
-//         {}
+    //     // DeInitEndpointArray should be called only when application need to reallocate memory of
+    // // epModeOptionsProviderList ( Eg. Bridges ).
+    // static void DeInitEndpointArray()
+    // {
+    //     delete[] epModeOptionsProviderList;
+    //     epModeOptionsProviderList = nullptr;
+    //     mSize                     = 0;
+    // }
 
-//         EndpointSpanPair() : mEndpointId(0), mSpan(Span<storage_value_type>()) {}
-//     };
+    struct EndpointSpanPair
+    {
+        const EndpointId mEndpointId;
+        const Span<storage_value_type> mSpan;
 
-//     static storage_value_type coffeeOptions[];
-//     static const EndpointSpanPair supportedOptionsByEndpoints[EMBER_AF_MODE_SELECT_CLUSTER_SERVER_ENDPOINT_COUNT];
+        EndpointSpanPair(const EndpointId aEndpointId, const Span<storage_value_type> && aSpan) :
+            mEndpointId(aEndpointId), mSpan(aSpan)
+        {}
 
-// public:
-//     static const StaticSupportedModesManager instance;
+        EndpointSpanPair() : mEndpointId(0), mSpan(Span<storage_value_type>()) {}
+    };
 
-//     SupportedModesManager::ModeOptionsProvider getModeOptionsProvider(EndpointId endpointId) const override;
+    static storage_value_type coffeeOptions[];
+    static const EndpointSpanPair supportedOptionsByEndpoints[EMBER_AF_MODE_SELECT_CLUSTER_SERVER_ENDPOINT_COUNT];
 
-//     Protocols::InteractionModel::Status getModeOptionByMode(EndpointId endpointId, uint8_t mode,
-//                                                             const ModeOptionStructType ** dataPtr) const override;
+public:
+    static const StaticSupportedModesManager instance;
 
-//     ~StaticSupportedModesManager(){};
+    SupportedModesManager::ModeOptionsProvider getModeOptionsProvider(EndpointId endpointId) const override;
 
-//     StaticSupportedModesManager() {}
+    Protocols::InteractionModel::Status getModeOptionByMode(EndpointId endpointId, uint8_t mode,
+                                                            const ModeOptionStructType ** dataPtr) const override;
 
-//     static inline const StaticSupportedModesManager & getStaticSupportedModesManagerInstance() { return instance; }
-// };
+    ~StaticSupportedModesManager(){};
 
-// const SupportedModesManager * getSupportedModesManager();
+    StaticSupportedModesManager() {}
 
-// } // namespace ModeSelect
-// } // namespace Clusters
-// } // namespace app
-// } // namespace chip
+    static inline const StaticSupportedModesManager & getStaticSupportedModesManagerInstance() { return instance; }
+};
+
+const SupportedModesManager * getSupportedModesManager();
+
+} // namespace ModeSelect
+} // namespace Clusters
+} // namespace app
+} // namespace chip

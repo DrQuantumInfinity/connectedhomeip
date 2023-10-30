@@ -131,8 +131,10 @@ static void SerialMain(void* pvParameter)
 //Setup
 static void SerialSetup(void)
 {
+    #if SOC_UART_NUM > 2
     SerialUartInit();
     serialTask.timerTick.SetFromNow(1000);
+    #endif
 }
 static void SerialUartInit(void)
 {
@@ -237,5 +239,7 @@ static void SerialProcessMyMsg(const MSG_HEADER* pMsg)
 }
 static void SerialTxMsg(const void* pData, uint32_t dataLength)
 {
-    uart_write_bytes(UART_NUM_1, pData, dataLength);
+    #if SOC_UART_NUM > 2
+    uart_write_bytes(SERIAL_UART, pData, dataLength);
+    #endif
 }
