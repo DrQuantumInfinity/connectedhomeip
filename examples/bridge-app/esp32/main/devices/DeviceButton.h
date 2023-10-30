@@ -16,9 +16,6 @@ using namespace ::chip;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-class DeviceButton;
-typedef void (*DEVICE_BUTTON_WRITE_CALLBACK)(DeviceButton * deviceButton, ClusterId clusterId,
-                                             const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
 
 class DeviceButton : public Device
 {
@@ -26,9 +23,6 @@ public:
     DeviceButton(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceButton(void);
     void Toggle(void) { onOffCluster.SetOn(!onOffCluster._isOn, GetIndex()); }
-
-    // // protected...
-    // DEVICE_BUTTON_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     OnOffCluster onOffCluster;

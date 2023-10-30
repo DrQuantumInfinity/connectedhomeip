@@ -16,8 +16,6 @@ using namespace ::chip;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-class DeviceLight;
-typedef void (*DEVICE_LIGHT_WRITE_CALLBACK)(DeviceLight *deviceLight, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 
 class DeviceLight : public Device
 {
@@ -27,10 +25,6 @@ public:
 
     void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }
 
-    // //protected...
-    // DEVICE_LIGHT_WRITE_CALLBACK _pfnWriteCallback;
-    
- 
 private:    
     OnOffCluster onOffCluster;
     DescriptorCluster descriptorCluster;

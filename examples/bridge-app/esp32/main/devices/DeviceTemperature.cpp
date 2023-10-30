@@ -28,11 +28,11 @@ const EmberAfEndpointType bridgedEndpoint = {
 // (taken from chip-devices.xml)
 #define DEVICE_TYPE_BRIDGED_NODE 0x0013
 // (taken from lo-devices.xml)
-#define DEVICE_TYPE_LO_ON_OFF_LIGHT 0x0100
+#define DEVICE_TYPE_TEMP_MEASURE 0x0302
 // Device Version for dynamic endpoints:
 #define DEVICE_VERSION_DEFAULT 1
 const EmberAfDeviceType bridgedDeviceTypes[] = { 
-    [0] = {.deviceId = DEVICE_TYPE_LO_ON_OFF_LIGHT, .deviceVersion = DEVICE_VERSION_DEFAULT},
+    [0] = {.deviceId = DEVICE_TYPE_TEMP_MEASURE, .deviceVersion = DEVICE_VERSION_DEFAULT},
     [1] = {.deviceId = DEVICE_TYPE_BRIDGED_NODE,    .deviceVersion = DEVICE_VERSION_DEFAULT} 
 };
 /**************************************************************************
@@ -52,7 +52,7 @@ const EmberAfDeviceType bridgedDeviceTypes[] = {
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceTemperature::DeviceTemperature(const char* pName, const char* pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback)
+DeviceTemperature::DeviceTemperature(const char* pName, const char* pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback, float temp)
 {
     _pfnWriteCallback = pfnWriteCallback;
     DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedClusters));
@@ -73,6 +73,8 @@ DeviceTemperature::DeviceTemperature(const char* pName, const char* pLocation, D
     };
     AddCluster(&descriptorCluster);
     AddCluster(&tempCluster);
+    tempCluster.UpdateTemp(temp, GetIndex());
+    basicCluster.SetName(pName, GetIndex());
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
 
@@ -88,20 +90,3 @@ DeviceTemperature::~DeviceTemperature(void)
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-// static EmberAfStatus GoogleReadCallback(void *pObject, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength)
-// {
-//     DeviceTemperature * pDevice = (DeviceTemperature *) pObject;
-//     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
-// }
-
-// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-//                                          uint8_t * buffer)
-// {
-//     DeviceTemperature * pDevice = (DeviceTemperature *) pObject;
-//     EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
-//     if (pDevice->_pfnWriteCallback)
-//     {
-//         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
-//     }
-//     return status;
-// }

@@ -16,19 +16,13 @@ using namespace ::chip;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-class DeviceTemperature;
-typedef void (*DEVICE_TEMP_WRITE_CALLBACK)(DeviceTemperature * device, ClusterId clusterId,
-                                             const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
 
 class DeviceTemperature : public Device
 {
 public:
-    DeviceTemperature(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
+    DeviceTemperature(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback, float temp);
     ~DeviceTemperature(void);
-    void UpdateTemp(int16_t temp) { tempCluster.UpdateTemp(temp, GetIndex()); }
-
-    // // protected...
-    // DEVICE_TEMP_WRITE_CALLBACK _pfnWriteCallback;
+    void UpdateTemp(float temp) { tempCluster.UpdateTemp(temp, GetIndex()); }
 
 private:
     TempCluster tempCluster;

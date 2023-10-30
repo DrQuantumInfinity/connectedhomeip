@@ -17,7 +17,7 @@ void BasicCluster::SetReachable(bool reachable, uint16_t index)
     EndpointReportChange(index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);
 }
 
-void BasicCluster::SetName(char * name, uint16_t index)
+void BasicCluster::SetName(const char * name, uint16_t index)
 {
     snprintf(_name, 32, "%s", name);
     EndpointReportChange(index, BridgedDeviceBasicInformation::Id, BridgedDeviceBasicInformation::Attributes::Reachable::Id);

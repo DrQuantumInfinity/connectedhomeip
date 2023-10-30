@@ -20,9 +20,6 @@ using namespace ::chip;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-class DeviceLightRGB; // forward declare
-typedef void (*DEVICE_LIGHT_RGB_WRITE_CALLBACK)(DeviceLightRGB * deviceLight, ClusterId clusterId,
-                                                  const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
 
 class DeviceLightRGB : public Device
 {

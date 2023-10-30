@@ -19,9 +19,6 @@ using namespace ::chip;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-class DeviceLightLevel; // forward declare
-typedef void (*DEVICE_LIGHT_LEVEL_WRITE_CALLBACK)(DeviceLightLevel * deviceLight, ClusterId clusterId,
-                                                  const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer);
 
 class DeviceLightLevel : public Device
 {
@@ -34,8 +31,6 @@ public:
     OnOffCluster GetOnOffCluster(void) { return onOffCluster; }
     LevelControlCluster GetLevelControlCluster(void) { return levelControlCluster; }
     DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
-    // // protected...
-    // DEVICE_LIGHT_LEVEL_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     OnOffCluster onOffCluster;

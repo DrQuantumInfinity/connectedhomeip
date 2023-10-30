@@ -16,7 +16,7 @@ public:
     BasicCluster();
     virtual ~BasicCluster() = default;
     void SetReachable(bool reachable, uint16_t index);
-    void SetName(char * name, uint16_t index);
+    void SetName(const char * name, uint16_t index);
     bool _reachable;
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) override;
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) override;

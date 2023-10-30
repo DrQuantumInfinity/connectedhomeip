@@ -27,6 +27,15 @@
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
 using namespace ::chip;
+/**************************************************************************
+ *                                  Constants
+ **************************************************************************/
+/**************************************************************************
+ *                                  Macros
+ **************************************************************************/
+/**************************************************************************
+ *                                  Types
+ **************************************************************************/
 
 class Device;
 typedef void (*DEVICE_WRITE_CALLBACK)(Device *device, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
@@ -55,3 +64,6 @@ private:
     static inline bool _indexList[CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT] = {0};
     std::vector<Cluster*> _clusters;
 };
+/**************************************************************************
+ *                                  Prototypes
+ **************************************************************************/
