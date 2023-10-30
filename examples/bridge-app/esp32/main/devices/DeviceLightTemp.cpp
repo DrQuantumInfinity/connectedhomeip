@@ -1,6 +1,5 @@
 
 #include "DeviceLightTemp.h"
-#include "AttrList.h"
 #include "EndpointApi.h"
 #include "BasicCluster.h"
 #include "DescriptorCluster.h"
