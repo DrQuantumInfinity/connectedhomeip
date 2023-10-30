@@ -27,7 +27,7 @@ typedef void (*DEVICE_LIGHT_TEMP_WRITE_CALLBACK)(DeviceLightTemp * deviceLight, 
 class DeviceLightTemp : public Device
 {
 public:
-    DeviceLightTemp(const char * pName, const char * pLocation, DEVICE_LIGHT_TEMP_WRITE_CALLBACK pfnWriteCallback);
+    DeviceLightTemp(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceLightTemp(void);
 
     void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }
@@ -37,8 +37,8 @@ public:
     LevelControlCluster GetLevelControlCluster(void) { return levelControlCluster; }
     ColourCluster GetColourCluster(void) { return colourCluster; }
     DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
-    // protected...
-    DEVICE_LIGHT_TEMP_WRITE_CALLBACK _pfnWriteCallback;
+    // // protected...
+    // DEVICE_LIGHT_TEMP_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     OnOffCluster onOffCluster;

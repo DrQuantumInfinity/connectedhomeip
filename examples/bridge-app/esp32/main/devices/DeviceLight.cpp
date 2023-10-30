@@ -52,7 +52,7 @@ static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, co
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceLight::DeviceLight(const char * pName, const char * pLocation, DEVICE_LIGHT_WRITE_CALLBACK pfnWriteCallback)
+DeviceLight::DeviceLight(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback)
 {
     _pfnWriteCallback           = pfnWriteCallback;
     DataVersion * pDataVersions = (DataVersion *) malloc(sizeof(DataVersion) * ArraySize(bridgedClusters));
@@ -95,18 +95,18 @@ static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, con
     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
 }
 
-static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                         uint8_t * buffer)
-{
-    DeviceLight * pDevice = (DeviceLight *) pObject;
-    EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
-    pDevice->sendEspNowMessage();
-    if (pDevice->_pfnWriteCallback)
-    {
-        pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
-    }
-    return status;
-}
+// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                          uint8_t * buffer)
+// {
+//     DeviceLight * pDevice = (DeviceLight *) pObject;
+//     EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+//     pDevice->sendEspNowMessage();
+//     if (pDevice->_pfnWriteCallback)
+//     {
+//         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
+//     }
+//     return status;
+// }
 
 void DeviceLight::sendEspNowMessage()
 {

@@ -49,17 +49,17 @@ const EmberAfDeviceType bridgedDeviceTypes[] = {
  *                                  Prototypes
  **************************************************************************/
 // of type GOOGLE_WRITE_CALLBACK
-static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                         uint8_t * buffer);
-static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                        uint8_t * buffer, uint16_t maxReadLength);
+// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                          uint8_t * buffer);
+// static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                         uint8_t * buffer, uint16_t maxReadLength);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceLightTemp::DeviceLightTemp(const char * pName, const char * pLocation, DEVICE_LIGHT_TEMP_WRITE_CALLBACK pfnWriteCallback)
+DeviceLightTemp::DeviceLightTemp(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback)
 {
     _pfnWriteCallback          = pfnWriteCallback;
     DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedClusters));
@@ -98,25 +98,25 @@ DeviceLightTemp::~DeviceLightTemp()
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                        uint8_t * buffer, uint16_t maxReadLength)
-{
-    DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
-    return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
-}
+// static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                         uint8_t * buffer, uint16_t maxReadLength)
+// {
+//     DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
+//     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
+// }
 
-static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                         uint8_t * buffer)
-{
-    DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
-    EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
-    pDevice->sendEspNowMessage();
-    if (pDevice->_pfnWriteCallback)
-    {
-        pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
-    }
-    return status;
-}
+// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                          uint8_t * buffer)
+// {
+//     DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
+//     EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+//     pDevice->sendEspNowMessage();
+//     if (pDevice->_pfnWriteCallback)
+//     {
+//         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
+//     }
+//     return status;
+// }
 
 void DeviceLightTemp::sendEspNowMessage()
 {
@@ -124,6 +124,6 @@ void DeviceLightTemp::sendEspNowMessage()
     _espNowData.data.lightTempRgb.brightness = levelControlCluster._level;
     _espNowData.data.lightTempRgb.hue = colourCluster._hue;
     _espNowData.data.lightTempRgb.saturation = colourCluster._sat;
-    _espNowData.data.lightTempRgb.tempKelvin = 1000_000 / colourCluster._temp;
+    _espNowData.data.lightTempRgb.tempKelvin = 1000'000 / colourCluster._temp;
     SerialTransmit(&_espNowData, sizeof(_espNowData));
 }

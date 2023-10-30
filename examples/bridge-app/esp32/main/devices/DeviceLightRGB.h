@@ -27,7 +27,7 @@ typedef void (*DEVICE_LIGHT_RGB_WRITE_CALLBACK)(DeviceLightRGB * deviceLight, Cl
 class DeviceLightRGB : public Device
 {
 public:
-    DeviceLightRGB(const char * pName, const char * pLocation, DEVICE_LIGHT_RGB_WRITE_CALLBACK pfnWriteCallback);
+    DeviceLightRGB(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceLightRGB(void);
 
     void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }
@@ -37,8 +37,6 @@ public:
     LevelControlCluster GetLevelControlCluster(void) { return levelControlCluster; }
     ColourCluster GetColourCluster(void) { return colourCluster; }
     DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
-    // protected...
-    DEVICE_LIGHT_RGB_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     OnOffCluster onOffCluster;

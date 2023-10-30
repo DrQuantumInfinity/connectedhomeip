@@ -23,12 +23,12 @@ typedef void (*DEVICE_TEMP_WRITE_CALLBACK)(DeviceTemperature * device, ClusterId
 class DeviceTemperature : public Device
 {
 public:
-    DeviceTemperature(const char * pName, const char * pLocation, DEVICE_TEMP_WRITE_CALLBACK pfnWriteCallback);
+    DeviceTemperature(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceTemperature(void);
     void UpdateTemp(int16_t temp) { tempCluster.UpdateTemp(temp, GetIndex()); }
 
-    // protected...
-    DEVICE_TEMP_WRITE_CALLBACK _pfnWriteCallback;
+    // // protected...
+    // DEVICE_TEMP_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     TempCluster tempCluster;

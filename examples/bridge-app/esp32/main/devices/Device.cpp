@@ -48,7 +48,7 @@ void Device::AddCluster(Cluster * newCluster)
     _clusters.push_back(newCluster);
 }
 
-static EmberAfStatus Device::GoogleReadCallback(void * pObject, ClusterId clusterId,
+EmberAfStatus Device::GoogleReadCallback(void * pObject, ClusterId clusterId,
                                                 const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
                                                 uint16_t maxReadLength)
 {
@@ -56,7 +56,7 @@ static EmberAfStatus Device::GoogleReadCallback(void * pObject, ClusterId cluste
     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
 }
 
-static EmberAfStatus Device::GoogleWriteCallback(void * pObject, ClusterId clusterId,
+EmberAfStatus Device::GoogleWriteCallback(void * pObject, ClusterId clusterId,
                                                  const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer)
 {
 
@@ -68,6 +68,10 @@ static EmberAfStatus Device::GoogleWriteCallback(void * pObject, ClusterId clust
         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
     }
     return status;
+}
+
+void Device::sendEspNowMessage(void){
+    return;
 }
 
 EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,

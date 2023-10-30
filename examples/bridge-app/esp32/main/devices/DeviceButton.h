@@ -23,12 +23,12 @@ typedef void (*DEVICE_BUTTON_WRITE_CALLBACK)(DeviceButton * deviceButton, Cluste
 class DeviceButton : public Device
 {
 public:
-    DeviceButton(const char * pName, const char * pLocation, DEVICE_BUTTON_WRITE_CALLBACK pfnWriteCallback);
+    DeviceButton(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceButton(void);
     void Toggle(void) { onOffCluster.SetOn(!onOffCluster._isOn, GetIndex()); }
 
-    // protected...
-    DEVICE_BUTTON_WRITE_CALLBACK _pfnWriteCallback;
+    // // protected...
+    // DEVICE_BUTTON_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     OnOffCluster onOffCluster;
