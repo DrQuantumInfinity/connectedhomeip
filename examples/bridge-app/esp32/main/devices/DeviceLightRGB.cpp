@@ -7,6 +7,7 @@
 #include "LevelControlCluster.h"
 #include "ColourCluster.h"
 #include "OnOffCluster.h"
+#include "SerialTask.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
@@ -48,17 +49,17 @@ const EmberAfDeviceType bridgedDeviceTypes[] = {
  *                                  Prototypes
  **************************************************************************/
 // of type GOOGLE_WRITE_CALLBACK
-static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                         uint8_t * buffer);
-static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                        uint8_t * buffer, uint16_t maxReadLength);
+// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                          uint8_t * buffer);
+// static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                         uint8_t * buffer, uint16_t maxReadLength);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceLightRGB::DeviceLightRGB(const char * pName, const char * pLocation, DEVICE_LIGHT_RGB_WRITE_CALLBACK pfnWriteCallback)
+DeviceLightRGB::DeviceLightRGB(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback)
 {
     _pfnWriteCallback          = pfnWriteCallback;
     DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedClusters));
@@ -97,21 +98,31 @@ DeviceLightRGB::~DeviceLightRGB()
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                        uint8_t * buffer, uint16_t maxReadLength)
-{
-    DeviceLightRGB * pDevice = (DeviceLightRGB *) pObject;
-    return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
-}
+// static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                         uint8_t * buffer, uint16_t maxReadLength)
+// {
+//     DeviceLightRGB * pDevice = (DeviceLightRGB *) pObject;
+//     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
+// }
 
-static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                         uint8_t * buffer)
+// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+//                                          uint8_t * buffer)
+// {
+//     DeviceLightRGB * pDevice = (DeviceLightRGB *) pObject;
+//     EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
+//     pDevice->sendEspNowMessage();
+//     if (pDevice->_pfnWriteCallback)
+//     {
+//         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
+//     }
+//     return status;
+// }
+
+void DeviceLightRGB::sendEspNowMessage()
 {
-    DeviceLightRGB * pDevice = (DeviceLightRGB *) pObject;
-    EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
-    if (pDevice->_pfnWriteCallback)
-    {
-        pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
-    }
-    return status;
+    _espNowData.data.lightRgb.onOff = onOffCluster._isOn;
+    _espNowData.data.lightRgb.brightness = levelControlCluster._level;
+    _espNowData.data.lightRgb.hue = colourCluster._hue;
+    _espNowData.data.lightRgb.saturation = colourCluster._sat;
+    SerialTransmit(&_espNowData, sizeof(_espNowData));
 }

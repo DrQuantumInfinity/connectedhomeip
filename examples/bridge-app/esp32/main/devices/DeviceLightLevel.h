@@ -26,7 +26,7 @@ typedef void (*DEVICE_LIGHT_LEVEL_WRITE_CALLBACK)(DeviceLightLevel * deviceLight
 class DeviceLightLevel : public Device
 {
 public:
-    DeviceLightLevel(const char * pName, const char * pLocation, DEVICE_LIGHT_LEVEL_WRITE_CALLBACK pfnWriteCallback);
+    DeviceLightLevel(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
     ~DeviceLightLevel(void);
 
     void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }
@@ -34,14 +34,15 @@ public:
     OnOffCluster GetOnOffCluster(void) { return onOffCluster; }
     LevelControlCluster GetLevelControlCluster(void) { return levelControlCluster; }
     DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
-    // protected...
-    DEVICE_LIGHT_LEVEL_WRITE_CALLBACK _pfnWriteCallback;
+    // // protected...
+    // DEVICE_LIGHT_LEVEL_WRITE_CALLBACK _pfnWriteCallback;
 
 private:
     OnOffCluster onOffCluster;
     LevelControlCluster levelControlCluster;
     DescriptorCluster descriptorCluster;
     ENDPOINT_DATA _endpointData;
+    void sendEspNowMessage(void);
 };
 /**************************************************************************
  *                                  Prototypes

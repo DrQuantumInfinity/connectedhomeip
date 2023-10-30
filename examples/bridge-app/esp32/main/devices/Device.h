@@ -21,6 +21,15 @@
 #include <stdint.h>
 #include "Cluster.h"
 #include "BasicCluster.h"
+#include "EspNowData.h"
+
+#include "EndpointApi.h"
+#include <app/InteractionModelEngine.h>
+#include <app/util/af-types.h>
+using namespace ::chip;
+
+class Device;
+typedef void (*DEVICE_WRITE_CALLBACK)(Device *device, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 
 class Device
 {
@@ -31,11 +40,18 @@ public:
     EmberAfStatus ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer, uint16_t maxReadLength);
     EmberAfStatus WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
     BasicCluster basicCluster;
+    static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+                                         uint8_t * buffer);
+    static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+                                        uint8_t * buffer, uint16_t maxReadLength);
 protected:
     void AddCluster(Cluster* newCluster);
+    ESP_NOW_DATA _espNowData;
+    virtual void sendEspNowMessage(void);
+
+    DEVICE_WRITE_CALLBACK _pfnWriteCallback;
 private:
     uint16_t _index;
     static inline bool _indexList[CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT] = {0};
     std::vector<Cluster*> _clusters;
 };
-
