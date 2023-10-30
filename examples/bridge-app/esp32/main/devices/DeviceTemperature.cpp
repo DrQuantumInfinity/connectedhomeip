@@ -13,6 +13,7 @@ using namespace ::chip::app::Clusters;
 
 const EmberAfCluster bridgedClusters[] = {
     TempCluster::cluster,
+    HumidityCluster::cluster,
     DescriptorCluster::cluster,
     BasicCluster::cluster,
 };
@@ -29,11 +30,15 @@ const EmberAfEndpointType bridgedEndpoint = {
 #define DEVICE_TYPE_BRIDGED_NODE 0x0013
 // (taken from lo-devices.xml)
 #define DEVICE_TYPE_TEMP_MEASURE 0x0302
+#define DEVICE_TYPE_HUMID_MEASURE 0x0307
+#define DEV_THEMOSTAT 0x0301
 // Device Version for dynamic endpoints:
 #define DEVICE_VERSION_DEFAULT 1
 const EmberAfDeviceType bridgedDeviceTypes[] = { 
-    [0] = {.deviceId = DEVICE_TYPE_TEMP_MEASURE, .deviceVersion = DEVICE_VERSION_DEFAULT},
-    [1] = {.deviceId = DEVICE_TYPE_BRIDGED_NODE,    .deviceVersion = DEVICE_VERSION_DEFAULT} 
+     {.deviceId = DEVICE_TYPE_TEMP_MEASURE, .deviceVersion = DEVICE_VERSION_DEFAULT},
+    //  {.deviceId = DEVICE_TYPE_HUMID_MEASURE, .deviceVersion = DEVICE_VERSION_DEFAULT},
+    //  {.deviceId = DEV_THEMOSTAT, .deviceVersion = DEVICE_VERSION_DEFAULT},
+     {.deviceId = DEVICE_TYPE_BRIDGED_NODE,  .deviceVersion = DEVICE_VERSION_DEFAULT} 
 };
 /**************************************************************************
  *                                  Macros
@@ -52,7 +57,7 @@ const EmberAfDeviceType bridgedDeviceTypes[] = {
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceTemperature::DeviceTemperature(const char* pName, const char* pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback, float temp)
+DeviceTemperature::DeviceTemperature(const char* pName, const char* pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback, float temp, float humid)
 {
     _pfnWriteCallback = pfnWriteCallback;
     DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedClusters));
@@ -73,7 +78,9 @@ DeviceTemperature::DeviceTemperature(const char* pName, const char* pLocation, D
     };
     AddCluster(&descriptorCluster);
     AddCluster(&tempCluster);
+    AddCluster(&humidityCluster);
     tempCluster.UpdateTemp(temp, GetIndex());
+    humidityCluster.UpdateHumidity(humid, GetIndex());
     basicCluster.SetName(pName, GetIndex());
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);

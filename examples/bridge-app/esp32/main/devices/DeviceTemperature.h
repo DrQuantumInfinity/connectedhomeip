@@ -1,6 +1,7 @@
 
 #pragma once
 #include "DescriptorCluster.h"
+#include "HumidityCluster.h"
 #include "TempCluster.h"
 #include "Device.h"
 #include "EndpointApi.h"
@@ -20,12 +21,14 @@ using namespace ::chip;
 class DeviceTemperature : public Device
 {
 public:
-    DeviceTemperature(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback, float temp);
+    DeviceTemperature(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback, float temp, float humid);
     ~DeviceTemperature(void);
     void UpdateTemp(float temp) { tempCluster.UpdateTemp(temp, GetIndex()); }
+    void UpdateHumidity(float humidity) { humidityCluster.UpdateHumidity(humidity, GetIndex()); }
 
 private:
     TempCluster tempCluster;
+    HumidityCluster humidityCluster;
     DescriptorCluster descriptorCluster;
     ENDPOINT_DATA _endpointData;
 };

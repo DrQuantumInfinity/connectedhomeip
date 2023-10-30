@@ -5,6 +5,11 @@
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
 
+void HumidityCluster::UpdateHumidity(uint16_t humidity, uint16_t index)
+{
+    _humidity = (uint16_t) (humidity * 100);
+    EndpointReportChange(index, RelativeHumidityMeasurement::Id, RelativeHumidityMeasurement::Attributes::MeasuredValue::Id);
+}
 EmberAfStatus HumidityCluster::Write(chip::AttributeId attributeId, uint8_t * buffer)
 {
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
@@ -20,7 +25,8 @@ EmberAfStatus HumidityCluster::Write(chip::AttributeId attributeId, uint8_t * bu
     return status;
 }
 
-EmberAfStatus HumidityCluster::Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength){
+EmberAfStatus HumidityCluster::Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength)
+{
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     if (maxReadLength == 2)
     {

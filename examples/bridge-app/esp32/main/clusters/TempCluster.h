@@ -11,9 +11,9 @@ using namespace ::chip::app::Clusters;
 class TempCluster : public Cluster
 {
 public:
-    TempCluster() { _id = TemperatureMeasurement::Id;}
+    TempCluster() { _id = TemperatureMeasurement::Id; }
     int16_t _temp = 0;
-    void UpdateTemp(float temp, uint16_t index) { _temp = (int16_t) temp*100; }
+    void UpdateTemp(float temp, uint16_t index);
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) override;
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) override;
 

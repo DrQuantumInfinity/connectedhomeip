@@ -5,9 +5,11 @@
 #include "EspNowData.h"
 #include "Device.h"
 #include "DeviceLight.h"
+#include "DeviceLightTemp.h"
 #include "DynamicList.h"
 #include "freertos/FreeRTOS.h"
 #include "DeviceButton.h"
+#include "DeviceTemperature.h"
 
 using namespace chip;
 
@@ -123,6 +125,9 @@ static void MatterMain(void* pvParameter)
     MatterSetup();
     ESP_LOGI(TAG, "Task started");
 
+
+    DeviceLightTemp* dev = new DeviceLightTemp("DevLightTemp", "Z", NULL);
+
     MSG_HEADER *pMsg;
     while (true)
     {
@@ -199,7 +204,21 @@ static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
     }
 }
 static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
-{
+{  
+    DeviceTemperature *pDevice;
+    if (pItem->pDevice == NULL)
+    {
+        pDevice = new DeviceTemperature(pName, "Z", NULL, pEspMsg->data.dht.temperature, pEspMsg->data.dht.humidity);
+        pItem->pDevice = pDevice;
+    }
+    else
+    {
+        DeviceTemperature* pDevice = (DeviceTemperature*)pItem->pDevice;
+        ESP_LOGW(TAG, "temp: %f", pEspMsg->data.dht.temperature);
+        ESP_LOGW(TAG, "humid: %f", pEspMsg->data.dht.humidity);
+        // pDevice->UpdateTemp(pEspMsg->data.dht.temperature);
+        pDevice->UpdateHumidity(pEspMsg->data.dht.humidity);
+    }
 }
 static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {
