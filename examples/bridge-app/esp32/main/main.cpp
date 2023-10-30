@@ -104,6 +104,7 @@ extern "C" void app_main()
 #if CONFIG_ENABLE_ESP32_DEVICE_INSTANCE_INFO_PROVIDER
     SetDeviceInstanceInfoProvider(&sFactoryDataProvider);
 #endif
+    SetDeviceAttestationCredentialsProvider(Examples::GetExampleDACProvider());
     chip::DeviceLayer::PlatformMgr().ScheduleWork(InitServer, reinterpret_cast<intptr_t>(nullptr));
 
     StartThreads();
