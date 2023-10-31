@@ -205,6 +205,8 @@ static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 }
 static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {  
+    ESP_LOGW(TAG, "temp: %f", pEspMsg->data.dht.temperature);
+    ESP_LOGW(TAG, "humid: %f", pEspMsg->data.dht.humidity);
     DeviceTemperature *pDevice;
     if (pItem->pDevice == NULL)
     {
@@ -213,11 +215,9 @@ static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LI
     }
     else
     {
-        DeviceTemperature* pDevice = (DeviceTemperature*)pItem->pDevice;
-        ESP_LOGW(TAG, "temp: %f", pEspMsg->data.dht.temperature);
-        ESP_LOGW(TAG, "humid: %f", pEspMsg->data.dht.humidity);
-        // pDevice->UpdateTemp(pEspMsg->data.dht.temperature);
+        pDevice = (DeviceTemperature*)pItem->pDevice;
         pDevice->UpdateHumidity(pEspMsg->data.dht.humidity);
+        pDevice->UpdateTemp(pEspMsg->data.dht.temperature);
     }
 }
 static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)

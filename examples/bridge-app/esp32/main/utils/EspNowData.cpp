@@ -6,11 +6,16 @@
 /**************************************************************************
  *                                  Constants
  **************************************************************************/
-char const * const pDeviceTypeStrings[ESP_NOW_DEVICE_TYPE_COUNT] = {
-    "Dht", 
-    "Motion", 
-    "Bool", 
-    "Toggle"
+char const * const pDeviceTypeStrings[] = {
+    "DHT",
+    "MOTION",
+    "BOOL",
+    "TOGGLE",
+    "LIGHT_ON_OFF",
+    "LIGHT_DIMMER",
+    "LIGHT_RGB",
+    "LIGHT_TEMP",
+    "LIGHT_TEMP_RGB",
 };
 /**************************************************************************
  *                                  Macros

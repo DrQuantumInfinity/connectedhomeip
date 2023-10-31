@@ -171,6 +171,14 @@ static void SerialFetchRxData(void)
     int readLength = uart_read_bytes(SERIAL_UART, pData, spaceRemaining, 0);
     if (readLength > 0)
     {
+        static char debugBuf[300];
+        debugBuf[0] = '\0';
+        for (int i = 0; i < readLength; i++)
+        {
+            sprintf(&debugBuf[strlen(debugBuf)], " %02X", pData[i]);
+        }
+        ESP_LOGI(TAG, "Rx %u: %s", readLength, debugBuf);
+
         serialTask.rxFraming.offset += readLength;
         SerialParseEspNowFrame();
     }
