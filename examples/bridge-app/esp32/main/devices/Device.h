@@ -63,6 +63,7 @@ private:
     uint16_t _index;
     static inline bool _indexList[CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT] = {0};
     std::vector<Cluster*> _clusters;
+    ENDPOINT_DATA _endpointData;
 };
 /**************************************************************************
  *                                  Prototypes

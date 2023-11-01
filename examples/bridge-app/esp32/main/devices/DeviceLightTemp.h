@@ -40,7 +40,7 @@ private:
     LevelControlCluster levelControlCluster;
     ColourCluster colourCluster;
     DescriptorCluster descriptorCluster;
-    ENDPOINT_DATA _endpointData;
+    // ENDPOINT_DATA _endpointData;
     void sendEspNowMessage(void);
 };
 /**************************************************************************

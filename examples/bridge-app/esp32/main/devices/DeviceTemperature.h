@@ -30,7 +30,7 @@ private:
     TempCluster tempCluster;
     HumidityCluster humidityCluster;
     DescriptorCluster descriptorCluster;
-    ENDPOINT_DATA _endpointData;
+    // ENDPOINT_DATA _endpointData;
 };
 /**************************************************************************
  *                                  Prototypes

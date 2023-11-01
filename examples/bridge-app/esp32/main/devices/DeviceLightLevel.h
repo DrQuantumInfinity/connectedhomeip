@@ -36,7 +36,7 @@ private:
     OnOffCluster onOffCluster;
     LevelControlCluster levelControlCluster;
     DescriptorCluster descriptorCluster;
-    ENDPOINT_DATA _endpointData;
+    // ENDPOINT_DATA _endpointData;
     void sendEspNowMessage(void);
 };
 /**************************************************************************

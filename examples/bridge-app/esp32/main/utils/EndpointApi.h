@@ -37,7 +37,6 @@ typedef struct
     uint32_t dataVersionStorageLength;
     chip::EndpointId parentEndpointId;
 }ENDPOINT_DATA;
-
     
 /**************************************************************************
  *                                  Prototypes
@@ -46,3 +45,8 @@ void EndpointApiInit(void);
 void EndpointAdd(ENDPOINT_DATA *pData);
 void EndpointRemove(uint16_t index);
 void EndpointReportChange(uint16_t index, ClusterId cluster, AttributeId attribute);
+void EndpointDataUpdate(ENDPOINT_DATA *pData,   EmberAfEndpointType* bridgedEndpoint,
+        .pDeviceTypeList = bridgedDeviceTypes,
+        .deviceTypeListLength = ArraySize(bridgedDeviceTypes),
+        .pDataVersionStorage = pDataVersions,
+        .dataVersionStorageLength = ArraySize(bridgedClusters),);

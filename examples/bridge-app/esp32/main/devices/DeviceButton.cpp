@@ -74,10 +74,16 @@ DeviceButton::DeviceButton(const char* pName, const char* pLocation, DEVICE_WRIT
     };
     AddCluster(&descriptorCluster);
     AddCluster(&onOffCluster);
-    strcpy(endpointData.name, pName);
-    strcpy(endpointData.location, pLocation);
 
-    memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
+        .ep = &bridgedEndpoint,
+        .pDeviceTypeList = bridgedDeviceTypes,
+        .deviceTypeListLength = ArraySize(bridgedDeviceTypes),
+        .pDataVersionStorage = pDataVersions,
+        .dataVersionStorageLength = ArraySize(bridgedClusters),
+    // strcpy(endpointData.name, pName);
+    // strcpy(endpointData.location, pLocation);
+
+    // memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
     EndpointAdd(&_endpointData);
 }
 

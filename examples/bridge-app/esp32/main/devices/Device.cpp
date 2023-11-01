@@ -31,7 +31,27 @@ Device::Device(void)
         }
     }
     AddCluster(&basicCluster);
-    basicCluster._reachable = true;
+    basicCluster.SetReachable(true, GetIndex());
+    basicCluster.SetName(pName, GetIndex());
+
+    ENDPOINT_DATA endpointData = {
+        .index = GetIndex(),
+        .pObject = this,
+        .pfnReadCallback = GoogleReadCallback,
+        .pfnWriteCallback = GoogleWriteCallback,
+        .pfnInstantActionCallback = NULL, //worry about this later
+        .name = {0},
+        .location = {0},
+        .ep = &bridgedEndpoint,
+        .pDeviceTypeList = bridgedDeviceTypes,
+        .deviceTypeListLength = ArraySize(bridgedDeviceTypes),
+        .pDataVersionStorage = pDataVersions,
+        .dataVersionStorageLength = ArraySize(bridgedClusters),
+        .parentEndpointId = 1,
+    };
+    strcpy(endpointData.name, pName);
+    strcpy(endpointData.location, pLocation);
+    memcpy(&_endpointData, &endpointData, sizeof(_endpointData));
 }
 Device::~Device(void)
 {
