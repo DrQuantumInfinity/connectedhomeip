@@ -127,9 +127,6 @@ static void MatterMain(void* pvParameter)
     MatterSetup();
     ESP_LOGI(TAG, "Task started");
 
-
-    DeviceLightTemp* dev = new DeviceLightTemp("DevLightTemp", "Z", NULL);
-
     MSG_HEADER *pMsg;
     while (true)
     {
@@ -150,7 +147,6 @@ static void MatterSetup(void)
 {
     matterTask.pList = DynamicListCreate(MatterListItemMatcher, sizeof(LIST_ITEM));
     matterTask.timerTick.Disable();
-    deviceButton = new DeviceButton("Button", "nowhere", NULL);
 }
 static bool MatterListItemMatcher(const void* pItemNew, const void* pItemStored)
 {

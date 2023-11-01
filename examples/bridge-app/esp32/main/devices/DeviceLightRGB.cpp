@@ -123,5 +123,5 @@ void DeviceLightRGB::sendEspNowMessage()
     _espNowData.data.lightRgb.brightness = levelControlCluster._level;
     _espNowData.data.lightRgb.hue = colourCluster._hue;
     _espNowData.data.lightRgb.saturation = colourCluster._sat;
-    SerialTransmit(&_espNowData, sizeof(_espNowData));
+    SerialTransmit(&_espNowData, offsetof(ESP_NOW_DATA, data) + sizeof(ESP_NOW_DATA_LIGHT_RGB));
 }
