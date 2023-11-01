@@ -58,9 +58,16 @@ typedef struct __attribute__((packed))
     uint8_t brightness;
 }ESP_NOW_DATA_LIGHT_DIMMER;
 
+typedef enum __attribute__((packed))
+{
+    ESP_NOW_DATA_LIGHT_RGB_MODE_STATIC,
+    ESP_NOW_DATA_LIGHT_RGB_MODE_RAINBOW,
+    ESP_NOW_DATA_LIGHT_RGB_MODE_COUNT,
+}ESP_NOW_DATA_LIGHT_RGB_MODE;
 typedef struct __attribute__((packed))
 {
     bool onOff;
+    ESP_NOW_DATA_LIGHT_RGB_MODE mode;
     uint8_t hue;
     uint8_t saturation;
     uint8_t brightness;
