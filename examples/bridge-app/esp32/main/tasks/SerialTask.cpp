@@ -76,6 +76,7 @@ static void SerialParseEspNowFrame(void);
 //Message Processing
 static void SerialProcessMyMsg(const MSG_HEADER* pMsg);
 static void SerialTxMsg(const void* pData, uint32_t dataLength);
+static void SerialPrintDebug(bool tx, const uint8_t* pData, uint32_t dataLength);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
@@ -171,13 +172,7 @@ static void SerialFetchRxData(void)
     int readLength = uart_read_bytes(SERIAL_UART, pData, spaceRemaining, 0);
     if (readLength > 0)
     {
-        static char debugBuf[300];
-        debugBuf[0] = '\0';
-        for (int i = 0; i < readLength; i++)
-        {
-            sprintf(&debugBuf[strlen(debugBuf)], " %02X", pData[i]);
-        }
-        ESP_LOGI(TAG, "Rx %u: %s", readLength, debugBuf);
+        SerialPrintDebug(false, pData, readLength);
 
         serialTask.rxFraming.offset += readLength;
         SerialParseEspNowFrame();
@@ -248,13 +243,18 @@ static void SerialProcessMyMsg(const MSG_HEADER* pMsg)
 static void SerialTxMsg(const void* pData, uint32_t dataLength)
 {
     #if SOC_UART_NUM > 2
+    SerialPrintDebug(true, (uint8_t*)pData, dataLength);
+    uart_write_bytes(SERIAL_UART, pData, dataLength);
+    #endif
+}
+static void SerialPrintDebug(bool tx, const uint8_t* pData, uint32_t dataLength)
+{
     static char debugBuf[300];
     debugBuf[0] = '\0';
     for (int i = 0; i < dataLength; i++)
     {
         sprintf(&debugBuf[strlen(debugBuf)], " %02X", pData[i]);
     }
-    ESP_LOGI(TAG, "Tx %u: %s", dataLength, debugBuf);
-    uart_write_bytes(SERIAL_UART, pData, dataLength);
-    #endif
+    const char* pTxStr = tx ? "Tx" : "Rx";
+    ESP_LOGI(TAG, "%s %lu:%s", pTxStr, dataLength, debugBuf);
 }
