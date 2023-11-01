@@ -248,6 +248,13 @@ static void SerialProcessMyMsg(const MSG_HEADER* pMsg)
 static void SerialTxMsg(const void* pData, uint32_t dataLength)
 {
     #if SOC_UART_NUM > 2
+    static char debugBuf[300];
+    debugBuf[0] = '\0';
+    for (int i = 0; i < dataLength; i++)
+    {
+        sprintf(&debugBuf[strlen(debugBuf)], " %02X", pData[i]);
+    }
+    ESP_LOGI(TAG, "Tx %u: %s", dataLength, debugBuf);
     uart_write_bytes(SERIAL_UART, pData, dataLength);
     #endif
 }

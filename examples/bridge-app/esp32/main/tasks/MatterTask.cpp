@@ -10,6 +10,7 @@
 #include "freertos/FreeRTOS.h"
 #include "DeviceButton.h"
 #include "DeviceTemperature.h"
+#include "DeviceLightRGB.h"
 
 using namespace chip;
 
@@ -86,6 +87,7 @@ static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength);
 static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
 static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
 static void MatterEspNowBool(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
+static void MatterEspNowLightRGB(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
 static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName);
 /**************************************************************************
  *                                  Variables
@@ -199,6 +201,11 @@ static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
     case ESP_NOW_DEVICE_TYPE_DHT:       MatterEspNowDht(pEspMsg, dataLength, pItem, nameBuf);       break;
     case ESP_NOW_DEVICE_TYPE_MOTION:    MatterEspNowMotion(pEspMsg, dataLength, pItem, nameBuf);    break;
     case ESP_NOW_DEVICE_TYPE_BOOL:      MatterEspNowBool(pEspMsg, dataLength, pItem, nameBuf);      break;
+    // case ESP_NOW_DEVICE_TYPE_LIGHT_ON_OFF:
+    // case ESP_NOW_DEVICE_TYPE_LIGHT_DIMMER:
+    case ESP_NOW_DEVICE_TYPE_LIGHT_RGB:   MatterEspNowLightRGB(pEspMsg, dataLength, pItem, nameBuf);      break;
+    // case ESP_NOW_DEVICE_TYPE_LIGHT_TEMP:
+    // case ESP_NOW_DEVICE_TYPE_LIGHT_TEMP_RGB:  MatterEspNowLightTempRGB(pEspMsg, dataLength, pItem, nameBuf);      break;
     case ESP_NOW_DEVICE_TYPE_TOGGLE:    MatterEspNowToggle(pEspMsg, dataLength, pItem, nameBuf);    break;
     default:                            ESP_LOGI(TAG, "invalid EspNow type %u", pEspMsg->type);     break;
     }
@@ -226,6 +233,16 @@ static void MatterEspNowMotion(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength,
 static void MatterEspNowBool(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {
 }
+static void MatterEspNowLightRGB(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
+{
+    DeviceLightRGB *pDevice;
+    if (pItem->pDevice == NULL)
+    {
+        pItem->pDevice = new DeviceLightRGB(pName, "Z", NULL);
+    }else{
+        //TODO: keepalive
+    }
+}
 static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {
     DeviceButton *pButton;
@@ -236,7 +253,7 @@ static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength,
     }
     else
     {
-        DeviceButton* pButton = (DeviceButton*)pItem->pDevice;
+        pButton = (DeviceButton*)pItem->pDevice;
         pButton->Toggle();
     }
 }
