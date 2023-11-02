@@ -242,10 +242,23 @@ static void SerialProcessMyMsg(const MSG_HEADER* pMsg)
 }
 static void SerialTxMsg(const void* pData, uint32_t dataLength)
 {
-    #if SOC_UART_NUM > 2
     SerialPrintDebug(true, (uint8_t*)pData, dataLength);
-    uart_write_bytes(SERIAL_UART, pData, dataLength);
-    #endif
+    if (dataLength < 256)
+    {
+        uint8_t byteLength = dataLength;
+        #if SOC_UART_NUM > 2
+        uint32_t startKey = 0x1f5a3db9;
+        uart_write_bytes(SERIAL_UART, (uint8_t*)&startKey, sizeof(startKey));
+        uart_write_bytes(SERIAL_UART, (uint8_t*)&byteLength, sizeof(byteLength));
+        uart_write_bytes(SERIAL_UART, (uint8_t*)pData, byteLength);
+        uint16_t crc = Crc16Block(0, pData, byteLength);
+        uart_write_bytes(SERIAL_UART, (uint8_t*)&crc, sizeof(crc));
+        #endif
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Tx too long");
+    }
 }
 static void SerialPrintDebug(bool tx, const uint8_t* pData, uint32_t dataLength)
 {
