@@ -19,6 +19,7 @@ using namespace ::chip::app::Clusters;
 
 // namespace CurrentSaturation {
 
+#define ZCL_COLOR_CLUSTER_REVISION (6u)
 void ColourCluster::SetColourHS(uint8_t hue, uint8_t sat, uint16_t index)
 {
     _hue = hue;
@@ -59,6 +60,10 @@ EmberAfStatus ColourCluster::Read(chip::AttributeId attributeId, uint8_t * buffe
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     switch (attributeId)
     {
+    case ColorControl::Attributes::ClusterRevision::Id:
+        uint16_t rev = ZCL_COLOR_CLUSTER_REVISION;
+        memcpy(buffer, &rev, sizeof(rev));
+        break;
     case ColorControl::Attributes::CurrentHue::Id:
         buffer[0] = _hue;
         break;
@@ -78,6 +83,22 @@ EmberAfStatus ColourCluster::Read(chip::AttributeId attributeId, uint8_t * buffe
     default:
         status = EMBER_ZCL_STATUS_FAILURE;
         break;
+    }
+    return status;
+
+    EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
+    if ((attributeId == LevelControl::Attributes::CurrentLevel::Id) && (maxReadLength == 1))
+    {
+        *buffer = _level ? 1 : 0;
+    }
+    else if ((attributeId == LevelControl::Attributes::ClusterRevision::Id) && (maxReadLength == 2))
+    {
+        uint16_t rev = ZCL_ON_OFF_CLUSTER_REVISION;
+        memcpy(buffer, &rev, sizeof(rev));
+    }
+    else
+    {
+        status = EMBER_ZCL_STATUS_FAILURE;
     }
     return status;
 }

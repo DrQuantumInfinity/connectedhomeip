@@ -5,7 +5,7 @@
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
 
-#define ZCL_ON_OFF_CLUSTER_REVISION (4u)
+#define ZCL_LEVEL_CLUSTER_REVISION (5u)
 void LevelControlCluster::SetLevel(uint8_t level, uint16_t index)
 {
     _level = level;
@@ -29,9 +29,13 @@ EmberAfStatus LevelControlCluster::Write(chip::AttributeId attributeId, uint8_t 
 
 EmberAfStatus LevelControlCluster::Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength){
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
-    if (maxReadLength == 2)
+    if ((attributeId == LevelControl::Attributes::CurrentLevel::Id) && (maxReadLength == 1))
     {
-        uint16_t rev = ZCL_ON_OFF_CLUSTER_REVISION;
+        *buffer = _level ? 1 : 0;
+    }
+    else if ((attributeId == LevelControl::Attributes::ClusterRevision::Id) && (maxReadLength == 2))
+    {
+        uint16_t rev = ZCL_LEVEL_CLUSTER_REVISION;
         memcpy(buffer, &rev, sizeof(rev));
     }
     else
