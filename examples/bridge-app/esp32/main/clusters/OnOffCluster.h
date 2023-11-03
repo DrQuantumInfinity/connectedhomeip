@@ -8,16 +8,6 @@
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
 
-static const CommandId onOffIncomingCommands[] = {
-    app::Clusters::OnOff::Commands::Off::Id,
-    app::Clusters::OnOff::Commands::On::Id,
-    app::Clusters::OnOff::Commands::Toggle::Id,
-    app::Clusters::OnOff::Commands::OffWithEffect::Id,
-    app::Clusters::OnOff::Commands::OnWithRecallGlobalScene::Id,
-    app::Clusters::OnOff::Commands::OnWithTimedOff::Id,
-    kInvalidCommandId,
-};
-
 class OnOffCluster : public Cluster
 {
 public:
@@ -41,6 +31,16 @@ public:
           .attributeType = ZAP_TYPE(INT16U),
           .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
     };
+    
+    static constexpr CommandId incomingCommands[] = {
+        app::Clusters::OnOff::Commands::Off::Id,
+        app::Clusters::OnOff::Commands::On::Id,
+        app::Clusters::OnOff::Commands::Toggle::Id,
+        app::Clusters::OnOff::Commands::OffWithEffect::Id,
+        app::Clusters::OnOff::Commands::OnWithRecallGlobalScene::Id,
+        app::Clusters::OnOff::Commands::OnWithTimedOff::Id,
+        kInvalidCommandId,
+    };
 
     static constexpr EmberAfCluster cluster = { .clusterId            = OnOff::Id,
                                                 .attributes           = onOffAttrs,
@@ -48,7 +48,7 @@ public:
                                                 .clusterSize          = 0,
                                                 .mask                 = ZAP_CLUSTER_MASK(SERVER),
                                                 .functions            = NULL,
-                                                .acceptedCommandList  = onOffIncomingCommands,
+                                                .acceptedCommandList  = incomingCommands,
                                                 .generatedCommandList = nullptr,
                                                 .eventList            = nullptr,
                                                 .eventCount           = 0 };

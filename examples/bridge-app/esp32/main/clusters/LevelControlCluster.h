@@ -8,56 +8,49 @@
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
 
-
-
-static const CommandId incomingCommands[] = {
-    app::Clusters::LevelControl::Commands::MoveToLevel::Id,
-    app::Clusters::LevelControl::Commands::Move::Id,
-    app::Clusters::LevelControl::Commands::Step::Id,
-    app::Clusters::LevelControl::Commands::Stop::Id,
-    app::Clusters::LevelControl::Commands::MoveToLevelWithOnOff::Id,
-    app::Clusters::LevelControl::Commands::MoveWithOnOff::Id,
-    app::Clusters::LevelControl::Commands::StepWithOnOff::Id,
-    app::Clusters::LevelControl::Commands::StopWithOnOff::Id,
-    app::Clusters::LevelControl::Commands::MoveToClosestFrequency::Id,
-    kInvalidCommandId,
-};
-
-class LevelControlCluster : public Cluster {
-    public:
+class LevelControlCluster : public Cluster
+{
+public:
     LevelControlCluster(void) { _id = LevelControl::Id; }
     bool _level;
     void SetLevel(uint8_t level, uint16_t index);
-    EmberAfStatus Write(chip::AttributeId attributeId, uint8_t* buffer) override;
-    EmberAfStatus Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength) override;
+    EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) override;
+    EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) override;
 
     static constexpr EmberAfAttributeMetadata levelAttrs[] = {
-    {
-        .defaultValue = ZAP_EMPTY_DEFAULT(),
-        .attributeId = LevelControl::Attributes::CurrentLevel::Id,
-        .size = 1,
-        .attributeType = ZAP_TYPE(INT8U),
-        .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
-    },
-    {
-        .defaultValue = ZAP_EMPTY_DEFAULT(),
-        .attributeId = 0xFFFD,
-        .size = 2,
-        .attributeType = ZAP_TYPE(INT16U),
-        .mask = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE)
-    },
-};
-
-    static constexpr EmberAfCluster cluster=  { 
-        .clusterId = LevelControl::Id, 
-        .attributes = levelAttrs, 
-        .attributeCount = ArraySize(levelAttrs), 
-        .clusterSize = 0, 
-        .mask = ZAP_CLUSTER_MASK(SERVER), 
-        .functions = NULL, 
-        .acceptedCommandList = incomingCommands, 
-        .generatedCommandList = nullptr,
-        .eventList = nullptr,
-        .eventCount = 0
+        { .defaultValue  = ZAP_EMPTY_DEFAULT(),
+          .attributeId   = LevelControl::Attributes::CurrentLevel::Id,
+          .size          = 1,
+          .attributeType = ZAP_TYPE(INT8U),
+          .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+        { .defaultValue  = ZAP_EMPTY_DEFAULT(),
+          .attributeId   = 0xFFFD,
+          .size          = 2,
+          .attributeType = ZAP_TYPE(INT16U),
+          .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
     };
+
+    static constexpr CommandId incomingCommands[] = {
+        app::Clusters::LevelControl::Commands::MoveToLevel::Id,
+        app::Clusters::LevelControl::Commands::Move::Id,
+        app::Clusters::LevelControl::Commands::Step::Id,
+        app::Clusters::LevelControl::Commands::Stop::Id,
+        app::Clusters::LevelControl::Commands::MoveToLevelWithOnOff::Id,
+        app::Clusters::LevelControl::Commands::MoveWithOnOff::Id,
+        app::Clusters::LevelControl::Commands::StepWithOnOff::Id,
+        app::Clusters::LevelControl::Commands::StopWithOnOff::Id,
+        app::Clusters::LevelControl::Commands::MoveToClosestFrequency::Id,
+        kInvalidCommandId,
+    };
+
+    static constexpr EmberAfCluster cluster = { .clusterId            = LevelControl::Id,
+                                                .attributes           = levelAttrs,
+                                                .attributeCount       = ArraySize(levelAttrs),
+                                                .clusterSize          = 0,
+                                                .mask                 = ZAP_CLUSTER_MASK(SERVER),
+                                                .functions            = NULL,
+                                                .acceptedCommandList  = incomingCommands,
+                                                .generatedCommandList = nullptr,
+                                                .eventList            = nullptr,
+                                                .eventCount           = 0 };
 };
