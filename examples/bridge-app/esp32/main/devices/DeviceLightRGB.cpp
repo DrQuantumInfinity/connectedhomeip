@@ -76,6 +76,9 @@ DeviceLightRGB::DeviceLightRGB(const char* pName, const char* pLocation, DEVICE_
     AddCluster(&onOffCluster);
     AddCluster(&levelControlCluster);
     AddCluster(&colourCluster);
+
+    strncpy(basicCluster._name, pName, sizeof(basicCluster._name));
+
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
 
