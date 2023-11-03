@@ -77,9 +77,11 @@ DeviceTemperature::DeviceTemperature(const char* pName, const char* pLocation, D
     AddCluster(&descriptorCluster);
     AddCluster(&tempCluster);
     AddCluster(&humidityCluster);
-    tempCluster.UpdateTemp(temp, GetIndex());
-    humidityCluster.UpdateHumidity(humid, GetIndex());
-    basicCluster.SetName(pName, GetIndex());
+
+    tempCluster._temp = temp;
+    humidityCluster._humidity = humid;
+    strncpy(basicCluster._name, pName, sizeof(basicCluster._name));
+    
     strcpy(endpointData.name, pName);
     strcpy(endpointData.location, pLocation);
 

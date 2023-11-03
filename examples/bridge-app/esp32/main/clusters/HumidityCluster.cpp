@@ -28,7 +28,7 @@ EmberAfStatus HumidityCluster::Write(chip::AttributeId attributeId, uint8_t * bu
 EmberAfStatus HumidityCluster::Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength)
 {
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
-    if (maxReadLength == 2)
+    if (attributeId == RelativeHumidityMeasurement::Attributes::MeasuredValue::Id && maxReadLength == 2)
     {
         memcpy(buffer, &_humidity, maxReadLength);
     }
