@@ -31,7 +31,7 @@ EmberAfStatus LevelControlCluster::Read(chip::AttributeId attributeId, uint8_t* 
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     if ((attributeId == LevelControl::Attributes::CurrentLevel::Id) && (maxReadLength == 1))
     {
-        *buffer = _level ? 1 : 0;
+        *buffer = _level;
     }
     else if ((attributeId == LevelControl::Attributes::ClusterRevision::Id) && (maxReadLength == 2))
     {

@@ -12,7 +12,7 @@ class LevelControlCluster : public Cluster
 {
 public:
     LevelControlCluster(void) { _id = LevelControl::Id; }
-    bool _level;
+    uint8_t _level;
     void SetLevel(uint8_t level, uint16_t index);
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) override;
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) override;
