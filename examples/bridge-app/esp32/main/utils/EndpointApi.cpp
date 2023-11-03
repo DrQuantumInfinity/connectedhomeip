@@ -93,6 +93,11 @@ EmberAfStatus emberAfExternalAttributeReadCallback(
     {
         ESP_LOGE(TAG, "Read invalid index %u, %u", index, endpoint);
     }
+
+    if (status == EMBER_ZCL_STATUS_FAILURE)
+    {
+        ESP_LOGE(TAG, "Read failed");
+    }
     return status;
 }
 EmberAfStatus emberAfExternalAttributeWriteCallback(
@@ -113,6 +118,11 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(
     else
     {
         ESP_LOGE(TAG, "Write invalid index %u, %u", index, endpoint);
+    }
+    
+    if (status == EMBER_ZCL_STATUS_FAILURE)
+    {
+        ESP_LOGE(TAG, "Write failed");
     }
     return status;
 }
