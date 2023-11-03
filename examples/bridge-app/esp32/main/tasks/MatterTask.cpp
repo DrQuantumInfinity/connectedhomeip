@@ -93,7 +93,6 @@ static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength,
  *                                  Variables
  **************************************************************************/
 static MATTER_TASK matterTask;
-static DeviceButton* deviceButton;
 /**************************************************************************
  *                                  OS Functions
  **************************************************************************/
@@ -231,12 +230,18 @@ static void MatterEspNowBool(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, L
 }
 static void MatterEspNowLightRGB(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
 {
-    DeviceLightRGB *pDevice;
+    DeviceLightRGB* pDevice;
     if (pItem->pDevice == NULL)
     {
-        pItem->pDevice = new DeviceLightRGB(pName, "Z", NULL);
-    }else{
-        //TODO: keepalive
+        pDevice = new DeviceLightRGB(pName, "Z", NULL);
+        pItem->pDevice = pDevice;
+    }
+    else
+    {
+        //TODO: Handle KeepAlives here.
+        //pDevice = (DeviceLightRGB*)pItem->pDevice;
+        //pDevice->SetLevel(74);
+        //pDevice->SetColourHS(121, 100);
     }
 }
 static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LIST_ITEM* pItem, const char* pName)
