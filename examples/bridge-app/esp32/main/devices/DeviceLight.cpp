@@ -25,12 +25,10 @@ const EmberAfEndpointType bridgedEndpoint = { .cluster      = bridgedClusters,
 
 // (taken from chip-devices.xml)
 #define DEVICE_TYPE_BRIDGED_NODE 0x0013
-// (taken from lo-devices.xml)
-#define DEVICE_TYPE_LO_ON_OFF_LIGHT 0x0100
 // Device Version for dynamic endpoints:
 #define DEVICE_VERSION_DEFAULT 1
 const EmberAfDeviceType bridgedDeviceTypes[] = {
-    { .deviceId = DEVICE_TYPE_LO_ON_OFF_LIGHT, .deviceVersion = DEVICE_VERSION_DEFAULT },
+    { .deviceId = 0x0100, .deviceVersion = DEVICE_VERSION_DEFAULT },
     { .deviceId = DEVICE_TYPE_BRIDGED_NODE, .deviceVersion = DEVICE_VERSION_DEFAULT }
 };
 /**************************************************************************
@@ -42,10 +40,6 @@ const EmberAfDeviceType bridgedDeviceTypes[] = {
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                        uint8_t * buffer, uint16_t maxReadLength);
-static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-                                         uint8_t * buffer);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
@@ -88,26 +82,6 @@ DeviceLight::~DeviceLight(void)
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-// static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-//                                         uint8_t * buffer, uint16_t maxReadLength)
-// {
-//     DeviceLight * pDevice = (DeviceLight *) pObject;
-//     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
-// }
-
-// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-//                                          uint8_t * buffer)
-// {
-//     DeviceLight * pDevice = (DeviceLight *) pObject;
-//     EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
-//     pDevice->sendEspNowMessage();
-//     if (pDevice->_pfnWriteCallback)
-//     {
-//         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
-//     }
-//     return status;
-// }
-
 void DeviceLight::sendEspNowMessage()
 {
     _espNowData.data.lightOnOff.onOff = onOffCluster._isOn;

@@ -29,13 +29,11 @@ const EmberAfEndpointType bridgedEndpoint = { .cluster      = bridgedClusters,
 
 // (taken from chip-devices.xml)
 #define DEVICE_TYPE_BRIDGED_NODE 0x0013
-// (taken from lo-devices.xml)
-// #define DEVICE_TYPE_LO_ON_OFF_LIGHT 0x0100
 #define DEVICE_TYPE_LO_LEVEL_LIGHT 0x010C
 // Device Version for dynamic endpoints:
 #define DEVICE_VERSION_DEFAULT 1
 const EmberAfDeviceType bridgedDeviceTypes[] = {
-    { .deviceId = DEVICE_TYPE_LO_LEVEL_LIGHT, .deviceVersion = DEVICE_VERSION_DEFAULT },
+    { .deviceId = 0x010C, .deviceVersion = DEVICE_VERSION_DEFAULT },
     { .deviceId = DEVICE_TYPE_BRIDGED_NODE, .deviceVersion = DEVICE_VERSION_DEFAULT }
 };
 /**************************************************************************
@@ -47,11 +45,6 @@ const EmberAfDeviceType bridgedDeviceTypes[] = {
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-// of type GOOGLE_WRITE_CALLBACK
-// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-//                                          uint8_t * buffer);
-// static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-//                                         uint8_t * buffer, uint16_t maxReadLength);
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
@@ -63,7 +56,7 @@ DeviceLightTemp::DeviceLightTemp(const char * pName, const char * pLocation, DEV
     _pfnWriteCallback          = pfnWriteCallback;
     DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedClusters));
     ENDPOINT_DATA endpointData = {
-        .index                    = 0 /*base class index*/,
+        .index                    = GetIndex(),
         .pObject                  = this,
         .pfnReadCallback          = GoogleReadCallback /*local read function specific to a DeviceLightLevel*/,
         .pfnWriteCallback         = GoogleWriteCallback,
@@ -97,25 +90,6 @@ DeviceLightTemp::~DeviceLightTemp()
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-// static EmberAfStatus GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-//                                         uint8_t * buffer, uint16_t maxReadLength)
-// {
-//     DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
-//     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
-// }
-
-// static EmberAfStatus GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
-//                                          uint8_t * buffer)
-// {
-//     DeviceLightTemp * pDevice = (DeviceLightTemp *) pObject;
-//     EmberAfStatus status  = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
-//     pDevice->sendEspNowMessage();
-//     if (pDevice->_pfnWriteCallback)
-//     {
-//         pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
-//     }
-//     return status;
-// }
 
 void DeviceLightTemp::sendEspNowMessage()
 {

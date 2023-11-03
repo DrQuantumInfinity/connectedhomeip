@@ -9,6 +9,20 @@ using namespace ::chip;
 using namespace ::chip::app::Clusters;
 
 
+
+static const CommandId incomingCommands[] = {
+    app::Clusters::LevelControl::Commands::MoveToLevel::Id,
+    app::Clusters::LevelControl::Commands::Move::Id,
+    app::Clusters::LevelControl::Commands::Step::Id,
+    app::Clusters::LevelControl::Commands::Stop::Id,
+    app::Clusters::LevelControl::Commands::MoveToLevelWithOnOff::Id,
+    app::Clusters::LevelControl::Commands::MoveWithOnOff::Id,
+    app::Clusters::LevelControl::Commands::StepWithOnOff::Id,
+    app::Clusters::LevelControl::Commands::StopWithOnOff::Id,
+    app::Clusters::LevelControl::Commands::MoveToClosestFrequency::Id,
+    kInvalidCommandId,
+};
+
 class LevelControlCluster : public Cluster {
     public:
     LevelControlCluster(void) { _id = LevelControl::Id; }
@@ -41,7 +55,7 @@ class LevelControlCluster : public Cluster {
         .clusterSize = 0, 
         .mask = ZAP_CLUSTER_MASK(SERVER), 
         .functions = NULL, 
-        .acceptedCommandList = nullptr, 
+        .acceptedCommandList = incomingCommands, 
         .generatedCommandList = nullptr,
         .eventList = nullptr,
         .eventCount = 0

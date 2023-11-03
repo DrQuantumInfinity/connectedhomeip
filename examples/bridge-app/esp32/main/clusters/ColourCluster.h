@@ -8,6 +8,56 @@
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
 
+static const CommandId incomingCommands[] = {
+    app::Clusters::ColorControl::Commands::MoveToHue::Id,
+    app::Clusters::ColorControl::Commands::MoveHue::Id,
+    app::Clusters::ColorControl::Commands::StepHue::Id,
+    app::Clusters::ColorControl::Commands::MoveToSaturation::Id,
+    app::Clusters::ColorControl::Commands::MoveSaturation::Id,
+    app::Clusters::ColorControl::Commands::StepSaturation::Id,
+    app::Clusters::ColorControl::Commands::MoveToHueAndSaturation::Id,
+    app::Clusters::ColorControl::Commands::MoveToColor::Id,
+    app::Clusters::ColorControl::Commands::MoveColor::Id,
+    app::Clusters::ColorControl::Commands::StepColor::Id,
+    app::Clusters::ColorControl::Commands::MoveToColorTemperature::Id,
+    app::Clusters::ColorControl::Commands::EnhancedMoveToHue::Id,
+    app::Clusters::ColorControl::Commands::EnhancedMoveHue::Id,
+    app::Clusters::ColorControl::Commands::EnhancedStepHue::Id,
+    app::Clusters::ColorControl::Commands::EnhancedMoveToHueAndSaturation::Id,
+    app::Clusters::ColorControl::Commands::ColorLoopSet::Id,
+    app::Clusters::ColorControl::Commands::StopMoveStep::Id,
+    app::Clusters::ColorControl::Commands::MoveColorTemperature::Id,
+    app::Clusters::ColorControl::Commands::StepColorTemperature::Id,
+    kInvalidCommandId,
+};
+
+static const CommandId incomingCommandsHS[] = {
+    app::Clusters::ColorControl::Commands::MoveToHue::Id,
+    app::Clusters::ColorControl::Commands::MoveHue::Id,
+    app::Clusters::ColorControl::Commands::StepHue::Id,
+    app::Clusters::ColorControl::Commands::MoveToSaturation::Id,
+    app::Clusters::ColorControl::Commands::MoveSaturation::Id,
+    app::Clusters::ColorControl::Commands::StepSaturation::Id,
+    app::Clusters::ColorControl::Commands::MoveToHueAndSaturation::Id,
+    app::Clusters::ColorControl::Commands::MoveToColor::Id,
+    app::Clusters::ColorControl::Commands::MoveColor::Id,
+    app::Clusters::ColorControl::Commands::StepColor::Id,
+    app::Clusters::ColorControl::Commands::EnhancedMoveToHue::Id,
+    app::Clusters::ColorControl::Commands::EnhancedMoveHue::Id,
+    app::Clusters::ColorControl::Commands::EnhancedStepHue::Id,
+    app::Clusters::ColorControl::Commands::EnhancedMoveToHueAndSaturation::Id,
+    app::Clusters::ColorControl::Commands::ColorLoopSet::Id,
+    app::Clusters::ColorControl::Commands::StopMoveStep::Id,
+    kInvalidCommandId,
+};
+
+static const CommandId incomingCommandsTemp[] = {
+    app::Clusters::ColorControl::Commands::MoveToColorTemperature::Id,
+    app::Clusters::ColorControl::Commands::MoveColorTemperature::Id,
+    app::Clusters::ColorControl::Commands::StepColorTemperature::Id,
+    kInvalidCommandId,
+};
+
 class ColourCluster : public Cluster
 {
 public:
@@ -82,7 +132,7 @@ public:
                                                   .clusterSize          = 0,
                                                   .mask                 = ZAP_CLUSTER_MASK(SERVER),
                                                   .functions            = NULL,
-                                                  .acceptedCommandList  = nullptr,
+                                                  .acceptedCommandList  = incomingCommandsHS,
                                                   .generatedCommandList = nullptr,
                                                   .eventList            = nullptr,
                                                   .eventCount           = 0 };
@@ -93,7 +143,7 @@ public:
                                                     .clusterSize          = 0,
                                                     .mask                 = ZAP_CLUSTER_MASK(SERVER),
                                                     .functions            = NULL,
-                                                    .acceptedCommandList  = nullptr,
+                                                    .acceptedCommandList  = incomingCommandsTemp,
                                                     .generatedCommandList = nullptr,
                                                     .eventList            = nullptr,
                                                     .eventCount           = 0 };
@@ -104,7 +154,7 @@ public:
                                                 .clusterSize          = 0,
                                                 .mask                 = ZAP_CLUSTER_MASK(SERVER),
                                                 .functions            = NULL,
-                                                .acceptedCommandList  = nullptr,
+                                                .acceptedCommandList  = incomingCommands,
                                                 .generatedCommandList = nullptr,
                                                 .eventList            = nullptr,
                                                 .eventCount           = 0 };
