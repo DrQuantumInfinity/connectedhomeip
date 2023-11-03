@@ -149,13 +149,13 @@ public:
                                                     .eventCount           = 0 };
 
     static constexpr EmberAfCluster bothcluster = { .clusterId            = ColorControl::Id,
-                                                .attributes           = bothAttrs,
-                                                .attributeCount       = ArraySize(bothAttrs),
-                                                .clusterSize          = 0,
-                                                .mask                 = ZAP_CLUSTER_MASK(SERVER),
-                                                .functions            = NULL,
-                                                .acceptedCommandList  = incomingCommands,
-                                                .generatedCommandList = nullptr,
-                                                .eventList            = nullptr,
-                                                .eventCount           = 0 };
+                                                    .attributes           = bothAttrs,
+                                                    .attributeCount       = ArraySize(bothAttrs),
+                                                    .clusterSize          = 0,
+                                                    .mask                 = ZAP_CLUSTER_MASK(SERVER),
+                                                    .functions            = NULL,
+                                                    .acceptedCommandList  = incomingCommands,
+                                                    .generatedCommandList = nullptr,
+                                                    .eventList            = nullptr,
+                                                    .eventCount           = 0 };
 };

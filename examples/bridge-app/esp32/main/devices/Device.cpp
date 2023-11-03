@@ -19,7 +19,7 @@
 #include "EndpointApi.h"
 #include "esp_log.h"
 
-static const char * TAG = "Device";
+//static const char * TAG = "Device";
 Device::Device(void)
 {
     for (_index = 0; _index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT; _index++)
@@ -85,6 +85,7 @@ EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMet
             if (cluster->_id == clusterId)
             {
                 status = cluster->Read(attributeMetadata->attributeId, buffer, maxReadLength);
+                break;
             }
         }
     }
@@ -101,6 +102,7 @@ EmberAfStatus Device::WriteCluster(ClusterId clusterId, const EmberAfAttributeMe
             if (cluster->_id == clusterId)
             {
                 status = cluster->Write(attributeMetadata->attributeId, buffer);
+                break;
             }
         }
     }
