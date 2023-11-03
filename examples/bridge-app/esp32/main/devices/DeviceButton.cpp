@@ -3,7 +3,6 @@
 
 #include "BasicCluster.h"
 #include "DescriptorCluster.h"
-#include "LevelControlCluster.h"
 #include "OnOffCluster.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;

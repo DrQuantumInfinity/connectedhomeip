@@ -15,18 +15,18 @@ using namespace ::chip::app::Clusters;
  **************************************************************************/
 
 const EmberAfCluster bridgedClusters[] = {
-    BasicCluster::cluster,
-    DescriptorCluster::cluster,
-    OnOffCluster::cluster,
     LevelControlCluster::cluster,
-    ColourCluster::hsCluster,
+    ColourCluster::hsCluster,    
+    OnOffCluster::cluster,
+    DescriptorCluster::cluster,
+    BasicCluster::cluster,
 };
 
 // Declare Bridged Light endpoint
 const EmberAfEndpointType bridgedEndpoint = { 
     .cluster      = bridgedClusters,
     .clusterCount = ArraySize(bridgedClusters),
-    .endpointSize = 0 
+    .endpointSize = 0
 };
 
 // (taken from chip-devices.xml)
@@ -76,7 +76,12 @@ DeviceLightRGB::DeviceLightRGB(const char* pName, const char* pLocation, DEVICE_
     AddCluster(&onOffCluster);
     AddCluster(&levelControlCluster);
     AddCluster(&colourCluster);
-
+    
+    levelControlCluster._level = 74;
+    levelControlCluster._minLevel = 0;
+    levelControlCluster._maxLevel = 100;
+    colourCluster._hue = 100;
+    colourCluster._sat = 90;
     strncpy(basicCluster._name, pName, sizeof(basicCluster._name));
 
     strcpy(endpointData.name, pName);

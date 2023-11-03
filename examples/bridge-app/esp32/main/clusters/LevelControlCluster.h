@@ -13,6 +13,8 @@ class LevelControlCluster : public Cluster
 public:
     LevelControlCluster(void) { _id = LevelControl::Id; }
     uint8_t _level;
+    uint8_t _minLevel;
+    uint8_t _maxLevel;
     void SetLevel(uint8_t level, uint16_t index);
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) override;
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) override;
@@ -22,7 +24,17 @@ public:
           .attributeId   = LevelControl::Attributes::CurrentLevel::Id,
           .size          = 1,
           .attributeType = ZAP_TYPE(INT8U),
+          .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },/*
+        { .defaultValue  = ZAP_EMPTY_DEFAULT(),
+          .attributeId   = LevelControl::Attributes::MinLevel::Id,
+          .size          = 1,
+          .attributeType = ZAP_TYPE(INT8U),
           .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+        { .defaultValue  = ZAP_EMPTY_DEFAULT(),
+          .attributeId   = LevelControl::Attributes::MaxLevel::Id,
+          .size          = 1,
+          .attributeType = ZAP_TYPE(INT8U),
+          .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },*/
         { .defaultValue  = ZAP_EMPTY_DEFAULT(),
           .attributeId   = 0xFFFD,
           .size          = 2,
