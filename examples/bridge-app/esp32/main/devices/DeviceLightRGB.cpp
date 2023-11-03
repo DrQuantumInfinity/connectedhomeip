@@ -15,17 +15,19 @@ using namespace ::chip::app::Clusters;
  **************************************************************************/
 
 const EmberAfCluster bridgedClusters[] = {
+    BasicCluster::cluster,
+    DescriptorCluster::cluster,
     OnOffCluster::cluster,
     LevelControlCluster::cluster,
     ColourCluster::hsCluster,
-    DescriptorCluster::cluster,
-    BasicCluster::cluster,
 };
 
 // Declare Bridged Light endpoint
-const EmberAfEndpointType bridgedEndpoint = { .cluster      = bridgedClusters,
-                                                   .clusterCount = ArraySize(bridgedClusters),
-                                                   .endpointSize = 0 };
+const EmberAfEndpointType bridgedEndpoint = { 
+    .cluster      = bridgedClusters,
+    .clusterCount = ArraySize(bridgedClusters),
+    .endpointSize = 0 
+};
 
 // (taken from chip-devices.xml)
 #define DEVICE_TYPE_BRIDGED_NODE 0x0013
@@ -58,7 +60,7 @@ const EmberAfDeviceType bridgedDeviceTypes[] = {
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceLightRGB::DeviceLightRGB(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback)
+DeviceLightRGB::DeviceLightRGB(const char* pName, const char* pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback)
 {
     _pfnWriteCallback          = pfnWriteCallback;
     DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedClusters));
