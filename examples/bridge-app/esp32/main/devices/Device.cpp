@@ -48,18 +48,16 @@ void Device::AddCluster(Cluster * newCluster)
     _clusters.push_back(newCluster);
 }
 
-EmberAfStatus Device::GoogleReadCallback(void * pObject, ClusterId clusterId,
-                                                const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
-                                                uint16_t maxReadLength)
+EmberAfStatus Device::GoogleReadCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+                                         uint8_t * buffer, uint16_t maxReadLength)
 {
     Device * pDevice = (Device *) pObject;
     return pDevice->ReadCluster(clusterId, attributeMetadata, buffer, maxReadLength);
 }
 
-EmberAfStatus Device::GoogleWriteCallback(void * pObject, ClusterId clusterId,
-                                                 const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer)
+EmberAfStatus Device::GoogleWriteCallback(void * pObject, ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata,
+                                          uint8_t * buffer)
 {
-
     Device * pDevice     = (Device *) pObject;
     EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
     pDevice->sendEspNowMessage();
@@ -70,50 +68,41 @@ EmberAfStatus Device::GoogleWriteCallback(void * pObject, ClusterId clusterId,
     return status;
 }
 
-void Device::sendEspNowMessage(void){
+void Device::sendEspNowMessage(void)
+{
     return;
 }
 
 EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
                                   uint16_t maxReadLength)
 {
-    ESP_LOGI(TAG, "Device Read called");
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     if (basicCluster._reachable)
     {
-        ESP_LOGI(TAG, "Device Reachable");
         status = EMBER_ZCL_STATUS_SUCCESS;
         for (auto & cluster : _clusters)
         {
-            ESP_LOGI(TAG, "ClusterId of message:  %04lX", clusterId);
-            ESP_LOGI(TAG, "Checking clusterId:  %04lX", cluster->_id);
             if (cluster->_id == clusterId)
             {
-                ESP_LOGI(TAG, "Device with clusterId found");
                 status = cluster->Read(attributeMetadata->attributeId, buffer, maxReadLength);
             }
         }
     }
-    ESP_LOGI(TAG, "Device return from read");
     return status;
 }
 EmberAfStatus Device::WriteCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer)
 {
-    ESP_LOGI(TAG, "Device write called");
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     if (basicCluster._reachable)
     {
-        ESP_LOGI(TAG, "Device reachable for write");
         status = EMBER_ZCL_STATUS_SUCCESS;
         for (auto & cluster : _clusters)
         {
             if (cluster->_id == clusterId)
             {
-                ESP_LOGI(TAG, "Device found clusterid for write");
                 status = cluster->Write(attributeMetadata->attributeId, buffer);
             }
         }
     }
-    ESP_LOGI(TAG, "Device return from write");
     return status;
 }

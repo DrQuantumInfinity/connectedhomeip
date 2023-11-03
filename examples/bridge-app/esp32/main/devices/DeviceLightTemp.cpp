@@ -31,7 +31,7 @@ const EmberAfEndpointType bridgedEndpoint = { .cluster      = bridgedClusters,
 #define DEVICE_TYPE_BRIDGED_NODE 0x0013
 // (taken from lo-devices.xml)
 // #define DEVICE_TYPE_LO_ON_OFF_LIGHT 0x0100
-#define DEVICE_TYPE_LO_LEVEL_LIGHT 0x0101
+#define DEVICE_TYPE_LO_LEVEL_LIGHT 0x010C
 // Device Version for dynamic endpoints:
 #define DEVICE_VERSION_DEFAULT 1
 const EmberAfDeviceType bridgedDeviceTypes[] = {

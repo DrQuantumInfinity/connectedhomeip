@@ -31,7 +31,7 @@ const EmberAfEndpointType bridgedEndpoint = { .cluster      = bridgedClusters,
 #define DEVICE_TYPE_BRIDGED_NODE 0x0013
 // (taken from lo-devices.xml)
 // #define DEVICE_TYPE_LO_ON_OFF_LIGHT 0x0100
-#define DEVICE_TYPE_LO_LEVEL_LIGHT 0x0101
+#define DEVICE_TYPE_LO_LEVEL_LIGHT 0x010D
 // Device Version for dynamic endpoints:
 #define DEVICE_VERSION_DEFAULT 1
 const EmberAfDeviceType bridgedDeviceTypes[] = {
@@ -119,9 +119,14 @@ DeviceLightRGB::~DeviceLightRGB()
 
 void DeviceLightRGB::sendEspNowMessage()
 {
-    _espNowData.data.lightRgb.onOff = onOffCluster._isOn;
+    _espNowData.data.lightRgb.onOff      = onOffCluster._isOn;
     _espNowData.data.lightRgb.brightness = levelControlCluster._level;
-    _espNowData.data.lightRgb.hue = colourCluster._hue;
+    _espNowData.data.lightRgb.hue        = colourCluster._hue;
     _espNowData.data.lightRgb.saturation = colourCluster._sat;
+    _espNowData.data.lightRgb.mode       = ESP_NOW_DATA_LIGHT_RGB_MODE_STATIC;
+    _espNowData.type   = ESP_NOW_DEVICE_TYPE_LIGHT_RGB;
+    uint8_t macAddr[6] = { 0x18, 0xFE, 0x34, 0xDC, 0x1F, 0xAF };
+    memcpy(_espNowData.macAddr, macAddr, sizeof(_espNowData.macAddr));
+
     SerialTransmit(&_espNowData, offsetof(ESP_NOW_DATA, data) + sizeof(ESP_NOW_DATA_LIGHT_RGB));
 }
