@@ -79,7 +79,6 @@ EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMet
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     if (basicCluster._reachable)
     {
-        status = EMBER_ZCL_STATUS_SUCCESS;
         for (auto & cluster : _clusters)
         {
             if (cluster->_id == clusterId)
@@ -96,7 +95,6 @@ EmberAfStatus Device::WriteCluster(ClusterId clusterId, const EmberAfAttributeMe
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     if (basicCluster._reachable)
     {
-        status = EMBER_ZCL_STATUS_SUCCESS;
         for (auto & cluster : _clusters)
         {
             if (cluster->_id == clusterId)

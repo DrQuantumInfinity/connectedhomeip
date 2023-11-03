@@ -18,6 +18,7 @@ public:
     void SetReachable(bool reachable, uint16_t index);
     void SetName(const char * name, uint16_t index);
     bool _reachable;
+    char _name[32] = "cat lol";
     EmberAfStatus Write(chip::AttributeId attributeId, uint8_t * buffer) override;
     EmberAfStatus Read(chip::AttributeId attributeId, uint8_t * buffer, uint16_t maxReadLength) override;
 
@@ -54,5 +55,4 @@ public:
                                                 .eventCount           = 0 };
 
 private:
-    char _name[32] = "cat lol";
 };
