@@ -96,7 +96,7 @@ EmberAfStatus emberAfExternalAttributeReadCallback(
 
     if (status == EMBER_ZCL_STATUS_FAILURE)
     {
-        ESP_LOGE(TAG, "Read failed");
+        ESP_LOGE(TAG, "Read failed for index %u, cluster %04lX, attr %04lX", index, clusterId, attributeMetadata->attributeId);
     }
     return status;
 }
@@ -122,7 +122,7 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(
     
     if (status == EMBER_ZCL_STATUS_FAILURE)
     {
-        ESP_LOGE(TAG, "Write failed");
+        ESP_LOGE(TAG, "Write failed for index %u, cluster %04lX, attr %04lX", index, clusterId, attributeMetadata->attributeId);
     }
     return status;
 }
