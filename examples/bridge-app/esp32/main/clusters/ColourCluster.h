@@ -76,36 +76,42 @@ public:
           .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
     };
 
-    static constexpr EmberAfCluster hsCluster = { .clusterId            = ColorControl::Id,
-                                                  .attributes           = hsAttrs,
-                                                  .attributeCount       = ArraySize(hsAttrs),
-                                                  .clusterSize          = 0,
-                                                  .mask                 = ZAP_CLUSTER_MASK(SERVER),
-                                                  .functions            = NULL,
-                                                  .acceptedCommandList  = nullptr,
-                                                  .generatedCommandList = nullptr,
-                                                  .eventList            = nullptr,
-                                                  .eventCount           = 0 };
+    static constexpr EmberAfCluster hsCluster = { 
+        .clusterId            = ColorControl::Id,
+        .attributes           = hsAttrs,
+        .attributeCount       = ArraySize(hsAttrs),
+        .clusterSize          = 0,
+        .mask                 = ZAP_CLUSTER_MASK(SERVER),
+        .functions            = NULL,
+        .acceptedCommandList  = nullptr,
+        .generatedCommandList = nullptr,
+        .eventList            = nullptr,
+        .eventCount           = 0 
+    };
 
-    static constexpr EmberAfCluster tempCluster = { .clusterId            = ColorControl::Id,
-                                                    .attributes           = tempAttrs,
-                                                    .attributeCount       = ArraySize(tempAttrs),
-                                                    .clusterSize          = 0,
-                                                    .mask                 = ZAP_CLUSTER_MASK(SERVER),
-                                                    .functions            = NULL,
-                                                    .acceptedCommandList  = nullptr,
-                                                    .generatedCommandList = nullptr,
-                                                    .eventList            = nullptr,
-                                                    .eventCount           = 0 };
+    static constexpr EmberAfCluster tempCluster = { 
+        .clusterId            = ColorControl::Id,
+        .attributes           = tempAttrs,
+        .attributeCount       = ArraySize(tempAttrs),
+        .clusterSize          = 0,
+        .mask                 = ZAP_CLUSTER_MASK(SERVER),
+        .functions            = NULL,
+        .acceptedCommandList  = nullptr,
+        .generatedCommandList = nullptr,
+        .eventList            = nullptr,
+        .eventCount           = 0 
+    };
 
-    static constexpr EmberAfCluster bothcluster = { .clusterId            = ColorControl::Id,
-                                                .attributes           = bothAttrs,
-                                                .attributeCount       = ArraySize(bothAttrs),
-                                                .clusterSize          = 0,
-                                                .mask                 = ZAP_CLUSTER_MASK(SERVER),
-                                                .functions            = NULL,
-                                                .acceptedCommandList  = nullptr,
-                                                .generatedCommandList = nullptr,
-                                                .eventList            = nullptr,
-                                                .eventCount           = 0 };
+    static constexpr EmberAfCluster bothcluster = { 
+        .clusterId            = ColorControl::Id,
+        .attributes           = bothAttrs,
+        .attributeCount       = ArraySize(bothAttrs),
+        .clusterSize          = 0,
+        .mask                 = ZAP_CLUSTER_MASK(SERVER),
+        .functions            = NULL,
+        .acceptedCommandList  = nullptr,
+        .generatedCommandList = nullptr,
+        .eventList            = nullptr,
+        .eventCount           = 0 
+    };
 };
