@@ -4,6 +4,7 @@
 #include "Cluster.h"
 #include <app/util/attribute-storage.h>
 
+#include <app/util/endpoint-config-defines.h>
 #include <app/util/af-types.h>
 using namespace ::chip;
 using namespace ::chip::app::Clusters;
@@ -27,12 +28,12 @@ public:
           .attributeId   = ColorControl::Attributes::CurrentHue::Id,
           .size          = 1,
           .attributeType = ZAP_TYPE(INT8U),
-          .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+          .mask          = ZAP_ATTRIBUTE_MASK(WRITABLE) | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
         { .defaultValue  = ZAP_EMPTY_DEFAULT(),
           .attributeId   = ColorControl::Attributes::CurrentSaturation::Id,
           .size          = 1,
           .attributeType = ZAP_TYPE(INT8U),
-          .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+          .mask          = ZAP_ATTRIBUTE_MASK(WRITABLE) | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
         { .defaultValue  = ZAP_EMPTY_DEFAULT(),
           .attributeId   = 0xFFFD,
           .size          = 2,
@@ -45,7 +46,7 @@ public:
           .attributeId   = ColorControl::Attributes::ColorTemperatureMireds::Id,
           .size          = 2,
           .attributeType = ZAP_TYPE(INT16U),
-          .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+          .mask          = ZAP_ATTRIBUTE_MASK(WRITABLE) | ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
         { .defaultValue  = ZAP_EMPTY_DEFAULT(),
           .attributeId   = 0xFFFD,
           .size          = 2,
@@ -125,13 +126,16 @@ public:
         app::Clusters::ColorControl::Commands::StepColorTemperature::Id,
         kInvalidCommandId,
     };
-
+    static constexpr  EmberAfGenericClusterFunction chipFuncArrayColorControlServer[] = {                                     
+        // (EmberAfGenericClusterFunction) emberAfColorControlClusterServerInitCallback,                                      
+        // (EmberAfGenericClusterFunction) MatterColorControlClusterServerShutdownCallback,                                      
+    };   
     static constexpr EmberAfCluster hsCluster = { .clusterId            = ColorControl::Id,
                                                   .attributes           = hsAttrs,
                                                   .attributeCount       = ArraySize(hsAttrs),
                                                   .clusterSize          = 0,
-                                                  .mask                 = ZAP_CLUSTER_MASK(SERVER),
-                                                  .functions            = NULL,
+                                                  .mask                 = ZAP_CLUSTER_MASK(SERVER) | ZAP_CLUSTER_MASK(INIT_FUNCTION) | ZAP_CLUSTER_MASK(SHUTDOWN_FUNCTION),
+                                                  .functions            = chipFuncArrayColorControlServer,
                                                   .acceptedCommandList  = incomingCommandsHS,
                                                   .generatedCommandList = nullptr,
                                                   .eventList            = nullptr,
@@ -141,8 +145,8 @@ public:
                                                     .attributes           = tempAttrs,
                                                     .attributeCount       = ArraySize(tempAttrs),
                                                     .clusterSize          = 0,
-                                                    .mask                 = ZAP_CLUSTER_MASK(SERVER),
-                                                    .functions            = NULL,
+                                                    .mask                 = ZAP_CLUSTER_MASK(SERVER) | ZAP_CLUSTER_MASK(INIT_FUNCTION) | ZAP_CLUSTER_MASK(SHUTDOWN_FUNCTION),
+                                                    .functions            = chipFuncArrayColorControlServer,
                                                     .acceptedCommandList  = incomingCommandsTemp,
                                                     .generatedCommandList = nullptr,
                                                     .eventList            = nullptr,
@@ -152,8 +156,8 @@ public:
                                                     .attributes           = bothAttrs,
                                                     .attributeCount       = ArraySize(bothAttrs),
                                                     .clusterSize          = 0,
-                                                    .mask                 = ZAP_CLUSTER_MASK(SERVER),
-                                                    .functions            = NULL,
+                                                    .mask                 = ZAP_CLUSTER_MASK(SERVER) | ZAP_CLUSTER_MASK(INIT_FUNCTION) | ZAP_CLUSTER_MASK(SHUTDOWN_FUNCTION),
+                                                    .functions            = chipFuncArrayColorControlServer,
                                                     .acceptedCommandList  = incomingCommands,
                                                     .generatedCommandList = nullptr,
                                                     .eventList            = nullptr,
