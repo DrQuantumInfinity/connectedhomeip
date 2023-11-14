@@ -61,7 +61,7 @@ public:
     static constexpr EmberAfCluster cluster = { .clusterId            = Descriptor::Id,
                                                 .attributes           = descriptorAttrs,
                                                 .attributeCount       = ArraySize(descriptorAttrs),
-                                                .clusterSize          = 0,
+                                                .clusterSize          = 1018,
                                                 .mask                 = ZAP_CLUSTER_MASK(SERVER),
                                                 .functions            = NULL,
                                                 .acceptedCommandList  = nullptr,

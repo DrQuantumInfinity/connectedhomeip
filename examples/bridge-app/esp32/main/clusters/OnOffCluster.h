@@ -45,7 +45,7 @@ public:
     static constexpr EmberAfCluster cluster = { .clusterId            = OnOff::Id,
                                                 .attributes           = onOffAttrs,
                                                 .attributeCount       = ArraySize(onOffAttrs),
-                                                .clusterSize          = 0,
+                                                .clusterSize          = 3,
                                                 .mask                 = ZAP_CLUSTER_MASK(SERVER),
                                                 .functions            = NULL,
                                                 .acceptedCommandList  = incomingCommands,
