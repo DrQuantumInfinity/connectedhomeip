@@ -80,7 +80,6 @@ EmberAfStatus emberAfExternalAttributeReadCallback(
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
 
     uint16_t index = emberAfGetDynamicIndexFromEndpoint(endpoint);
-    ESP_LOGI(TAG, "Read callback for index %u, cluster %04lX, attr %04lX", index, clusterId, attributeMetadata->attributeId);
 
     if (index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
     {
@@ -91,12 +90,23 @@ EmberAfStatus emberAfExternalAttributeReadCallback(
     }
     else
     {
-        ESP_LOGE(TAG, "Read invalid index %u, %u", index, endpoint);
+        ESP_LOGE(TAG, "Read invalid endpoint %u, %u", endpoint, endpoint);
     }
 
-    if (status == EMBER_ZCL_STATUS_FAILURE)
+    if (status == EMBER_ZCL_STATUS_SUCCESS)
     {
-        ESP_LOGE(TAG, "Read failed for index %u, cluster %04lX, attr %04lX", index, clusterId, attributeMetadata->attributeId);
+        uint32_t temp = 0;
+        uint32_t copyLength = maxReadLength;
+        if (sizeof(temp) < copyLength)
+        {
+            copyLength = sizeof(temp);
+        }
+        memcpy(&temp, buffer, copyLength);
+        ESP_LOGI(TAG, "Read callback for endpoint %u, cluster %04lX, attr %04lX, val %08lX", endpoint, clusterId, attributeMetadata->attributeId, temp);
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Read failed for endpoint %u, cluster %04lX, attr %04lX", endpoint, clusterId, attributeMetadata->attributeId);
     }
     return status;
 }
@@ -106,7 +116,6 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     
     uint16_t index = emberAfGetDynamicIndexFromEndpoint(endpoint);
-    ESP_LOGI(TAG, "Write callback for index %u, cluster %04lX, attr %04lX", index, clusterId, attributeMetadata->attributeId);
 
     if (index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT)
     {
@@ -117,12 +126,18 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(
     }
     else
     {
-        ESP_LOGE(TAG, "Write invalid index %u, %u", index, endpoint);
+        ESP_LOGE(TAG, "Write invalid endpoint %u, %u", endpoint, endpoint);
     }
     
-    if (status == EMBER_ZCL_STATUS_FAILURE)
+    if (status == EMBER_ZCL_STATUS_SUCCESS)
     {
-        ESP_LOGE(TAG, "Write failed for index %u, cluster %04lX, attr %04lX", index, clusterId, attributeMetadata->attributeId);
+        uint32_t temp;
+        memcpy(&temp, buffer, sizeof(temp));
+        ESP_LOGI(TAG, "Write callback for endpoint %u, cluster %04lX, attr %04lX, val %08lX", endpoint, clusterId, attributeMetadata->attributeId, temp);
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Write failed for endpoint %u, cluster %04lX, attr %04lX", endpoint, clusterId, attributeMetadata->attributeId);
     }
     return status;
 }
@@ -195,7 +210,7 @@ static void EndpointAddWorker(intptr_t context)
                     pData->parentEndpointId);
                 if (ret == EMBER_ZCL_STATUS_SUCCESS)
                 {
-                    ChipLogProgress(DeviceLayer, "Added device %u: %s at dynamic endpoint %u", pData->index, pData->name, endpointApi.currentEndpointId);
+                    ESP_LOGI(TAG, "Added device %u: %s at dynamic endpoint %u", pData->index, pData->name, endpointApi.currentEndpointId);
                     return;
                 }
                 else if (ret != EMBER_ZCL_STATUS_DUPLICATE_EXISTS)
@@ -218,7 +233,7 @@ static void EndpointAddWorker(intptr_t context)
     {
         ESP_LOGE(TAG, "Index out of range: %u: %s", pData->index, pData->name);
     }
-    ChipLogProgress(DeviceLayer, "Failed to add dynamic endpoint: No endpoints available!");
+    ESP_LOGE(TAG, "Failed to add dynamic endpoint: No endpoints available!");
 }
 static void EndpointRemoveWorker(intptr_t context)
 {
