@@ -23,3 +23,13 @@ Thermostat
 other circuit board
 
 persistent device detection
+
+
+OTA
+https://project-chip.github.io/connectedhomeip-doc/guides/esp32/ota.html
+
+thread
+https://openthread.io/codelabs/openthread-border-router#1
+
+Mode
+https://github.com/project-chip/connectedhomeip/blob/f09120f41f3d32678454db1915730f6f5730bb39/src/app/clusters/mode-base-server/README.md?plain=1#L7
