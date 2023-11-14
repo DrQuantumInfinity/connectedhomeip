@@ -36,6 +36,11 @@ public:
           .attributeType = ZAP_TYPE(INT8U),
           .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },*/
         { .defaultValue  = ZAP_EMPTY_DEFAULT(),
+          .attributeId   = LevelControl::Attributes::FeatureMap::Id,
+          .size          = 4,
+          .attributeType = ZAP_TYPE(BITMAP32),
+          .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
+        { .defaultValue  = ZAP_EMPTY_DEFAULT(),
           .attributeId   = 0xFFFD,
           .size          = 2,
           .attributeType = ZAP_TYPE(INT16U),

@@ -41,6 +41,10 @@ EmberAfStatus LevelControlCluster::Read(chip::AttributeId attributeId, uint8_t* 
     {
         *buffer = _maxLevel;
     }
+    else if ((attributeId == LevelControl::Attributes::FeatureMap::Id) && (maxReadLength == 4))
+    {
+        *buffer = (1<<0) | (1<<1);
+    }
     else if ((attributeId == LevelControl::Attributes::ClusterRevision::Id) && (maxReadLength == 2))
     {
         uint16_t rev = ZCL_LEVEL_CLUSTER_REVISION;
