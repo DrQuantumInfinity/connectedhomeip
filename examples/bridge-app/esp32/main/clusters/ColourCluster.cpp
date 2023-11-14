@@ -70,6 +70,10 @@ EmberAfStatus ColourCluster::Read(chip::AttributeId attributeId, uint8_t * buffe
     case ColorControl::Attributes::CurrentSaturation::Id:
         buffer[0] = _sat;
         break;
+        //TODO set correctly
+    case ColorControl::Attributes::FeatureMap::Id:
+        buffer[0] = (1 << 0) | (1 << 1);
+        break;
     case ColorControl::Attributes::ColorTemperatureMireds::Id:
         if (maxReadLength == 2)
         {
