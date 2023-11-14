@@ -46,7 +46,7 @@ public:
     static constexpr EmberAfCluster cluster = { .clusterId            = BridgedDeviceBasicInformation::Id,
                                                 .attributes           = BasicAttrs,
                                                 .attributeCount       = ArraySize(BasicAttrs),
-                                                .clusterSize          = 0,
+                                                .clusterSize          = 35,
                                                 .mask                 = ZAP_CLUSTER_MASK(SERVER),
                                                 .functions            = NULL,
                                                 .acceptedCommandList  = nullptr,
