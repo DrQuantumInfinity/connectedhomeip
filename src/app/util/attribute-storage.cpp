@@ -627,6 +627,8 @@ EmberAfStatus emAfReadOrWriteAttribute(EmberAfAttributeSearchRecord * attRecord,
 
                                     src = attributeLocation;
                                     dst = buffer;
+
+
                                     if (!emberAfAttributeReadAccessCallback(attRecord->endpoint, attRecord->clusterId,
                                                                             am->attributeId))
                                     {
@@ -641,6 +643,20 @@ EmberAfStatus emAfReadOrWriteAttribute(EmberAfAttributeSearchRecord * attRecord,
                                                                                           am, buffer)
                                                   : emberAfExternalAttributeReadCallback(attRecord->endpoint, attRecord->clusterId,
                                                                                          am, buffer, emberAfAttributeSize(am)));
+                                }
+                                else
+                                {
+                                    if (!write)
+                                    {
+                                        uint32_t tempSrc = 0;
+                                        uint32_t copyLength = emberAfAttributeSize(am);
+                                        if (sizeof(tempSrc) < copyLength)
+                                        {
+                                            copyLength = sizeof(tempSrc);
+                                        }
+                                        memcpy(&tempSrc, src, copyLength);
+                                        ESP_LOGE("Read", "end %u, cluster %04lX, attr %04lX, val %08lX", attRecord->endpoint, attRecord->clusterId, am->attributeId, tempSrc);
+                                    }
                                 }
 
                                 // Internal storage is only supported for fixed endpoints

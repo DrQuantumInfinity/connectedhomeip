@@ -4,8 +4,11 @@
 #include "BasicCluster.h"
 #include "DescriptorCluster.h"
 #include "LevelControlCluster.h"
+#include "LevelControlCluster2.h"
+#include "SwitchCluster2.h"
 #include "ColourCluster.h"
 #include "OnOffCluster.h"
+#include "OnOffCluster2.h"
 #include "SerialTask.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
@@ -14,19 +17,19 @@ using namespace ::chip::app::Clusters;
  *                                  Constants
  **************************************************************************/
 
-const EmberAfCluster bridgedClusters[] = {
-    LevelControlCluster::cluster,
-    ColourCluster::hsCluster,    
-    OnOffCluster::cluster,
+EmberAfCluster bridgedClusters[] = {   
+    {0},
+    {0},
     DescriptorCluster::cluster,
+//    {0}, 
     BasicCluster::cluster,
 };
 
 // Declare Bridged Light endpoint
-const EmberAfEndpointType bridgedEndpoint = { 
+EmberAfEndpointType bridgedEndpoint = { 
     .cluster      = bridgedClusters,
     .clusterCount = ArraySize(bridgedClusters),
-    .endpointSize = 0
+    .endpointSize = 0 //Assigned dynamically on first constructor()
 };
 
 // (taken from chip-devices.xml)
@@ -54,6 +57,17 @@ const EmberAfDeviceType bridgedDeviceTypes[] = {
  **************************************************************************/
 DeviceLightRGB::DeviceLightRGB(const char* pName, const char* pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback)
 {
+    memcpy(&bridgedClusters[0], ClusterOnOffGetObject(), sizeof(bridgedClusters[0]));
+    memcpy(&bridgedClusters[1], ClusterLevelControlGetObject(), sizeof(bridgedClusters[1]));
+//    memcpy(&bridgedClusters[3], ClusterSwitchGetObject(), sizeof(bridgedClusters[3]));
+    if (bridgedEndpoint.endpointSize == 0) //only perform this the first time
+    {
+        for (int i = 0; i < bridgedEndpoint.clusterCount; i++)
+        {
+            bridgedEndpoint.endpointSize += bridgedEndpoint.cluster[i].clusterSize;
+        }
+    }
+    
     _pfnWriteCallback          = pfnWriteCallback;
     DataVersion* pDataVersions = (DataVersion*)malloc(sizeof(DataVersion)*ArraySize(bridgedClusters));
     ENDPOINT_DATA endpointData = {
@@ -77,9 +91,9 @@ DeviceLightRGB::DeviceLightRGB(const char* pName, const char* pLocation, DEVICE_
     AddCluster(&levelControlCluster);
     AddCluster(&colourCluster);
     
-    levelControlCluster._level = 74;
+    levelControlCluster._level = 74*255/100;
     levelControlCluster._minLevel = 0;
-    levelControlCluster._maxLevel = 100;
+    levelControlCluster._maxLevel = 255;
     colourCluster._hue = 100;
     colourCluster._sat = 90;
     strncpy(basicCluster._name, pName, sizeof(basicCluster._name));
