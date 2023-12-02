@@ -1,13 +1,7 @@
-Test the light
-    -hard code inject a serial message
+ZAP gen for temp and color
     -may lead to moooore
 
-why brightness/hsv not work
-
-Test multicluster devices
-    -like how does a RGB and temperature light at the same time work?
-
-ESPnow class
+====ESPnow class
     -provide an array of clusters to the device
     -bidirectional serialization from ESPNowMessage to cluster readers/writers
     -makes unique device types obsolete
@@ -20,9 +14,9 @@ linux bridge
 
 Thermostat
 
-other circuit board
+button circuit board
 
-persistent device detection
+persistent device detection (save added devices to flash)
 
 
 OTA

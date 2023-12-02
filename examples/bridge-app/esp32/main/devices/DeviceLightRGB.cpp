@@ -6,6 +6,7 @@
 #include "LevelControlCluster.h"
 #include "ColourCluster.h"
 #include "OnOffCluster.h"
+#include "ModeCluster.h"
 #include "SerialTask.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
@@ -15,9 +16,10 @@ using namespace ::chip::app::Clusters;
  **************************************************************************/
 
 const EmberAfCluster bridgedClusters[] = {
-    LevelControlCluster::cluster,
-    ColourCluster::hsCluster,    
-    OnOffCluster::cluster,
+    ClusterLevelControlGetObject(),
+    ClusterColorControlGetObjectBoth(),
+    ClusterOnOffGetObject(),
+    ClusterTestModeGetObject(),
     DescriptorCluster::cluster,
     BasicCluster::cluster,
 };
