@@ -5,6 +5,8 @@
 #include "LevelControlCluster.h"
 #include "ColourCluster.h"
 #include "OnOffCluster.h"
+// #include "ModeCluster.h"
+#include "DwModeCluster.h"
 #include "Device.h"
 #include "EndpointApi.h"
 #include <app/InteractionModelEngine.h>
@@ -34,11 +36,15 @@ public:
     LevelControlCluster GetLevelControlCluster(void) { return levelControlCluster; }
     ColourCluster GetColourCluster(void) { return colourCluster; }
     DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
+    // TestModeCluster GetModeCluster(void) { return modeCluster; }
+    DwModeCluster GetDwModeCluster(void) { return dwModeCluster; }
 
 private:
     OnOffCluster onOffCluster;
     LevelControlCluster levelControlCluster;
     ColourCluster colourCluster;
+    // TestModeCluster modeCluster;
+    DwModeCluster dwModeCluster;
     DescriptorCluster descriptorCluster;
     ENDPOINT_DATA _endpointData;
     void sendEspNowMessage(void);

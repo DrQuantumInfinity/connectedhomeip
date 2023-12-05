@@ -1,6 +1,6 @@
-#include "ModeCluster.h"
+#include "DwModeCluster.h"
 #include "EndpointApi.h"
-#include "mode.h"
+#include "dwMode.h"
 
 #include <app-common/zap-generated/callback.h>
 #include "esp_log.h"
@@ -9,17 +9,17 @@
  *                                  Constants
  **************************************************************************/
 #define ZCL_ON_OFF_CLUSTER_REVISION (4u)
-static const char * TAG = "TestModeCluster";
+static const char * TAG = "DwModeCluster";
 
 const EmberAfGenericClusterFunction chipFuncArrayOnOffServer[] = {
-    (EmberAfGenericClusterFunction) emberAfTestModeClusterInitCallback,
+    (EmberAfGenericClusterFunction) emberAfDishwasherModeClusterInitCallback,
     // (EmberAfGenericClusterFunction) MatterTestModeClusterServerShutdownCallback, //TODO fix
 };
 
 static constexpr EmberAfAttributeMetadata attributes[] = {
     { // onOff attribute
         .defaultValue  = ZAP_EMPTY_DEFAULT(),
-        .attributeId   = ModeBase::Attributes::CurrentMode::Id,
+        .attributeId   = DishwasherMode::Attributes::CurrentMode::Id,
         .size          = 1,
         .attributeType = ZAP_TYPE(INT8U),
         .mask          = ZAP_ATTRIBUTE_MASK(EXTERNAL_STORAGE) },
@@ -41,7 +41,7 @@ static constexpr CommandId acceptedCommandList[] = {
 };
 
 static EmberAfCluster cluster = { 
-    .clusterId            = TestMode::Id,
+    .clusterId            = DishwasherMode::Id,
     .attributes           = attributes,
     .attributeCount       = ArraySize(attributes),
     .clusterSize          = 0, //Assigned dynamically upon GetObject()
@@ -55,34 +55,34 @@ static EmberAfCluster cluster = {
 /**************************************************************************
  *                                  Class Functions
  **************************************************************************/
-void TestModeCluster::SetMode(TestMode::ModeTag newMode, uint16_t index)
+void DwModeCluster::SetMode(DishwasherMode::ModeTag newMode, uint16_t index)
 {
     _mode = newMode;
-    EndpointReportChange(index, TestMode::Id, ModeBase::Attributes::CurrentMode::Id); //TODO
+    EndpointReportChange(index, DishwasherMode::Id, ModeBase::Attributes::CurrentMode::Id); //TODO
 }
 
-EmberAfStatus TestModeCluster::Write(chip::AttributeId attributeId, uint8_t* buffer)
+EmberAfStatus DwModeCluster::Write(chip::AttributeId attributeId, uint8_t* buffer)
 {
-    ESP_LOGI(TAG, "TestModeCluster Write called");
+    ESP_LOGI(TAG, "DwModeCluster Write called");
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     switch (attributeId)
     {
         // case CurrentMode::Id:  _mode = (bool)buffer[0];   break;
-        case ModeBase::Attributes::CurrentMode::Id:   TestMode::Instance()->UpdateCurrentMode(buffer[0]); break;
+        case ModeBase::Attributes::CurrentMode::Id:   DishwasherMode::Instance()->UpdateCurrentMode(buffer[0]); break;
         default:                            status = EMBER_ZCL_STATUS_FAILURE;      break;
     }
     return status;
 }
 
-EmberAfStatus TestModeCluster::Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength){
+EmberAfStatus DwModeCluster::Read(chip::AttributeId attributeId, uint8_t* buffer, uint16_t maxReadLength){
 
-    ESP_LOGI(TAG, "TestModeCluster Read called");
+    ESP_LOGI(TAG, "DwModeCluster Read called");
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;
     
     if ((attributeId == ModeBase::Attributes::CurrentMode::Id) && (maxReadLength == 1))
     {
         // *buffer = _mode;
-        *buffer = TestMode::Instance()->GetCurrentMode();
+        *buffer = DishwasherMode::Instance()->GetCurrentMode();
     }
     else if ((attributeId == ModeBase::Attributes::ClusterRevision::Id) && (maxReadLength == 2))
     {
@@ -97,10 +97,11 @@ EmberAfStatus TestModeCluster::Read(chip::AttributeId attributeId, uint8_t* buff
     }
     return status;
 }
+
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
- EmberAfCluster ClusterTestModeGetObject(void)
+EmberAfCluster ClusterDwModeGetObject(void)
 {
     if (cluster.clusterSize == 0) //only perform this the first time
     {

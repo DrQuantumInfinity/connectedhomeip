@@ -19,7 +19,7 @@
 #include "EndpointApi.h"
 #include "esp_log.h"
 
-//static const char * TAG = "Device";
+static const char * TAG = "Device";
 Device::Device(void)
 {
     for (_index = 0; _index < CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT; _index++)
@@ -76,6 +76,8 @@ void Device::sendEspNowMessage(void)
 EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,
                                   uint16_t maxReadLength)
 {
+    ESP_LOGI(TAG, "Read cluster %04lX, attr %04lX", clusterId, attributeMetadata->attributeId);
+  
     EmberAfStatus status = EMBER_ZCL_STATUS_FAILURE;
     if (basicCluster._reachable)
     {

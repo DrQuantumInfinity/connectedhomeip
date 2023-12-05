@@ -824,6 +824,9 @@ static Status moveToLevelHandler(EndpointId endpoint, CommandId commandId, uint8
 
     state->commandId = commandId;
 
+    ChipLogProgress(Zcl, "Commanded Level: %d", level);
+    ChipLogProgress(Zcl, "Max Level: %d", state->maxLevel);
+    ChipLogProgress(Zcl, "Min Level: %d", state->minLevel);
     // Move To Level commands cause the device to move from its current level to
     // the specified level at the specified rate.
     if (state->maxLevel <= level)
@@ -838,6 +841,7 @@ static Status moveToLevelHandler(EndpointId endpoint, CommandId commandId, uint8
     {
         state->moveToLevel = level;
     }
+    ChipLogProgress(Zcl, "Result Level: %d", state->moveToLevel);
 
     // If the level is decreasing, the On/Off attribute is left unchanged.  This
     // logic is to prevent a light from transitioning from off to bright to dim.
@@ -1383,7 +1387,9 @@ void emberAfLevelControlClusterServerInitCallback(EndpointId endpoint)
         {
             state->maxLevel = LEVEL_CONTROL_LIGHTING_MAX_LEVEL;
         }
-    }
+    }       
+    
+    ChipLogProgress(Zcl, "\n\nLevel control cluster max level set to :%d", state->maxLevel);
 
     app::DataModel::Nullable<uint8_t> currentLevel;
     EmberAfStatus status = Attributes::CurrentLevel::Get(endpoint, currentLevel);

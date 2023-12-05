@@ -204,6 +204,7 @@ static void EndpointAddWorker(intptr_t context)
             {
                 Span<DataVersion> dataVersion = Span<DataVersion>(pData->pDataVersionStorage, pData->dataVersionStorageLength);
                 Span<const EmberAfDeviceType> deviceTypeList= Span<const EmberAfDeviceType>(pData->pDeviceTypeList, pData->deviceTypeListLength);
+                ESP_LOGI(TAG, "Adding dynamic endpoint. Id: %u: %s", endpointApi.currentEndpointId, pData->name);
                 EmberAfStatus ret = emberAfSetDynamicEndpoint(
                     pData->index, endpointApi.currentEndpointId, pData->ep, 
                     dataVersion, deviceTypeList, 

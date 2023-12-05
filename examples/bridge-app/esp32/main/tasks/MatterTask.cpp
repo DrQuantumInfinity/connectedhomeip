@@ -126,6 +126,7 @@ static void MatterMain(void* pvParameter)
     MatterSetup();
     ESP_LOGI(TAG, "Task started");
 
+    DeviceLightRGB* light = new DeviceLightRGB("dummyLight", "Z", NULL);
     MSG_HEADER *pMsg;
     while (true)
     {

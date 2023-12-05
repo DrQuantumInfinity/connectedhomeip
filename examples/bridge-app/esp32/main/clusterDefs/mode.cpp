@@ -15,8 +15,8 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#include <app-common/zap-generated/attributes/Accessors.h>
 #include "mode.h"
+#include <app-common/zap-generated/attributes/Accessors.h>
 
 using namespace chip::app::Clusters;
 using namespace chip::app::Clusters::TestMode;
@@ -26,7 +26,7 @@ using List              = chip::app::DataModel::List<T>;
 using ModeTagStructType = chip::app::Clusters::detail::Structs::ModeTagStruct::Type;
 
 static ExampleTestModeDelegate * gExampleTestModeDelegate = nullptr;
-static ModeBase::Instance * gTestModeInstance               = nullptr;
+static ModeBase::Instance * gTestModeInstance             = nullptr;
 
 CHIP_ERROR ExampleTestModeDelegate::Init()
 {
@@ -34,8 +34,7 @@ CHIP_ERROR ExampleTestModeDelegate::Init()
 }
 
 // todo refactor code by making a parent class for all ModeInstance classes to reduce flash usage.
-void ExampleTestModeDelegate::HandleChangeToMode(uint8_t NewMode,
-                                                          ModeBase::Commands::ChangeToModeResponse::Type & response)
+void ExampleTestModeDelegate::HandleChangeToMode(uint8_t NewMode, ModeBase::Commands::ChangeToModeResponse::Type & response)
 {
     response.status = to_underlying(ModeBase::StatusCode::kGenericFailure);
 }
@@ -98,9 +97,14 @@ void TestMode::Shutdown()
 
 void emberAfTestModeClusterInitCallback(chip::EndpointId endpointId)
 {
-    VerifyOrDie(gExampleTestModeDelegate == nullptr && gTestModeInstance == nullptr);
-    gExampleTestModeDelegate = new TestMode::ExampleTestModeDelegate;
-    gTestModeInstance =
-        new ModeBase::Instance(gExampleTestModeDelegate, endpointId, TestMode::Id, 0);//chip::to_underlying(Feature::kOnOff));
-    gTestModeInstance->Init();
+
+    // VerifyOrDie(gExampleTestModeDelegate == nullptr && gTestModeInstance == nullptr);
+    if (gExampleTestModeDelegate == nullptr)
+        gExampleTestModeDelegate = new TestMode::ExampleTestModeDelegate;
+    if (gTestModeInstance == nullptr)
+    {
+        gTestModeInstance =
+            new ModeBase::Instance(gExampleTestModeDelegate, endpointId, TestMode::Id, 0); // chip::to_underlying(Feature::kOnOff));
+        gTestModeInstance->Init();
+    }
 }

@@ -6,7 +6,8 @@
 #include "LevelControlCluster.h"
 #include "ColourCluster.h"
 #include "OnOffCluster.h"
-#include "ModeCluster.h"
+// #include "ModeCluster.h"
+#include "DwModeCluster.h"
 #include "SerialTask.h"
 #include <app/util/attribute-storage.h>
 using namespace ::chip;
@@ -16,10 +17,11 @@ using namespace ::chip::app::Clusters;
  **************************************************************************/
 
 const EmberAfCluster bridgedClusters[] = {
+    ClusterDwModeGetObject(),
     ClusterLevelControlGetObject(),
     ClusterColorControlGetObjectBoth(),
     ClusterOnOffGetObject(),
-    ClusterTestModeGetObject(),
+    // ClusterTestModeGetObject(),
     DescriptorCluster::cluster,
     BasicCluster::cluster,
 };
@@ -78,6 +80,8 @@ DeviceLightRGB::DeviceLightRGB(const char* pName, const char* pLocation, DEVICE_
     AddCluster(&onOffCluster);
     AddCluster(&levelControlCluster);
     AddCluster(&colourCluster);
+    // AddCluster(&modeCluster);
+    AddCluster(&dwModeCluster);
     
     levelControlCluster._level = 74;
     levelControlCluster._minLevel = 0;

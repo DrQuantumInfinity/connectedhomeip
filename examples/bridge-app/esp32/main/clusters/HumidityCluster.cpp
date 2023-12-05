@@ -10,6 +10,7 @@ void HumidityCluster::UpdateHumidity(uint16_t humidity, uint16_t index)
     _humidity = (uint16_t) (humidity * 100);
     EndpointReportChange(index, RelativeHumidityMeasurement::Id, RelativeHumidityMeasurement::Attributes::MeasuredValue::Id);
 }
+
 EmberAfStatus HumidityCluster::Write(chip::AttributeId attributeId, uint8_t * buffer)
 {
     EmberAfStatus status = EMBER_ZCL_STATUS_SUCCESS;

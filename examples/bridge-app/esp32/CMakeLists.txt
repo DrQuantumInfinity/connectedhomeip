@@ -34,6 +34,7 @@ idf_build_set_property(C_COMPILE_OPTIONS "-Os" APPEND)
 # For the C3, project_include.cmake sets -Wno-format, but does not clear various
 # flags that depend on -Wformat
 idf_build_set_property(COMPILE_OPTIONS "-Wno-format-nonliteral;-Wno-format-security" APPEND)
+idf_build_set_property(COMPILE_OPTIONS "-Wno-error=format" APPEND)
 
 # -Wmaybe-uninitialized has too many false positives, including on std::optional
 # and chip::Optional.  Make it nonfatal.

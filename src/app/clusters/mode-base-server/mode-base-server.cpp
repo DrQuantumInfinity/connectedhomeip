@@ -60,6 +60,8 @@ CHIP_ERROR Instance::Init()
 {
     // Initialise the current mode with the value of the first mode. This ensures that it is representing a valid mode.
     ReturnErrorOnFailure(mDelegate->GetModeValueByIndex(0, mCurrentMode));
+    ChipLogError(Zcl, "ModeBase: cluster selected in zap: %u. eID = %u, cID = %u", emberAfContainsServer(mEndpointId, mClusterId),
+                 mEndpointId, mClusterId);
 
     // Check if the cluster has been selected in zap
     VerifyOrDie(emberAfContainsServer(mEndpointId, mClusterId) == true);

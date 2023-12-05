@@ -11,7 +11,7 @@ namespace TestMode {
 
 const uint8_t ModeNormal  = 0;
 const uint8_t ModeDefrost = 1;
-const ClusterId Id = 99999;
+const ClusterId Id = 0x50;
 
 enum class ModeTag : uint16_t
 {
