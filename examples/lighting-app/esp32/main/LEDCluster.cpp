@@ -21,6 +21,8 @@
 #include "LEDWidget.h"
 #include "led_strip.h"
 
+#define MIN(a, b) (((a)<(b)) ? (a) : (b))
+
 static const char * TAG = "LEDCluster";
 
 void LEDCluster::Init(Led * leds, uint8_t size, uint8_t colorGpio)

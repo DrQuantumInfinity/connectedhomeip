@@ -25,15 +25,6 @@
 #include "hal/ledc_types.h"
 #include "led_strip.h"
 
-class Led
-{
-public:
-    uint8_t gpio;
-    float temp;
-    float clamp;
-    Led(uint8_t gpio, float temp, float clamp);
-}
-
 class LEDWidget
 {
 public:

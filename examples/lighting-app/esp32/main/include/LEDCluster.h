@@ -47,11 +47,11 @@ public:
         temp  = _temp;
         clamp = _clamp;
     }
-} 
+};
 class LEDCluster
 {
 public:
-    void Init(uint8_t * gpios, float * temps, uint8_t size, uint8_t colorGpio);
+    void Init(Led * leds, uint8_t size, uint8_t colorGpio);
     void Set(bool state);
     void Toggle(void);
 
