@@ -19,6 +19,7 @@
 #include "led_strip.h"
 #include "esp_timer.h"
 #include <cstring>
+#include "esp_log.h"
 
 static const char * TAG = "LEDWidget";
 
@@ -44,9 +45,9 @@ void LEDWidget::InitColorPwm(gpio_num_t pinR, gpio_num_t pinB, gpio_num_t pinG)
     Init(LED_RGB_PWM, &ledConfig);
 }
 
-void LEDWidget::Init(LED_TYPE ledType, LED_DATA* pLedConfig)
+void LEDWidget::Init(LED_TYPE ledType, LED_DATA* pLedData)
 {
-    memcpy(&mLedData, pLedConfig, sizeof(mLedData));
+    memcpy(&mLedData, pLedData, sizeof(mLedData));
     mState      = false;
     mBrightness = UINT8_MAX;
     mLedType = ledType;

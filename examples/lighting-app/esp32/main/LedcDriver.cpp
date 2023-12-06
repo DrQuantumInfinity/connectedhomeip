@@ -1,7 +1,8 @@
 
 
 #include "LedcDriver.h"
-#include "esp_timer.h"
+#include "esp_log.h"
+#include "hal/ledc_types.h"
 
 static const char * TAG = "LedcDriver";
 

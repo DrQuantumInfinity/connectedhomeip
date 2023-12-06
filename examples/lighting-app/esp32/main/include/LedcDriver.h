@@ -1,10 +1,7 @@
 #pragma once
 
 #include "driver/gpio.h"
-#include "esp_log.h"
-
 #include "driver/ledc.h"
-#include "hal/ledc_types.h"
 
 
 class LedcDriver

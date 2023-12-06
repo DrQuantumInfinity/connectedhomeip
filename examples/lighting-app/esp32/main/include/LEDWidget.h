@@ -18,15 +18,9 @@
 #pragma once
 
 #include "driver/gpio.h"
-#include "esp_log.h"
-
 #include "ColorFormat.h"
-#include "driver/ledc.h"
 #include "LedcDriver.h"
 #include "Ws2812Driver.h"
-#include "driver/rmt.h"
-#include "hal/ledc_types.h"
-#include "led_strip.h"
 
 class LEDWidget
 {
@@ -73,7 +67,7 @@ private:
         RGB_PWM rgbPwm;
     }LED_DATA;
     
-    void Init(LED_TYPE ledType, LED_DATA* pLedConfig);
+    void Init(LED_TYPE ledType, LED_DATA* pLedData);
     void DoSetColor(uint8_t brightness);
     void DoSetMono(uint8_t brightness);
     void DoSetPwmColor(uint8_t brightness);
