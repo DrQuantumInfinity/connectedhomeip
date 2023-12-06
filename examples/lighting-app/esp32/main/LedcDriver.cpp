@@ -42,7 +42,7 @@ void LedcDriver::DoFirstInit(void)
 }
 void LedcDriver::SetDutyCycle(uint8_t dutyCycleOf255)
 {
-    ESP_LOGI(TAG, "SetDutyCycle to GPIO number %d", mGpioPin);
+    ESP_LOGI(TAG, "SetDutyCycle to GPIO number %d to %u", mGpioPin, dutyCycleOf255);
     ledc_set_duty(LEDC_LOW_SPEED_MODE, mLedcChannel, dutyCycleOf255);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, mLedcChannel);
 }

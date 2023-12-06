@@ -30,7 +30,7 @@ void LEDCluster::Init(Led * leds, uint8_t size, uint8_t colorGpio)
     for (int ledIndex = 0; ledIndex < size; ledIndex++)
     {
         LEDWidget newLed;
-        newLed.InitMono((gpio_num_t) leds[ledIndex].gpio, (ledc_channel_t) ledIndex);
+        newLed.InitMono((gpio_num_t) leds[ledIndex].gpio);
         mLeds.push_back(newLed);
         mLedProp.push_back(0.0f);
         mTemps.push_back(leds[ledIndex].temp);

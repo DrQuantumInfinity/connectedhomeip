@@ -16,73 +16,72 @@
  */
 
 #include "LEDWidget.h"
-#include "ColorFormat.h"
 #include "led_strip.h"
 #include "esp_timer.h"
+#include <cstring>
 
 static const char * TAG = "LEDWidget";
 
 void LEDWidget::InitColor(gpio_num_t pin, rmt_channel_t rmtChannel)
 {
-    Init(true, pin, rmtChannel, (ledc_channel_t)0);
+    LED_DATA ledConfig;
+    ledConfig.rgbWs2812.pin = pin;
+    ledConfig.rgbWs2812.rmtChannel = rmtChannel;
+    Init(LED_RGB_WS2812, &ledConfig);
 }
-void LEDWidget::InitMono(gpio_num_t pin, ledc_channel_t ledcChannel)
+void LEDWidget::InitMono(gpio_num_t pin)
 {
-    Init(false, pin, (rmt_channel_t)0, ledcChannel);
+    LED_DATA ledConfig;
+    ledConfig.monoPwm.ledc = new LedcDriver(pin);
+    Init(LED_MONO_PWM, &ledConfig);
+}
+void LEDWidget::InitColorPwm(gpio_num_t pinR, gpio_num_t pinB, gpio_num_t pinG)
+{
+    LED_DATA ledConfig;
+    ledConfig.rgbPwm.ledcR = new LedcDriver(pinR);
+    ledConfig.rgbPwm.ledcG = new LedcDriver(pinG);
+    ledConfig.rgbPwm.ledcB = new LedcDriver(pinB);
+    Init(LED_RGB_PWM, &ledConfig);
 }
 
-void LEDWidget::Init(bool color, gpio_num_t pin, rmt_channel_t rmtChannel, ledc_channel_t ledcChannel)
+void LEDWidget::Init(LED_TYPE ledType, LED_DATA* pLedConfig)
 {
     mState      = false;
     mBrightness = UINT8_MAX;
-    mColor = color;
-    mGPIONum = pin;
-    mLedcChannel = ledcChannel;
+    mLedType = ledType;
 
-    if (color)
+    switch (ledType)
     {
-// #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-//         led_strip_config_t strip_config = {
-//             .strip_gpio_num = mGPIONum,
-//             .max_leds       = 1,
-//         };
-
-//         led_strip_new_rmt_device(&strip_config, &mStrip);
-// #else
-        rmt_config_t config             = RMT_DEFAULT_CONFIG_TX(mGPIONum, (rmt_channel_t)rmtChannel);
-        led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t) config.channel);
-
-        config.clk_div = 2;
-        rmt_config(&config);
-        rmt_driver_install(config.channel, 0, 0);
-
-        mStrip = led_strip_new_rmt_ws2812(&strip_config);
-// #endif
-        mHue        = 90;
-        mSaturation = 255;
-        mBrightness = 10;
+        case LED_RGB_WS2812:    InitColorLocal(pLedConfig);     break;
+        case LED_MONO_PWM:      InitMonoLocal(pLedConfig);      break;
+        case LED_RGB_PWM:       InitColorPwmLocal(pLedConfig);  break;
     }
-    else
-    {
-        ledc_timer_config_t ledc_timer = {
-            .speed_mode      = LEDC_LOW_SPEED_MODE, // timer mode
-            .duty_resolution = LEDC_TIMER_8_BIT,    // resolution of PWM duty
-            .timer_num       = LEDC_TIMER_1,        // timer index
-            .freq_hz         = 5000,                // frequency of PWM signal
-            .clk_cfg         = LEDC_AUTO_CLK,       // Auto select the source clock
-        };
-        ledc_timer_config(&ledc_timer);
-        ledc_channel_config_t ledc_channel = {
-            .gpio_num   = mGPIONum,
-            .speed_mode = LEDC_LOW_SPEED_MODE,
-            .channel    = mLedcChannel,
-            .intr_type  = LEDC_INTR_DISABLE,
-            .timer_sel  = LEDC_TIMER_1,
-            .duty       = 0,
-            .hpoint     = 0,
-        };
-        ledc_channel_config(&ledc_channel);
-    }
+}
+
+void LEDWidget::InitColorLocal(LED_DATA* pLedConfig)
+{
+    memcpy(&mLedData.rgbWs2812, &pLedConfig->rgbWs2812, sizeof(mLedData.rgbWs2812));
+
+    rmt_config_t config             = RMT_DEFAULT_CONFIG_TX(mLedData.rgbWs2812.pin, (rmt_channel_t)mLedData.rgbWs2812.rmtChannel);
+    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t) config.channel);
+
+    config.clk_div = 2;
+    rmt_config(&config);
+    rmt_driver_install(config.channel, 0, 0);
+
+    mLedData.rgbWs2812.strip = led_strip_new_rmt_ws2812(&strip_config);
+
+    mHue        = 90;
+    mSaturation = 255;
+    mBrightness = 10;
+}
+void LEDWidget::InitMonoLocal(LED_DATA* pLedConfig)
+{
+    memcpy(&mLedData.monoPwm, &pLedConfig->monoPwm, sizeof(mLedData.monoPwm));
+}
+void LEDWidget::InitColorPwmLocal(LED_DATA* pLedConfig)
+{
+    memcpy(&mLedData.rgbPwm, &pLedConfig->rgbPwm, sizeof(mLedData.rgbPwm));
 }
 
 void LEDWidget::Set(bool state)
@@ -143,53 +142,68 @@ bool LEDWidget::IsTurnedOn()
 
 void LEDWidget::SetColor(int16_t Hue, int16_t Saturation)
 {
-    if (!mColor)
-        return;
-    if (Hue < 0)
+    if (mLedType == LED_RGB_WS2812 || 
+        mLedType == LED_RGB_PWM)
     {
-        Hue = mHue;
-    }
-    if (Saturation < 0)
-    {
-        Saturation = mSaturation;
-    }
-    if (Hue == mHue && Saturation == mSaturation)
-        return;
+        if (Hue < 0)
+        {
+            Hue = mHue;
+        }
+        if (Saturation < 0)
+        {
+            Saturation = mSaturation;
+        }
 
-    mHue        = Hue;
-    mSaturation = Saturation;
-
-    DoSet();
+        if (Hue != mHue || 
+            Saturation != mSaturation)
+        {
+            mHue = Hue;
+            mSaturation = Saturation;
+            DoSet();
+        }
+    }
 }
 
 void LEDWidget::DoSet(void)
 {
     uint8_t brightness = mState ? mBrightness : 0;
 
-    if (mColor)
+    switch (mLedType)
     {
-        if (mStrip)
-        {
-            HsvColor_t hsv = { (uint16_t)(mHue*360/255), (uint8_t)(mSaturation*100/255), brightness };
-            RgbColor_t rgb = HsvToRgb(hsv);
+        case LED_RGB_WS2812:   DoSetColor(brightness);      break;
+        case LED_MONO_PWM:     DoSetMono(brightness);       break;
+        case LED_RGB_PWM:      DoSetPwmColor(brightness);   break;
+    }
+}
+
+void LEDWidget::DoSetColor(uint8_t brightness)
+{
+    RgbColor_t rgb = GetRgb(brightness);
 // #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 //             ESP_LOGI(TAG, "DoSet to GPIO number %d, %d:%d:%d", mGPIONum, rgb.r, rgb.g, rgb.b);
 //             led_strip_set_pixel(mStrip, 0, rgb.r, rgb.g, rgb.b);
 //             led_strip_refresh(mStrip);
 // #else
-            ESP_LOGI(TAG, "DoSet to GPIO number %d, old %d:%d:%d", mGPIONum, rgb.r, rgb.g, rgb.b);
-            mStrip->set_pixel(mStrip, 0, rgb.r, rgb.g, rgb.b);
-            mStrip->refresh(mStrip, 100);
+    ESP_LOGI(TAG, "DoSetColor to GPIO number %d, old %d:%d:%d", mLedData.rgbWs2812.pin, rgb.r, rgb.g, rgb.b);
+    mLedData.rgbWs2812.strip->set_pixel(mLedData.rgbWs2812.strip, 0, rgb.r, rgb.g, rgb.b);
+    mLedData.rgbWs2812.strip->refresh(mLedData.rgbWs2812.strip, 100);
 // #endif
-        }
-    }
-    else
-    {
-        ESP_LOGI(TAG, "DoSet to GPIO number %d", mGPIONum);
-        if (mGPIONum < GPIO_NUM_MAX)
-        {
-            ledc_set_duty(LEDC_LOW_SPEED_MODE, mLedcChannel, brightness);
-            ledc_update_duty(LEDC_LOW_SPEED_MODE, mLedcChannel);
-        }
-    }
+}
+
+void LEDWidget::DoSetMono(uint8_t brightness)
+{
+    mLedData.monoPwm.ledc->SetDutyCycle(brightness);
+}
+
+void LEDWidget::DoSetPwmColor(uint8_t brightness)
+{
+    RgbColor_t rgb = GetRgb(brightness);
+    mLedData.rgbPwm.ledcR->SetDutyCycle(rgb.r);
+    mLedData.rgbPwm.ledcG->SetDutyCycle(rgb.g);
+    mLedData.rgbPwm.ledcB->SetDutyCycle(rgb.b);
+}
+RgbColor_t LEDWidget::GetRgb(uint8_t brightness)
+{
+    HsvColor_t hsv = { (uint16_t)(mHue*360/255), (uint8_t)(mSaturation*100/255), brightness };
+    return HsvToRgb(hsv);
 }
