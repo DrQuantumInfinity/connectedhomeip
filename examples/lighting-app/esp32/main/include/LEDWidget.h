@@ -23,6 +23,7 @@
 #include "ColorFormat.h"
 #include "driver/ledc.h"
 #include "LedcDriver.h"
+#include "Ws2812Driver.h"
 #include "driver/rmt.h"
 #include "hal/ledc_types.h"
 #include "led_strip.h"
@@ -30,7 +31,7 @@
 class LEDWidget
 {
 public:
-    void InitColor(gpio_num_t pin, uint16_t stripLength, rmt_channel_t rmtChannel);
+    void InitColor(gpio_num_t pin, uint16_t stripLength);
     void InitMono(gpio_num_t pin);
     void InitColorPwm(gpio_num_t pinR, gpio_num_t pinB, gpio_num_t pinG);
     void Set(bool state);
@@ -52,10 +53,8 @@ private:
 
     typedef struct
     {
-        led_strip_t* strip;
+        Ws2812Driver *ws2812;
         uint16_t stripLength;
-        gpio_num_t pin;
-        rmt_channel_t rmtChannel;
     }RGB_WS2812;
     typedef struct
     {
@@ -75,9 +74,6 @@ private:
     }LED_DATA;
     
     void Init(LED_TYPE ledType, LED_DATA* pLedConfig);
-    void InitColorLocal(LED_DATA* pLedConfig);
-    void InitMonoLocal(LED_DATA* pLedConfig);
-    void InitColorPwmLocal(LED_DATA* pLedConfig);
     void DoSetColor(uint8_t brightness);
     void DoSetMono(uint8_t brightness);
     void DoSetPwmColor(uint8_t brightness);

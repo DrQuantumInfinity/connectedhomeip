@@ -22,11 +22,10 @@
 
 static const char * TAG = "LEDWidget";
 
-void LEDWidget::InitColor(gpio_num_t pin, uint16_t stripLength, rmt_channel_t rmtChannel)
+void LEDWidget::InitColor(gpio_num_t pin, uint16_t stripLength)
 {
     LED_DATA ledConfig;
-    ledConfig.rgbWs2812.pin = pin;
-    ledConfig.rgbWs2812.rmtChannel = rmtChannel;
+    ledConfig.rgbWs2812.ws2812 = new Ws2812Driver(pin, stripLength);
     ledConfig.rgbWs2812.stripLength = stripLength;
     Init(LED_RGB_WS2812, &ledConfig);
 }
@@ -47,42 +46,13 @@ void LEDWidget::InitColorPwm(gpio_num_t pinR, gpio_num_t pinB, gpio_num_t pinG)
 
 void LEDWidget::Init(LED_TYPE ledType, LED_DATA* pLedConfig)
 {
+    memcpy(&mLedData, pLedConfig, sizeof(mLedData));
     mState      = false;
     mBrightness = UINT8_MAX;
     mLedType = ledType;
-
-    switch (ledType)
-    {
-        case LED_RGB_WS2812:    InitColorLocal(pLedConfig);     break;
-        case LED_MONO_PWM:      InitMonoLocal(pLedConfig);      break;
-        case LED_RGB_PWM:       InitColorPwmLocal(pLedConfig);  break;
-    }
-}
-
-void LEDWidget::InitColorLocal(LED_DATA* pLedConfig)
-{
-    memcpy(&mLedData.rgbWs2812, &pLedConfig->rgbWs2812, sizeof(mLedData.rgbWs2812));
-
-    rmt_config_t config             = RMT_DEFAULT_CONFIG_TX(mLedData.rgbWs2812.pin, (rmt_channel_t)mLedData.rgbWs2812.rmtChannel);
-    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(mLedData.rgbWs2812.stripLength, (led_strip_dev_t) config.channel);
-
-    config.clk_div = 2;
-    rmt_config(&config);
-    rmt_driver_install(config.channel, 0, 0);
-
-    mLedData.rgbWs2812.strip = led_strip_new_rmt_ws2812(&strip_config);
-
     mHue        = 90;
     mSaturation = 255;
     mBrightness = 10;
-}
-void LEDWidget::InitMonoLocal(LED_DATA* pLedConfig)
-{
-    memcpy(&mLedData.monoPwm, &pLedConfig->monoPwm, sizeof(mLedData.monoPwm));
-}
-void LEDWidget::InitColorPwmLocal(LED_DATA* pLedConfig)
-{
-    memcpy(&mLedData.rgbPwm, &pLedConfig->rgbPwm, sizeof(mLedData.rgbPwm));
 }
 
 void LEDWidget::Set(bool state)
@@ -179,13 +149,7 @@ void LEDWidget::DoSet(void)
 
 void LEDWidget::DoSetColor(uint8_t brightness)
 {
-    RgbColor_t rgb = GetRgb(brightness);
-    ESP_LOGI(TAG, "DoSetColor to GPIO number %d, old %d:%d:%d", mLedData.rgbWs2812.pin, rgb.r, rgb.g, rgb.b);
-    for (uint16_t ledIdx = 0; ledIdx < mLedData.rgbWs2812.stripLength; ledIdx++)
-    {
-        mLedData.rgbWs2812.strip->set_pixel(mLedData.rgbWs2812.strip, ledIdx, rgb.r, rgb.g, rgb.b);
-        mLedData.rgbWs2812.strip->refresh(mLedData.rgbWs2812.strip, 100);
-    }
+    mLedData.rgbWs2812.ws2812->SetAllLeds(GetRgb(brightness));
 }
 
 void LEDWidget::DoSetMono(uint8_t brightness)
