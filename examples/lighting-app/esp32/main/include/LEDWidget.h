@@ -30,7 +30,7 @@
 class LEDWidget
 {
 public:
-    void InitColor(gpio_num_t pin, rmt_channel_t rmtChannel);
+    void InitColor(gpio_num_t pin, uint16_t stripLength, rmt_channel_t rmtChannel);
     void InitMono(gpio_num_t pin);
     void InitColorPwm(gpio_num_t pinR, gpio_num_t pinB, gpio_num_t pinG);
     void Set(bool state);
@@ -52,7 +52,8 @@ private:
 
     typedef struct
     {
-        led_strip_t * strip;
+        led_strip_t* strip;
+        uint16_t stripLength;
         gpio_num_t pin;
         rmt_channel_t rmtChannel;
     }RGB_WS2812;
