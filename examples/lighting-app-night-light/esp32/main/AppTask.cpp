@@ -21,7 +21,6 @@
 #include "freertos/FreeRTOS.h"
 
 #include "DeviceWithDisplay.h"
-
 #include "esp_timer.h"
 #include <app-common/zap-generated/attributes/Accessors.h>
 
@@ -38,7 +37,9 @@ using namespace ::chip::DeviceLayer;
 
 static const char * TAG = "app-task";
 
-LEDCluster AppLEDC;
+LEDWidget led1;
+LEDWidget led2;
+LEDWidget ledWS;
 
 namespace {
 constexpr EndpointId kLightEndpointId = 1;
@@ -108,7 +109,9 @@ void AppTask::OnOffPostAttributeChangeHandler(EndpointId endpointId, AttributeId
                  ESP_LOGI(TAG, "Unhandled Attribute ID: '0x%" PRIx32 "'", attributeId));
     VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
 
-    AppLEDC.Set(*value);
+    led1.Set(*value);
+    led2.Set(*value);
+    ledWS.Set(*value);
 
 exit:
     return;
@@ -120,7 +123,9 @@ void AppTask::LevelControlAttributeChangeHandler(EndpointId endpointId, Attribut
                  ESP_LOGI(TAG, "Unhandled Attribute ID: '0x%" PRIx32 "'", attributeId));
     VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
 
-    AppLEDC.SetBrightness(*value);
+    led1.SetBrightness(*value);
+    led2.SetBrightness(*value);
+    ledWS.SetBrightness(*value);
 
 exit:
     return;
@@ -134,15 +139,7 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
     VerifyOrExit(attributeId == CurrentHue::Id || attributeId == CurrentSaturation::Id || attributeId == ColorTemperatureMireds::Id,
                  ESP_LOGI(TAG, "Unhandled AttributeId ID: '0x%" PRIx32 "'", attributeId));
     VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
-
-    if (attributeId == ColorTemperatureMireds::Id)
-    {
-        StopRainbow();
-        uint16_t temp;
-        memcpy(&temp, value, sizeof(temp));
-        AppLEDC.SetColorTemp(temp);
-    }
-    else if (attributeId == CurrentHue::Id)
+    if (attributeId == CurrentHue::Id)
     {
         hue = *value;
         saturation = -1;
@@ -155,14 +152,16 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
         {
             StopRainbow();
         }
-        //CurrentSaturation::Get(endpointId, &saturation);
-        AppLEDC.SetColor(hue, saturation);
+        led1.SetColor(hue, saturation);
+        led2.SetColor(hue, saturation);
+        ledWS.SetColor(hue, saturation);
     }
     else
     {
         saturation = *value;
-        //CurrentHue::Get(endpointId, &hue);
-        AppLEDC.SetColor(-1, saturation);
+        led1.SetColor(-1, saturation);
+        led2.SetColor(-1, saturation);
+        ledWS.SetColor(-1, saturation);
     }
 
 exit:
@@ -171,10 +170,13 @@ exit:
 CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err   = CHIP_NO_ERROR;
-    Led leds[] = { Led(17, 2600.0f, 1.0f),  Led(18, 3000.0f, 0.75f),  Led(19, 5000.0f, 0.75f)};
+    // Led leds[] = { Led(17, 2600.0f, 1.0f),  Led(18, 3000.0f, 0.75f),  Led(19, 5000.0f, 0.75f)};
     // uint8_t gpios[3] = { 17, 18, 19 };
     // float temps[3]   = { 2600.0f, 3000.0f, 5000.0f };
-    AppLEDC.Init(leds, sizeof(leds), 5);
+    // AppLEDC.Init(leds, sizeof(leds), 5);
+    ledWS.InitColor((gpio_num_t)33,2);
+    led1.InitColorPwm((gpio_num_t)25,(gpio_num_t)26,(gpio_num_t)27);
+    led2.InitColorPwm((gpio_num_t)17,(gpio_num_t)16,(gpio_num_t)4);
     mMode = AppMode_Normal;
     return err;
 }
@@ -232,7 +234,9 @@ void AppTask::HandleTimeout(void)
             mNextRainbowUpdateMics = esp_timer_get_time() + 2000 * 1000;
             ESP_LOGI(TAG, "Next Rainbow at %llu", mNextRainbowUpdateMics);
             mHue++ && 0xFF;
-            AppLEDC.SetColor(mHue, 255);
+            led1.SetColor(mHue, 255);
+            led2.SetColor(mHue, 255);
+            ledWS.SetColor(mHue, 255);
         }
     }
     else
@@ -289,7 +293,7 @@ void AppTask::UpdateClusterState()
 {
     ESP_LOGI(TAG, "Writing to OnOff cluster");
     // write the new on/off value
-    EmberAfStatus status = Clusters::OnOff::Attributes::OnOff::Set(kLightEndpointId, AppLEDC.IsTurnedOn());
+    EmberAfStatus status = Clusters::OnOff::Attributes::OnOff::Set(kLightEndpointId, led1.IsTurnedOn());
 
     if (status != EMBER_ZCL_STATUS_SUCCESS)
     {
@@ -297,7 +301,7 @@ void AppTask::UpdateClusterState()
     }
 
     ESP_LOGI(TAG, "Writing to Current Level cluster");
-    status = Clusters::LevelControl::Attributes::CurrentLevel::Set(kLightEndpointId, AppLEDC.GetLevel());
+    status = Clusters::LevelControl::Attributes::CurrentLevel::Set(kLightEndpointId, led1.GetLevel());
 
     if (status != EMBER_ZCL_STATUS_SUCCESS)
     {

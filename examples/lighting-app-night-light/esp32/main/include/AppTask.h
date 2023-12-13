@@ -23,7 +23,7 @@
 
 #include "AttributeChangeEvent.h"
 #include "Button.h"
-#include "LEDCluster.h"
+#include "LEDWidget.h"
 #include "freertos/FreeRTOS.h"
 #include <platform/CHIPDeviceLayer.h>
 
@@ -38,7 +38,9 @@
 #define APP_ERROR_START_TIMER_FAILED CHIP_APPLICATION_ERROR(0x05)
 #define APP_ERROR_STOP_TIMER_FAILED CHIP_APPLICATION_ERROR(0x06)
 
-extern LEDCluster AppLEDC;
+extern LEDWidget led1;
+extern LEDWidget led2;
+extern LEDWidget ledWS;
 extern Button AppButton;
 
 enum AppMode
