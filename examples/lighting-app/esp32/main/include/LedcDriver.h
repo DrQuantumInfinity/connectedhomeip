@@ -14,7 +14,6 @@ private:
     void DoFirstInit(void);
 
     bool mFirstInit = true;
-    ledc_channel_t mNextFreeLedcChannel = (ledc_channel_t)0;
     ledc_channel_t mLedcChannel;
     gpio_num_t mGpioPin;
 };

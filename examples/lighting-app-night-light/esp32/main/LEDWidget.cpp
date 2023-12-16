@@ -36,7 +36,7 @@ void LEDWidget::InitMono(gpio_num_t pin)
     ledConfig.monoPwm.ledc = new LedcDriver(pin);
     Init(LED_MONO_PWM, &ledConfig);
 }
-void LEDWidget::InitColorPwm(gpio_num_t pinR, gpio_num_t pinB, gpio_num_t pinG)
+void LEDWidget::InitColorPwm(gpio_num_t pinR, gpio_num_t pinG, gpio_num_t pinB)
 {
     LED_DATA ledConfig;
     ledConfig.rgbPwm.ledcR = new LedcDriver(pinR);
@@ -114,6 +114,7 @@ bool LEDWidget::IsTurnedOn()
 
 void LEDWidget::SetColor(int16_t Hue, int16_t Saturation)
 {
+    ESP_LOGI(TAG, "Setting Color to Hue:%d, Sat:%d", Hue , Saturation);
     if (mLedType == LED_RGB_WS2812 || 
         mLedType == LED_RGB_PWM)
     {
@@ -150,6 +151,7 @@ void LEDWidget::DoSet(void)
 
 void LEDWidget::DoSetColor(uint8_t brightness)
 {
+    
     mLedData.rgbWs2812.ws2812->SetAllLeds(GetRgb(brightness));
 }
 

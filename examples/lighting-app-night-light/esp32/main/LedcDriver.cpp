@@ -6,12 +6,15 @@
 
 static const char * TAG = "LedcDriver";
 
+// static ledc_channel_t mNextFreeLedcChannel = (ledc_channel_t)0;
+
 LedcDriver::LedcDriver(gpio_num_t pin)
 {
     mGpioPin = pin;
     mLedcChannel = mNextFreeLedcChannel;
     mNextFreeLedcChannel = (ledc_channel_t)((int)mNextFreeLedcChannel + 1);
 
+    ESP_LOGI(TAG, "channel %d next free %d next free addr %u", (int)mLedcChannel, (int)mNextFreeLedcChannel, (unsigned int)&mNextFreeLedcChannel);
     DoFirstInit();
 
     ledc_channel_config_t ledc_channel = {
@@ -43,7 +46,7 @@ void LedcDriver::DoFirstInit(void)
 }
 void LedcDriver::SetDutyCycle(uint8_t dutyCycleOf255)
 {
-    ESP_LOGI(TAG, "SetDutyCycle to GPIO number %d to %u", mGpioPin, dutyCycleOf255);
+    ESP_LOGI(TAG, "SetDutyCycle to GPIO number %d to %u with channel %d", mGpioPin, dutyCycleOf255, mLedcChannel);
     ledc_set_duty(LEDC_LOW_SPEED_MODE, mLedcChannel, dutyCycleOf255);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, mLedcChannel);
 }
