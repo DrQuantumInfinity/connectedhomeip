@@ -169,6 +169,6 @@ void LEDWidget::DoSetPwmColor(uint8_t brightness)
 }
 RgbColor_t LEDWidget::GetRgb(uint8_t brightness)
 {
-    HsvColor_t hsv = { (uint16_t)(mHue*360/255), (uint8_t)(mSaturation*100/255), brightness };
+    HsvColor_t hsv = { (uint16_t)(mHue*359/255), (uint8_t)(mSaturation*100/255), brightness };
     return HsvToRgb(hsv);
 }

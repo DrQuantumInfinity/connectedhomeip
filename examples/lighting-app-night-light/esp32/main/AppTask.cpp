@@ -37,8 +37,8 @@ using namespace ::chip::DeviceLayer;
 
 static const char * TAG = "app-task";
 
-// LEDWidget led1;
-// LEDWidget led2;
+LEDWidget led1;
+LEDWidget led2;
 // LEDWidget ledtest;
 LEDWidget ledWS;
 
@@ -110,8 +110,8 @@ void AppTask::OnOffPostAttributeChangeHandler(EndpointId endpointId, AttributeId
                  ESP_LOGI(TAG, "Unhandled Attribute ID: '0x%" PRIx32 "'", attributeId));
     VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
 
-    // led1.Set(*value);
-    // led2.Set(*value);
+    led1.Set(*value);
+    led2.Set(*value);
     // ledtest.Set(*value);
     ledWS.Set(*value);
 
@@ -125,8 +125,8 @@ void AppTask::LevelControlAttributeChangeHandler(EndpointId endpointId, Attribut
                  ESP_LOGI(TAG, "Unhandled Attribute ID: '0x%" PRIx32 "'", attributeId));
     VerifyOrExit(endpointId == 1, ESP_LOGE(TAG, "Unexpected EndPoint ID: `0x%02x'", endpointId));
 
-    // led1.SetBrightness(*value);
-    // led2.SetBrightness(*value);
+    led1.SetBrightness(*value);
+    led2.SetBrightness(*value);
     // ledtest.SetBrightness(*value);
     ledWS.SetBrightness(*value);
 
@@ -158,16 +158,16 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
         {
             StopRainbow();
         }
-        // led1.SetColor(hue, saturation);
-        // led2.SetColor(hue, saturation);
+        led1.SetColor(hue, saturation);
+        led2.SetColor(hue, saturation);
         // ledtest.SetColor(hue, saturation);
         ledWS.SetColor(hue, saturation);
     }
     else
     {
         saturation = *value;
-        // led1.SetColor(-1, saturation);
-        // led2.SetColor(-1, saturation);
+        led1.SetColor(-1, saturation);
+        led2.SetColor(-1, saturation);
         // ledtest.SetColor(-1, saturation);
         ledWS.SetColor(-1, saturation);
     }
@@ -183,8 +183,8 @@ CHIP_ERROR AppTask::Init()
     // float temps[3]   = { 2600.0f, 3000.0f, 5000.0f };
     // AppLEDC.Init(leds, sizeof(leds), 5);
     ledWS.InitColor((gpio_num_t)33,2);
-    // led1.InitColorPwm((gpio_num_t)26,(gpio_num_t)27,(gpio_num_t)25);
-    // led2.InitColorPwm((gpio_num_t)16,(gpio_num_t)4,(gpio_num_t)17);
+    led1.InitColorPwm((gpio_num_t)26,(gpio_num_t)27,(gpio_num_t)25);
+    led2.InitColorPwm((gpio_num_t)16,(gpio_num_t)4,(gpio_num_t)17);
     // ledtest.InitMono((gpio_num_t)17);
 
     mMode = AppMode_Normal;
@@ -237,6 +237,21 @@ TickType_t AppTask::GetTimeoutTicks(void)
 void AppTask::HandleTimeout(void)
 {
     ESP_LOGI(TAG, "Handle Timeout");
+    static int8_t doOnce = 2;
+    if(doOnce>0)
+    {
+        doOnce--;
+        if (doOnce == 0)
+        {
+            ledWS.Set(1);
+            led1.Set(1);
+            led2.Set(1);
+            ledWS.SetBrightness(255);
+            led1.SetBrightness(255);
+            led2.SetBrightness(255);
+            StartRainbow();
+        }
+    }
     if (mMode == AppMode_Rainbow)
     {
         if ((int64_t)(mNextRainbowUpdateMics - esp_timer_get_time()) <= 0)
@@ -244,8 +259,8 @@ void AppTask::HandleTimeout(void)
             mNextRainbowUpdateMics = esp_timer_get_time() + 2000 * 1000;
             ESP_LOGI(TAG, "Next Rainbow at %llu", mNextRainbowUpdateMics);
             mHue++ && 0xFF;
-            // led1.SetColor(mHue, 255);
-            // led2.SetColor(mHue, 255);
+            led1.SetColor(mHue, 255);
+            led2.SetColor(mHue, 255);
             // ledtest.SetColor(mHue, 255);
             ledWS.SetColor(mHue, 255);
         }
