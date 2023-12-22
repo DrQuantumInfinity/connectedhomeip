@@ -52,7 +52,13 @@ using namespace chip::Inet;
 using namespace chip::System;
 using namespace chip::app::Clusters;
 
-#define MIN(a, b) (((a)<(b)) ? (a) : (b))
+#ifndef MAX
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#endif
+
+#ifndef MIN
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#endif
 
 AppTask AppTask::sAppTask;
 
@@ -139,7 +145,7 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
     
     ESP_LOGI(TAG, "Setting AttID %lu, to %u", attributeId , *value);
     using namespace ColorControl::Attributes;
-    uint8_t hue, saturation;
+    int16_t hue, saturation;
 
     VerifyOrExit(attributeId == CurrentHue::Id || attributeId == CurrentSaturation::Id || attributeId == ColorTemperatureMireds::Id,
                  ESP_LOGI(TAG, "Unhandled AttributeId ID: '0x%" PRIx32 "'", attributeId));
@@ -165,7 +171,7 @@ void AppTask::ColorControlAttributeChangeHandler(EndpointId endpointId, Attribut
     }
     else
     {
-        saturation = *value;
+        saturation = MIN(*value * 1.22, 255);
         led1.SetColor(-1, saturation);
         led2.SetColor(-1, saturation);
         // ledtest.SetColor(-1, saturation);
