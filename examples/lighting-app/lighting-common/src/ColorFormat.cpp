@@ -76,8 +76,7 @@ static const char * TAG = "ColorFormat";
 
 RgbColor_t HsvToRgb(HsvColor_t hsv)
 {
-
-    ESP_LOGI(TAG, "\n\nInput HSV %d:%d:%d", hsv.h, hsv.s, hsv.v);
+//    ESP_LOGI(TAG, "\n\nInput HSV %d:%d:%d", hsv.h, hsv.s, hsv.v);
     RgbColor_t rgb;
 
     uint16_t i       = hsv.h / 60;
@@ -87,7 +86,7 @@ RgbColor_t HsvToRgb(HsvColor_t hsv)
     uint16_t rgb_adj = (uint16_t)((rgb_max - rgb_min) * diff) / 60;
 
 
-    ESP_LOGI(TAG, "\n\n Case %d", i);
+//    ESP_LOGI(TAG, "\n\n Case %d", i);
     switch (i)
     {
     case 0:
@@ -122,7 +121,7 @@ RgbColor_t HsvToRgb(HsvColor_t hsv)
         break;
     }
 
-    ESP_LOGI(TAG, "\n\nColor result %d:%d:%d", rgb.r, rgb.g, rgb.b);
+//    ESP_LOGI(TAG, "\n\nColor result %d:%d:%d", rgb.r, rgb.g, rgb.b);
     return rgb;
 }
 
