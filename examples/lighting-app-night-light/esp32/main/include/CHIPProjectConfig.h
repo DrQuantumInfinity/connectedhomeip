@@ -45,3 +45,6 @@
  *
  */
 #define CHIP_IM_MAX_NUM_SUBSCRIPTIONS 45
+
+/* The ProductID attribute of the Basic cluster. */
+#define CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID 0x8002
