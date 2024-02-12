@@ -14,8 +14,6 @@ ESPnow class
 
 Figure out mode clusters
 
-Device light circuit board
-
 linux bridge
 
 Thermostat
