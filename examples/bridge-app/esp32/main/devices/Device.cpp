@@ -60,17 +60,8 @@ EmberAfStatus Device::GoogleWriteCallback(void * pObject, ClusterId clusterId, c
 {
     Device * pDevice     = (Device *) pObject;
     EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
-    pDevice->sendEspNowMessage();
-    if (pDevice->_pfnWriteCallback)
-    {
-        pDevice->_pfnWriteCallback(pDevice, clusterId, attributeMetadata, buffer);
-    }
+    pDevice->transportLayer.Send(clusterId, attributeMetadata, buffer);
     return status;
-}
-
-void Device::sendEspNowMessage(void)
-{
-    return;
 }
 
 EmberAfStatus Device::ReadCluster(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t * buffer,

@@ -22,6 +22,7 @@
 #include "Cluster.h"
 #include "BasicCluster.h"
 #include "EspNowData.h"
+#include "transportLayer.h"
 
 #include "EndpointApi.h"
 #include <app/InteractionModelEngine.h>
@@ -37,6 +38,7 @@ using namespace ::chip;
  *                                  Types
  **************************************************************************/
 
+//TODO: delete these two lines
 class Device;
 typedef void (*DEVICE_WRITE_CALLBACK)(Device *device, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 
@@ -56,7 +58,7 @@ public:
 protected:
     void AddCluster(Cluster* newCluster);
     ESP_NOW_DATA _espNowData;
-    virtual void sendEspNowMessage(void);
+    TransportLayer transportLayer;
 
     DEVICE_WRITE_CALLBACK _pfnWriteCallback;
 private:
