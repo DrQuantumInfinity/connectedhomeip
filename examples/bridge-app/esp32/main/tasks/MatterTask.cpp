@@ -212,7 +212,7 @@ static void MatterEspNowDht(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength, LI
     DeviceTemperature *pDevice;
     if (pItem->pDevice == NULL)
     {
-        pDevice = new DeviceTemperature(pName, "Z", NULL, pEspMsg->data.dht.temperature, pEspMsg->data.dht.humidity);
+        pDevice = new DeviceTemperature(pName, "Z", pEspMsg->data.dht.temperature, pEspMsg->data.dht.humidity);
         pItem->pDevice = pDevice;
     }
     else
@@ -233,7 +233,7 @@ static void MatterEspNowLightRGB(const ESP_NOW_DATA* pEspMsg, uint32_t dataLengt
     DeviceLightRGB* pDevice;
     if (pItem->pDevice == NULL)
     {
-        pDevice = new DeviceLightRGB(pName, "Z", NULL);
+        pDevice = new DeviceLightRGB(pName, "Z");
         pItem->pDevice = pDevice;
     }
     else
@@ -249,7 +249,7 @@ static void MatterEspNowToggle(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength,
     DeviceButton *pButton;
     if (pItem->pDevice == NULL)
     {
-        pButton = new DeviceButton(pName, "Z", NULL);
+        pButton = new DeviceButton(pName, "Z");
         pItem->pDevice = pButton;
     }
     else

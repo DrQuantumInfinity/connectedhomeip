@@ -20,7 +20,7 @@ using namespace ::chip;
 class DeviceLight : public Device
 {
 public:
-    DeviceLight(const char* pName, const char* pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
+    DeviceLight(const char* pName, const char* pLocation);
     ~DeviceLight(void);
 
     void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }

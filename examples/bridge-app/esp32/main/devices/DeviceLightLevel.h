@@ -23,7 +23,7 @@ using namespace ::chip;
 class DeviceLightLevel : public Device
 {
 public:
-    DeviceLightLevel(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback);
+    DeviceLightLevel(const char * pName, const char * pLocation);
     ~DeviceLightLevel(void);
 
     void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }

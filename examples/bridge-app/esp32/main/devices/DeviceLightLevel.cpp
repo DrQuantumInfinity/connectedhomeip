@@ -47,9 +47,8 @@ const EmberAfDeviceType bridgedDeviceTypes[] = { { .deviceId = 0x0101, .deviceVe
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-DeviceLightLevel::DeviceLightLevel(const char * pName, const char * pLocation, DEVICE_WRITE_CALLBACK pfnWriteCallback)
+DeviceLightLevel::DeviceLightLevel(const char * pName, const char * pLocation)
 {
-    _pfnWriteCallback           = pfnWriteCallback;
     DataVersion * pDataVersions = (DataVersion *) malloc(sizeof(DataVersion) * ArraySize(bridgedClusters));
     ENDPOINT_DATA endpointData  = {
          .index                    = GetIndex(),
