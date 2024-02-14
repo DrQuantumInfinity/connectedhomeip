@@ -52,7 +52,7 @@ public:
                                         uint8_t * buffer, uint16_t maxReadLength);
 protected:
     void AddCluster(Cluster* newCluster);
-    TransportLayer transportLayer;
+    TransportLayer* pTransportLayer;
 
 private:
     uint16_t _index;

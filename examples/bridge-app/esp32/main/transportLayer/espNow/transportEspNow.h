@@ -33,7 +33,7 @@ private:
     ESP_NOW_DATA _data;
     struct Private;
 
-    void Send(const void* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+    void Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 };
 /**************************************************************************
  *                                  Prototypes

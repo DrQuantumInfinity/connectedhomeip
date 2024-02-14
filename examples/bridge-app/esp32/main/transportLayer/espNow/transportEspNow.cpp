@@ -38,7 +38,7 @@ TransportEspNow::~TransportEspNow(void)
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-void TransportEspNow::Send(const void* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
+void TransportEspNow::Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
 {
     switch (_data.type)
     {

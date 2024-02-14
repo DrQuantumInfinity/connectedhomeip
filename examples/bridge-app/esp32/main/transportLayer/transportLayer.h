@@ -17,13 +17,11 @@ using namespace ::chip;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-
+class Device;
 class TransportLayer
 {
 public:
-    TransportLayer(void);
-    virtual ~TransportLayer(void);
-    virtual void Send(const void* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
+    virtual void Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer) = 0;
 
 protected:
 

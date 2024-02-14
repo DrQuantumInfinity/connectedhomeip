@@ -60,7 +60,7 @@ EmberAfStatus Device::GoogleWriteCallback(void * pObject, ClusterId clusterId, c
 {
     Device * pDevice     = (Device *) pObject;
     EmberAfStatus status = pDevice->WriteCluster(clusterId, attributeMetadata, buffer);
-    pDevice->transportLayer.Send(pDevice, clusterId, attributeMetadata, buffer);
+    pDevice->pTransportLayer->Send(pDevice, clusterId, attributeMetadata, buffer);
     return status;
 }
 

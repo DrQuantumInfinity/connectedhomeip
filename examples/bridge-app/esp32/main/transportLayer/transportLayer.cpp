@@ -20,19 +20,6 @@
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-
-TransportLayer::TransportLayer(void)
-{
-    
-}
-TransportLayer::~TransportLayer(void)
-{
-    
-}
-void TransportLayer::Send(const void* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
-{
-    //This function should never be called
-}
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
