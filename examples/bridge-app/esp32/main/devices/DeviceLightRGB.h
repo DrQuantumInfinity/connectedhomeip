@@ -34,11 +34,12 @@ public:
     LevelControlCluster GetLevelControlCluster(void) { return levelControlCluster; }
     ColourCluster GetColourCluster(void) { return colourCluster; }
     DescriptorCluster GetDescriptorCluster(void) { return descriptorCluster; }
-
-private:
+    
     OnOffCluster onOffCluster;
     LevelControlCluster levelControlCluster;
     ColourCluster colourCluster;
+
+private:
     DescriptorCluster descriptorCluster;
     ENDPOINT_DATA _endpointData;
     void sendEspNowMessage(void);

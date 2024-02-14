@@ -21,7 +21,6 @@
 #include <stdint.h>
 #include "Cluster.h"
 #include "BasicCluster.h"
-#include "EspNowData.h"
 #include "transportLayer.h"
 
 #include "EndpointApi.h"
@@ -53,7 +52,6 @@ public:
                                         uint8_t * buffer, uint16_t maxReadLength);
 protected:
     void AddCluster(Cluster* newCluster);
-    ESP_NOW_DATA _espNowData;
     TransportLayer transportLayer;
 
 private:

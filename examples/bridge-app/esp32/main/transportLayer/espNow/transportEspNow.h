@@ -1,9 +1,13 @@
 
 #pragma once
-#include "Device.h"
-#include "EndpointApi.h"
-#include "DescriptorCluster.h"
-#include "OnOffCluster.h"
+
+#include <functional>
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "transportLayer.h"
+#include "EspNowData.h"
+
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
 using namespace ::chip;
@@ -16,20 +20,20 @@ using namespace ::chip;
 /**************************************************************************
  *                                  Types
  **************************************************************************/
-class DeviceLight : public Device
+
+class TransportEspNow : public TransportLayer
 {
 public:
-    DeviceLight(const char* pName, const char* pLocation);
-    ~DeviceLight(void);
+    TransportEspNow(const ESP_NOW_DATA* pData);
+    virtual ~TransportEspNow(void);
 
-    void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }
-    
-    OnOffCluster onOffCluster;
-    DescriptorCluster descriptorCluster;
+protected:
 
-private:    
-    void sendEspNowMessage(void);
-    ENDPOINT_DATA _endpointData;
+private:
+    ESP_NOW_DATA _data;
+    struct Private;
+
+    void Send(const void* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 };
 /**************************************************************************
  *                                  Prototypes

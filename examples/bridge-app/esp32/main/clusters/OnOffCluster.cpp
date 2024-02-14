@@ -8,8 +8,11 @@ static const char * TAG = "OnOffCluster";
 
 void OnOffCluster::SetOn(bool on, uint16_t index)
 {
-    _isOn = on;
-    EndpointReportChange(index, OnOff::Id, OnOff::Attributes::OnOff::Id);
+    if (_isOn != on)
+    {
+        _isOn = on;
+        EndpointReportChange(index, OnOff::Id, OnOff::Attributes::OnOff::Id);
+    }
 }
 
 EmberAfStatus OnOffCluster::Write(chip::AttributeId attributeId, uint8_t* buffer)

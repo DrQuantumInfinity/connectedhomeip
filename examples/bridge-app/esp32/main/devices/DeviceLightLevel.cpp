@@ -84,10 +84,3 @@ DeviceLightLevel::~DeviceLightLevel()
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-
-void DeviceLightLevel::sendEspNowMessage()
-{
-    _espNowData.data.lightDimmer.onOff      = onOffCluster._isOn;
-    _espNowData.data.lightDimmer.brightness = levelControlCluster._level;
-    SerialTransmit(&_espNowData, sizeof(_espNowData));
-}

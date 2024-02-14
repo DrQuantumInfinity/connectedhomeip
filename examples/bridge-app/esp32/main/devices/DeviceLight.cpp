@@ -81,8 +81,3 @@ DeviceLight::~DeviceLight(void)
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-void DeviceLight::sendEspNowMessage()
-{
-    _espNowData.data.lightOnOff.onOff = onOffCluster._isOn;
-    SerialTransmit(&_espNowData, sizeof(_espNowData));
-}

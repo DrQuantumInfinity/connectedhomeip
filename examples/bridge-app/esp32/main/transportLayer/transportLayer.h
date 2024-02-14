@@ -23,7 +23,7 @@ class TransportLayer
 public:
     TransportLayer(void);
     virtual ~TransportLayer(void);
-    virtual void Send(ClusterId clusterId, const EmberAfAttributeMetadata * attributeMetadata, uint8_t* buffer);
+    virtual void Send(const void* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 
 protected:
 
