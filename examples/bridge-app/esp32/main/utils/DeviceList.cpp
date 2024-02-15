@@ -41,7 +41,7 @@ void DeviceList::Upsert(std::string key, Device* pDevice)
         mapRet.first->second->timer.SetFromNow(REMOVE_TIMER_1_DAY_MS);
     }
 }
-void DeviceList::Upsert(uint8_t* pKey, uint32_t len, Device* pDevice)
+void DeviceList::Upsert(const uint8_t* pKey, uint32_t len, Device* pDevice)
 {
     Upsert(STR(pKey, len), pDevice);
 }
@@ -49,7 +49,7 @@ void DeviceList::Remove(std::string key)
 {
     _map.erase(key);
 }
-void DeviceList::Remove(uint8_t* pKey, uint32_t len)
+void DeviceList::Remove(const uint8_t* pKey, uint32_t len)
 {
     Remove(STR(pKey, len));
 }
@@ -62,7 +62,7 @@ Device* DeviceList::GetDevice(std::string key)
     }
     return NULL;
 }
-Device* DeviceList::GetDevice(uint8_t* pKey, uint32_t len)
+Device* DeviceList::GetDevice(const uint8_t* pKey, uint32_t len)
 {
     return GetDevice(STR(pKey, len));
 }
@@ -78,7 +78,7 @@ Device* DeviceList::GetAndRemoveExpiredDevice(std::string key)
     }
     return NULL;
 }
-Device* DeviceList::GetAndRemoveExpiredDevice(uint8_t* pKey, uint32_t len)
+Device* DeviceList::GetAndRemoveExpiredDevice(const uint8_t* pKey, uint32_t len)
 {
     return GetAndRemoveExpiredDevice(STR(pKey, len));
 }

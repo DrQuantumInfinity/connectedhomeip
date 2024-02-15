@@ -37,13 +37,13 @@ public:
     DeviceList(void);
 
     void Upsert(std::string key, Device* pDevice);
-    void Upsert(uint8_t* pKey, uint32_t len, Device* pDevice);
+    void Upsert(const uint8_t* pKey, uint32_t len, Device* pDevice);
     void Remove(std::string key);
-    void Remove(uint8_t* pKey, uint32_t len);
+    void Remove(const uint8_t* pKey, uint32_t len);
     Device* GetDevice(std::string key);
-    Device* GetDevice(uint8_t* pKey, uint32_t len);
+    Device* GetDevice(const uint8_t* pKey, uint32_t len);
     Device* GetAndRemoveExpiredDevice(std::string key);
-    Device* GetAndRemoveExpiredDevice(uint8_t* pKey, uint32_t len);
+    Device* GetAndRemoveExpiredDevice(const uint8_t* pKey, uint32_t len);
 
 protected:
 

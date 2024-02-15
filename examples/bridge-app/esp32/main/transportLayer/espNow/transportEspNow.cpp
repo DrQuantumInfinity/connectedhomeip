@@ -1,6 +1,7 @@
 
 #include "transportEspNow.h"
 #include "SerialTask.h"
+#include "DeviceList.h"
 
 //Devices
 #include "DeviceLightRGB.h"
@@ -19,14 +20,36 @@
  **************************************************************************/
 struct TransportEspNow::Private
 {
-    static void DeviceLightRgb(TransportEspNow& self, const DeviceLightRGB* pDevice);
+    static void DeviceLightRgbSend(TransportEspNow& self, const DeviceLightRGB* pDevice);
 };
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
+DeviceList deviceList;
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
+void TransportEspNowHandleSerialRx(const ESP_NOW_DATA* pData)
+{
+    Device *pDevice = deviceList.GetDevice(pData->macAddr, sizeof(pData->macAddr));
+    if (pDevice == NULL)
+    {
+        char nameBuf[32];
+        sprintf(nameBuf, "%s %02X:%02X:%02X:%02X:%02X:%02X", EspNowGetName(pData),
+            pData->macAddr[0], pData->macAddr[1], pData->macAddr[2], 
+            pData->macAddr[3], pData->macAddr[4], pData->macAddr[5]);
+        switch(pData->type)
+        {
+            case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: pDevice = new DeviceLightRGB(nameBuf, "Z"/*, new TransportEspNow(pData)*/); break;
+            default:                            /*Support this type!*/                      break;
+        }
+    }
+    
+    if (pDevice)
+    {
+        deviceList.Upsert(pData->macAddr, sizeof(pData->macAddr), pDevice);
+    }
+}
 TransportEspNow::TransportEspNow(const ESP_NOW_DATA* pData)
 {
     memcpy(&_data, pData, sizeof(_data));
@@ -42,11 +65,11 @@ void TransportEspNow::Send(const Device* pDevice, ClusterId clusterId, const Emb
 {
     switch (_data.type)
     {
-        case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: Private::DeviceLightRgb(*this, (const DeviceLightRGB*)pDevice); break;
-        default:                            /*Support this type!*/                                          break;
+        case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: Private::DeviceLightRgbSend(*this, (const DeviceLightRGB*)pDevice); break;
+        default:                            /*Support this type!*/                                              break;
     }
 }
-void TransportEspNow::Private::DeviceLightRgb(TransportEspNow& self, const DeviceLightRGB* pDevice)
+void TransportEspNow::Private::DeviceLightRgbSend(TransportEspNow& self, const DeviceLightRGB* pDevice)
 {
     self._data.data.lightRgb.onOff      = pDevice->onOffCluster._isOn;
     self._data.data.lightRgb.brightness = pDevice->levelControlCluster._level;
