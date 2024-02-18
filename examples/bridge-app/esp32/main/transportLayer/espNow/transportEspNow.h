@@ -7,6 +7,7 @@
 
 #include "transportLayer.h"
 #include "EspNowData.h"
+#include "DeviceList.h"
 
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
@@ -26,11 +27,13 @@ class TransportEspNow : public TransportLayer
 public:
     TransportEspNow(const ESP_NOW_DATA* pData, uint32_t dataLength);
     virtual ~TransportEspNow(void);
+    static void HandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLength);
 
 protected:
 
 private:
     ESP_NOW_DATA _data;
+    static DeviceList _deviceList;
     struct Private;
 
     void Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
@@ -38,4 +41,3 @@ private:
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-void TransportEspNowHandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLength);

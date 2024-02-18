@@ -1,3 +1,5 @@
+#pragma once
+
 #include "freertos/FreeRTOS.h"
 
 class TimerTick

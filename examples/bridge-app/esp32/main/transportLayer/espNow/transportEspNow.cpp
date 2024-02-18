@@ -1,7 +1,6 @@
 
 #include "transportEspNow.h"
 #include "SerialTask.h"
-#include "DeviceList.h"
 
 //Devices
 #include "DeviceLightRGB.h"
@@ -25,14 +24,14 @@ struct TransportEspNow::Private
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
-DeviceList deviceList;
+DeviceList TransportEspNow::_deviceList; //static variables in a class need to be independently initialized. C++ is dumb
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-void TransportEspNowHandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLength)
+void TransportEspNow::HandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLength)
 {
     //TODO: add a validator to match pData->type and dataLength
-    Device *pDevice = deviceList.GetDevice(pData->macAddr, sizeof(pData->macAddr));
+    Device *pDevice = _deviceList.GetDevice(pData->macAddr, sizeof(pData->macAddr));
     if (pDevice == NULL)
     {
         char nameBuf[32];
@@ -49,7 +48,7 @@ void TransportEspNowHandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLengt
     
     if (pDevice)
     {
-        deviceList.Upsert(pData->macAddr, sizeof(pData->macAddr), pDevice);
+        _deviceList.Upsert(pData->macAddr, sizeof(pData->macAddr), pDevice);
     }
 }
 TransportEspNow::TransportEspNow(const ESP_NOW_DATA* pData, uint32_t dataLength)

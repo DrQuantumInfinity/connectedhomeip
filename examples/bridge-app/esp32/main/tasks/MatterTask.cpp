@@ -150,5 +150,5 @@ static void MatterProcessMyMsg(const MSG_HEADER* pMsg)
 }
 static void MatterEspNowRxMsg(const ESP_NOW_DATA* pEspMsg, uint32_t dataLength)
 {
-    TransportEspNowHandleSerialRx(pEspMsg, dataLength);
+    TransportEspNow::HandleSerialRx(pEspMsg, dataLength);
 }
