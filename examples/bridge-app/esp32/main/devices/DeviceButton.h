@@ -20,7 +20,7 @@ using namespace ::chip;
 class DeviceButton : public Device
 {
 public:
-    DeviceButton(const char * pName, const char * pLocation);
+    DeviceButton(const char * pName, const char * pLocation, TransportLayer* pTransportLayer);
     ~DeviceButton(void);
     void Toggle(void) { onOffCluster.SetOn(!onOffCluster._isOn, GetIndex()); }
 

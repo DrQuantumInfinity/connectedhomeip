@@ -24,7 +24,7 @@ using namespace ::chip;
 class DeviceLightRGB : public Device
 {
 public:
-    DeviceLightRGB(const char * pName, const char * pLocation);
+    DeviceLightRGB(const char* pName, const char* pLocation, TransportLayer* pTransportLayer);
     ~DeviceLightRGB(void);
 
     void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }

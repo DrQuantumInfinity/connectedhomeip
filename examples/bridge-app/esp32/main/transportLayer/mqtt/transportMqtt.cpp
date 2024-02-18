@@ -1,6 +1,5 @@
 
-#include "transportEspNow.h"
-#include "SerialTask.h"
+#include "transportMqtt.h"
 #include "DeviceList.h"
 
 //Devices
@@ -18,9 +17,9 @@
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-struct TransportEspNow::Private
+struct TransportMqtt::Private
 {
-    static void DeviceLightRgbSend(TransportEspNow& self, const DeviceLightRGB* pDevice);
+    static void DeviceLightRgbSend(TransportMqtt& self, const DeviceLightRGB* pDevice);
 };
 /**************************************************************************
  *                                  Variables
@@ -29,49 +28,47 @@ DeviceList deviceList;
 /**************************************************************************
  *                                  Global Functions
  **************************************************************************/
-void TransportEspNowHandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLength)
+void TransportMqttHandleTopicRx(const char* pTopic, const char *pPayload)
 {
-    //TODO: add a validator to match pData->type and dataLength
-    Device *pDevice = deviceList.GetDevice(pData->macAddr, sizeof(pData->macAddr));
+    Device *pDevice = deviceList.GetDevice(pTopic);
     if (pDevice == NULL)
     {
-        char nameBuf[32];
-        sprintf(nameBuf, "%s %02X:%02X:%02X:%02X:%02X:%02X", EspNowGetName(pData),
+        //char nameBuf[32] = "test";
+        /*sprintf(nameBuf, "%s %02X:%02X:%02X:%02X:%02X:%02X", MqttGetName(pData),
             pData->macAddr[0], pData->macAddr[1], pData->macAddr[2], 
-            pData->macAddr[3], pData->macAddr[4], pData->macAddr[5]);
-        TransportLayer* pTransport = new TransportEspNow(pData, dataLength);
-        switch(pData->type)
-        {
-            case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: pDevice = new DeviceLightRGB(nameBuf, "Z", pTransport); break;
-            default:                            /*Support this type!*/                                  break;
-        }
+            pData->macAddr[3], pData->macAddr[4], pData->macAddr[5]);*/
+        //switch(pData->type)
+        //{
+        //    case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: pDevice = new DeviceLightRGB(nameBuf, "Z"/*, new TransportMqtt(pData)*/); break;
+        //    default:                            /*Support this type!*/                      break;
+        //}
     }
     
     if (pDevice)
     {
-        deviceList.Upsert(pData->macAddr, sizeof(pData->macAddr), pDevice);
+        deviceList.Upsert(pTopic, pDevice);
     }
 }
-TransportEspNow::TransportEspNow(const ESP_NOW_DATA* pData, uint32_t dataLength)
+TransportMqtt::TransportMqtt(const char* pTopic)
 {
-    memcpy(&_data, pData, dataLength);
+    
 }
-TransportEspNow::~TransportEspNow(void)
+TransportMqtt::~TransportMqtt(void)
 {
     
 }
 /**************************************************************************
  *                                  Private Functions
  **************************************************************************/
-void TransportEspNow::Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
+void TransportMqtt::Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
 {
-    switch (_data.type)
-    {
-        case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: Private::DeviceLightRgbSend(*this, (const DeviceLightRGB*)pDevice); break;
-        default:                            /*Support this type!*/                                              break;
-    }
+    //switch (_data.type)
+    //{
+    //    case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: Private::DeviceLightRgbSend(*this, (const DeviceLightRGB*)pDevice); break;
+    //    default:                            /*Support this type!*/                                              break;
+    //}
 }
-void TransportEspNow::Private::DeviceLightRgbSend(TransportEspNow& self, const DeviceLightRGB* pDevice)
+/*void TransportMqtt::Private::DeviceLightRgbSend(TransportMqtt& self, const DeviceLightRGB* pDevice)
 {
     self._data.data.lightRgb.onOff      = pDevice->onOffCluster._isOn;
     self._data.data.lightRgb.brightness = pDevice->levelControlCluster._level;
@@ -81,9 +78,9 @@ void TransportEspNow::Private::DeviceLightRgbSend(TransportEspNow& self, const D
     self._data.type                     = ESP_NOW_DEVICE_TYPE_LIGHT_RGB;
 
     SerialTransmit(&self._data, offsetof(ESP_NOW_DATA, data) + sizeof(ESP_NOW_DATA_LIGHT_RGB));
-}
+}*/
 /*
-void TransportEspNow::DeviceLightRgb(const DeviceLightRGB* pDevice)
+void TransportMqtt::DeviceLightRgb(const DeviceLightRGB* pDevice)
 {    
     _data.data.lightRgb.onOff      = pDevice->onOffCluster._isOn;
     _data.data.lightRgb.brightness = pDevice->levelControlCluster._level;
@@ -94,18 +91,18 @@ void TransportEspNow::DeviceLightRgb(const DeviceLightRGB* pDevice)
 
     SerialTransmit(&_data, offsetof(ESP_NOW_DATA, data) + sizeof(ESP_NOW_DATA_LIGHT_RGB));
 }
-void DeviceLight::sendEspNowMessage()
+void DeviceLight::sendMqttMessage()
 {
     _espNowData.data.lightOnOff.onOff = onOffCluster._isOn;
     SerialTransmit(&_espNowData, sizeof(_espNowData));
 }
-void DeviceLightLevel::sendEspNowMessage()
+void DeviceLightLevel::sendMqttMessage()
 {
     _espNowData.data.lightDimmer.onOff      = onOffCluster._isOn;
     _espNowData.data.lightDimmer.brightness = levelControlCluster._level;
     SerialTransmit(&_espNowData, sizeof(_espNowData));
 }
-void DeviceLightTemp::sendEspNowMessage()
+void DeviceLightTemp::sendMqttMessage()
 {
     _espNowData.data.lightTempRgb.onOff = onOffCluster._isOn;
     _espNowData.data.lightTempRgb.brightness = levelControlCluster._level;

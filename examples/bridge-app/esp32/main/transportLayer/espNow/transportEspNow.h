@@ -10,7 +10,7 @@
 
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
-using namespace ::chip;
+using namespace::chip;
 /**************************************************************************
  *                                  Constants
  **************************************************************************/
@@ -24,7 +24,7 @@ using namespace ::chip;
 class TransportEspNow : public TransportLayer
 {
 public:
-    TransportEspNow(const ESP_NOW_DATA* pData);
+    TransportEspNow(const ESP_NOW_DATA* pData, uint32_t dataLength);
     virtual ~TransportEspNow(void);
 
 protected:
@@ -38,4 +38,4 @@ private:
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-void TransportEspNowHandleSerialRx(const ESP_NOW_DATA* pData);
+void TransportEspNowHandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLength);

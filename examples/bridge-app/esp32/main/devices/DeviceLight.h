@@ -19,7 +19,7 @@ using namespace ::chip;
 class DeviceLight : public Device
 {
 public:
-    DeviceLight(const char* pName, const char* pLocation);
+    DeviceLight(const char* pName, const char* pLocation, TransportLayer* pTransportLayer);
     ~DeviceLight(void);
 
     void SetOn(bool isOn) { onOffCluster.SetOn(isOn, GetIndex()); }
