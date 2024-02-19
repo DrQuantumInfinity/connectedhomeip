@@ -80,7 +80,7 @@ Device* TransportEspNow::Private::AddNewDevice(const ESP_NOW_DATA* pData, uint32
         TransportLayer* pTransport = new TransportEspNow(pData, dataLength);
         switch(pData->type)
         {
-            case ESP_NOW_DEVICE_TYPE_ON_OFF:      pDevice = new DeviceButton(name, room, pTransport);     break;
+            case ESP_NOW_DEVICE_TYPE_TOGGLE:    pDevice = new DeviceButton(name, room, pTransport);     break;
             case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: pDevice = new DeviceLightRGB(name, room, pTransport);   break;
             default:                            /*Support this type!*/                                  break;
         }
@@ -92,7 +92,7 @@ void TransportEspNow::Private::GoogleSend(const ESP_NOW_DATA* pData, Device* pDe
 {
     switch (pData->type)
     {
-        case ESP_NOW_DEVICE_TYPE_ON_OFF:    Private::GoogleSendButton(pData, (DeviceButton*)pDevice);       break;
+        case ESP_NOW_DEVICE_TYPE_TOGGLE:    Private::GoogleSendButton(pData, (DeviceButton*)pDevice);       break;
         case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: Private::GoogleSendLightRgb(pData, (DeviceLightRGB*)pDevice);   break;
         default:                            /*Support this type!*/                                          break;
     }
