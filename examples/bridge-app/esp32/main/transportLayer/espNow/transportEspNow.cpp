@@ -3,6 +3,7 @@
 #include "SerialTask.h"
 
 //Devices
+#include "DeviceButton.h"
 #include "DeviceLightRGB.h"
 
 /**************************************************************************
@@ -19,38 +20,34 @@
  **************************************************************************/
 struct TransportEspNow::Private
 {
-    static void DeviceLightRgbSend(TransportEspNow& self, const DeviceLightRGB* pDevice);
+    static Device* AddNewDevice(const ESP_NOW_DATA* pData, uint32_t dataLength);
+
+    static void GoogleSend(const ESP_NOW_DATA* pData, Device* pDevice);
+    static void GoogleSendButton(const ESP_NOW_DATA* pData, DeviceButton* pDevice);
+    static void GoogleSendLightRgb(const ESP_NOW_DATA* pData, DeviceLightRGB* pDevice);
+    
+    static void EspNowSend(TransportEspNow& self, const Device* pDevice);
+    static void EspNowSendLightRgb(TransportEspNow& self, const DeviceLightRGB* pDevice);
 };
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
 DeviceList TransportEspNow::_deviceList; //static variables in a class need to be independently initialized. C++ is dumb
 /**************************************************************************
- *                                  Global Functions
+ *                                  Static Functions
  **************************************************************************/
 void TransportEspNow::HandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLength)
 {
-    //TODO: add a validator to match pData->type and dataLength
-    Device *pDevice = _deviceList.GetDevice(pData->macAddr, sizeof(pData->macAddr));
-    if (pDevice == NULL)
-    {
-        char nameBuf[32];
-        sprintf(nameBuf, "%s %02X:%02X:%02X:%02X:%02X:%02X", EspNowGetName(pData),
-            pData->macAddr[0], pData->macAddr[1], pData->macAddr[2], 
-            pData->macAddr[3], pData->macAddr[4], pData->macAddr[5]);
-        TransportLayer* pTransport = new TransportEspNow(pData, dataLength);
-        switch(pData->type)
-        {
-            case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: pDevice = new DeviceLightRGB(nameBuf, "Z", pTransport); break;
-            default:                            /*Support this type!*/                                  break;
-        }
-    }
-    
+    Device* pDevice = Private::AddNewDevice(pData, dataLength);
     if (pDevice)
     {
         _deviceList.Upsert(pData->macAddr, sizeof(pData->macAddr), pDevice);
+        Private::GoogleSend(pData, pDevice);
     }
 }
+/**************************************************************************
+ *                                  Global Functions
+ **************************************************************************/
 TransportEspNow::TransportEspNow(const ESP_NOW_DATA* pData, uint32_t dataLength)
 {
     memcpy(&_data, pData, dataLength);
@@ -60,17 +57,74 @@ TransportEspNow::~TransportEspNow(void)
     
 }
 /**************************************************************************
- *                                  Private Functions
+ *                                  Protected Functions
  **************************************************************************/
 void TransportEspNow::Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
 {
-    switch (_data.type)
+    Private::EspNowSend(*this, pDevice);
+}
+/**************************************************************************
+ *                                  Private Functions
+ **************************************************************************/
+Device* TransportEspNow::Private::AddNewDevice(const ESP_NOW_DATA* pData, uint32_t dataLength)
+{
+    //TODO: add a validator to match pData->type and dataLength
+    Device* pDevice = _deviceList.GetDevice(pData->macAddr, sizeof(pData->macAddr));
+    if (pDevice == NULL)
     {
-        case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: Private::DeviceLightRgbSend(*this, (const DeviceLightRGB*)pDevice); break;
+        char name[32];
+        sprintf(name, "%s %02X:%02X:%02X:%02X:%02X:%02X", EspNowGetName(pData),
+            pData->macAddr[0], pData->macAddr[1], pData->macAddr[2], 
+            pData->macAddr[3], pData->macAddr[4], pData->macAddr[5]);
+        char room[10] = "Bridge";
+        TransportLayer* pTransport = new TransportEspNow(pData, dataLength);
+        switch(pData->type)
+        {
+            case ESP_NOW_DEVICE_TYPE_ON_OFF:      pDevice = new DeviceButton(name, room, pTransport);     break;
+            case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: pDevice = new DeviceLightRGB(name, room, pTransport);   break;
+            default:                            /*Support this type!*/                                  break;
+        }
+    }
+    return pDevice;
+}
+//Send to Google functions
+void TransportEspNow::Private::GoogleSend(const ESP_NOW_DATA* pData, Device* pDevice)
+{
+    switch (pData->type)
+    {
+        case ESP_NOW_DEVICE_TYPE_ON_OFF:    Private::GoogleSendButton(pData, (DeviceButton*)pDevice);       break;
+        case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: Private::GoogleSendLightRgb(pData, (DeviceLightRGB*)pDevice);   break;
+        default:                            /*Support this type!*/                                          break;
+    }
+}
+void TransportEspNow::Private::GoogleSendButton(const ESP_NOW_DATA* pData, DeviceButton* pDevice)
+{
+    pDevice->Toggle();
+}
+void TransportEspNow::Private::GoogleSendLightRgb(const ESP_NOW_DATA* pData, DeviceLightRGB* pDevice)
+{
+    /*
+    bool onOff;
+    ESP_NOW_DATA_LIGHT_RGB_MODE mode;
+    uint8_t hue;
+    uint8_t saturation;
+    uint8_t brightness;
+    */
+    pDevice->SetOn(pData->data.lightRgb.onOff);
+    pDevice->SetLevel(pData->data.lightRgb.brightness*100/255);
+    pDevice->SetColourHS(pData->data.lightRgb.hue*100/255, pData->data.lightRgb.saturation*100/255);
+}
+//Send to EspNow device functions
+void TransportEspNow::Private::EspNowSend(TransportEspNow& self, const Device* pDevice)
+{
+    switch (self._data.type)
+    {
+        case ESP_NOW_DEVICE_TYPE_TOGGLE:    /*ESPNOW TOGGLEs are transmitters only*/                            break;
+        case ESP_NOW_DEVICE_TYPE_LIGHT_RGB: Private::EspNowSendLightRgb(self, (const DeviceLightRGB*)pDevice);  break;
         default:                            /*Support this type!*/                                              break;
     }
 }
-void TransportEspNow::Private::DeviceLightRgbSend(TransportEspNow& self, const DeviceLightRGB* pDevice)
+void TransportEspNow::Private::EspNowSendLightRgb(TransportEspNow& self, const DeviceLightRGB* pDevice)
 {
     self._data.data.lightRgb.onOff      = pDevice->onOffCluster._isOn;
     self._data.data.lightRgb.brightness = pDevice->levelControlCluster._level;

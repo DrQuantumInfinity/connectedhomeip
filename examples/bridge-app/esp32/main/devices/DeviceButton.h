@@ -22,6 +22,7 @@ class DeviceButton : public Device
 public:
     DeviceButton(const char * pName, const char * pLocation, TransportLayer* pTransportLayer);
     ~DeviceButton(void);
+    void SetOn(bool on) { onOffCluster.SetOn(on, GetIndex()); }
     void Toggle(void) { onOffCluster.SetOn(!onOffCluster._isOn, GetIndex()); }
 
 private:

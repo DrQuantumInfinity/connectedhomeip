@@ -30,13 +30,13 @@ public:
     static void HandleSerialRx(const ESP_NOW_DATA* pData, uint32_t dataLength);
 
 protected:
+    void Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 
 private:
     ESP_NOW_DATA _data;
     static DeviceList _deviceList;
     struct Private;
 
-    void Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 };
 /**************************************************************************
  *                                  Prototypes
