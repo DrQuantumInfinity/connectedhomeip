@@ -87,6 +87,8 @@ Device* TransportEspNow::Private::AddNewDevice(const ESP_NOW_DATA* pData, uint32
     }
     return pDevice;
 }
+
+
 //Send to Google functions
 void TransportEspNow::Private::GoogleSend(const ESP_NOW_DATA* pData, Device* pDevice)
 {
@@ -112,8 +114,10 @@ void TransportEspNow::Private::GoogleSendLightRgb(const ESP_NOW_DATA* pData, Dev
     */
     pDevice->SetOn(pData->data.lightRgb.onOff);
     pDevice->SetLevel(pData->data.lightRgb.brightness*100/255);
-    pDevice->SetColourHS(pData->data.lightRgb.hue*100/255, pData->data.lightRgb.saturation*100/255);
+    pDevice->SetColourHS(pData->data.lightRgb.hue*360/255, pData->data.lightRgb.saturation*100/255);
 }
+
+
 //Send to EspNow device functions
 void TransportEspNow::Private::EspNowSend(TransportEspNow& self, const Device* pDevice)
 {
