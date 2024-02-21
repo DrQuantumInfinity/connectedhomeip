@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "transportLayer.h"
+#include "DeviceList.h"
 
 #include <app/InteractionModelEngine.h>
 #include <app/util/af-types.h>
@@ -13,28 +14,39 @@ using namespace::chip;
 /**************************************************************************
  *                                  Constants
  **************************************************************************/
+#define MQTT_MAX_DEVICE_NAME_LENGTH (32)
+#define MQTT_MAC_ADDRESS_LENGTH     (12 + 1)
 /**************************************************************************
  *                                  Macros
  **************************************************************************/
 /**************************************************************************
  *                                  Types
  **************************************************************************/
+typedef enum
+{
+    MQTT_DIMMER_SWITCH_FEIT,
+    MQTT_OUTLET_GORDON,
+    MQTT_LAMP_RGB,
+    MQTT_TYPE_COUNT
+}MQTT_TYPE;
 
 class TransportMqtt : public TransportLayer
 {
 public:
-    TransportMqtt(const char* pTopic);
+    TransportMqtt(MQTT_TYPE type, const char* pMacAddr);
     virtual ~TransportMqtt(void);
-
+    static void HandleTopicRx(const char* pTopic, const char* pPayload);
+    
 protected:
+    void Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 
 private:
-    char topic[30];
+    MQTT_TYPE _type;
+    char _macAddr[MQTT_MAC_ADDRESS_LENGTH];
+    static DeviceList _deviceList;
     struct Private;
 
-    void Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer);
 };
 /**************************************************************************
  *                                  Prototypes
  **************************************************************************/
-void TransportMqttHandleTopicRx(const char* pTopic, const char *pPayload);
