@@ -35,6 +35,7 @@ class TransportMqtt : public TransportLayer
 public:
     TransportMqtt(MQTT_TYPE type, const char* pMacAddr);
     virtual ~TransportMqtt(void);
+    static void Init(void);
     static void HandleTopicRx(const char* pTopic, const char* pPayload);
     
 protected:

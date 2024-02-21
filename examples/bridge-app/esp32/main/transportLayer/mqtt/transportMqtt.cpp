@@ -37,21 +37,23 @@ struct TransportMqtt::Private
 /**************************************************************************
  *                                  Variables
  **************************************************************************/
-const char *pMqttDeviceTypes[] = {
+static const char *pMqttDeviceTypes[] = {
     [MQTT_DIMMER_SWITCH_FEIT] = "WifiDimmerFeit-",
     [MQTT_OUTLET_GORDON] = "WifiOutletGordon-",
     [MQTT_LAMP_RGB] = "WifiRgbLampGordon-",
 };
-const uint32_t mqttDeviceTopicLengths[] = {
-    [MQTT_DIMMER_SWITCH_FEIT] = strlen("WifiDimmerFeit-112233445566"),
-    [MQTT_OUTLET_GORDON] = strlen("WifiOutletGordon-112233445566"),
-    [MQTT_LAMP_RGB] = strlen("WifiRgbLampGordon-112233445566"),
-};
-
+static uint32_t mqttDeviceTopicLengths[MQTT_TYPE_COUNT];
 DeviceList TransportMqtt::_deviceList; //static variables in a class need to be independently initialized. C++ is dumb
 /**************************************************************************
  *                                  Static Functions
  **************************************************************************/
+void TransportMqtt::Init(void)
+{
+    for (uint32_t type = 0; type < (uint32_t)MQTT_TYPE_COUNT; type++)
+    {
+        mqttDeviceTopicLengths[type] = strlen(pMqttDeviceTypes[type]) + 12;
+    }
+}
 void TransportMqtt::HandleTopicRx(const char* pTopic, const char* pPayload)
 {
     MQTT_TYPE type = Private::GetDeviceType(pTopic);
@@ -116,7 +118,7 @@ Device* TransportMqtt::Private::AddNewDevice(MQTT_TYPE type, const char* pName)
 MQTT_TYPE TransportMqtt::Private::GetDeviceType(const char* pTopic)
 {
     //MQTT device identifiers must match the pattern "DEVICE-MACADDRESS/"
-    MQTT_TYPE type = MQTT_TYPE_COUNT;
+    uint32_t type = (uint32_t)MQTT_TYPE_COUNT;
 
     const char* pSlash = strchr(pTopic, '/');
     if (pSlash)
@@ -124,8 +126,8 @@ MQTT_TYPE TransportMqtt::Private::GetDeviceType(const char* pTopic)
         pSlash--;
         uint32_t deviceNameLength = (uint32_t)pSlash - (uint32_t)pTopic;
 
-        type = (MQTT_TYPE)0;
-        while (type < MQTT_TYPE_COUNT)
+        type = 0;
+        while (type < (uint32_t)MQTT_TYPE_COUNT)
         {
             if (deviceNameLength == mqttDeviceTopicLengths[type] &&
                 strcmp(pMqttDeviceTypes[type], pTopic) == STR_CMP_MATCH)
@@ -133,9 +135,10 @@ MQTT_TYPE TransportMqtt::Private::GetDeviceType(const char* pTopic)
                 //Could also verify that the last 12 characters are ascii-hex...
                 break;
             }
+            type++;
         }
     }
-    return type;
+    return (MQTT_TYPE)type;
 }
 
 
