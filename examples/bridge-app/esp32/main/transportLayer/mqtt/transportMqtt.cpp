@@ -29,10 +29,10 @@ struct TransportMqtt::Private
     static void GoogleSendOutlet(const char* pTopic, const char* pPayload, DeviceButton* pDevice);
     static void GoogleSendLightRgb(const char* pTopic, const char* pPayload, DeviceLightRGB* pDevice);
     
-    static void MqttSend(TransportMqtt& self, const Device* pDevice);
-    static void MqttSendLightLevel(TransportMqtt& self, const DeviceLightLevel* pDevice);
-    static void MqttSendOutlet(TransportMqtt& self, const DeviceButton* pDevice);
-    static void MqttSendLightRgb(TransportMqtt& self, const DeviceLightRGB* pDevice);
+    static void MqttSend(TransportMqtt& self, const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata);
+    static void MqttSendLightLevel(TransportMqtt& self, const DeviceLightLevel* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata);
+    static void MqttSendOutlet(TransportMqtt& self, const DeviceButton* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata);
+    static void MqttSendLightRgb(TransportMqtt& self, const DeviceLightRGB* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata);
 };
 /**************************************************************************
  *                                  Variables
@@ -93,7 +93,7 @@ TransportMqtt::~TransportMqtt(void)
  **************************************************************************/
 void TransportMqtt::Send(const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata, uint8_t* buffer)
 {
-    Private::MqttSend(*this, pDevice);
+    Private::MqttSend(*this, pDevice, clusterId, attributeMetadata);
 }
 /**************************************************************************
  *                                  Private Functions
@@ -172,25 +172,25 @@ void TransportMqtt::Private::GoogleSendLightRgb(const char* pTopic, const char* 
 
 
 //Send to EspNow device functions
-void TransportMqtt::Private::MqttSend(TransportMqtt& self, const Device* pDevice)
+void TransportMqtt::Private::MqttSend(TransportMqtt& self, const Device* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata)
 {
     switch (self._type)
     {
-        case MQTT_DIMMER_SWITCH_FEIT:   Private::MqttSendLightLevel(self, (const DeviceLightLevel*)pDevice);    break;
-        case MQTT_OUTLET_GORDON:        Private::MqttSendOutlet(self, (const DeviceButton*)pDevice);            break;
-        case MQTT_LAMP_RGB:             Private::MqttSendLightRgb(self, (const DeviceLightRGB*)pDevice);        break;
-        default:                        /*Support this type!*/                                                  break;
+        case MQTT_DIMMER_SWITCH_FEIT:   Private::MqttSendLightLevel(self, (const DeviceLightLevel*)pDevice, clusterId, attributeMetadata);  break;
+        case MQTT_OUTLET_GORDON:        Private::MqttSendOutlet(self, (const DeviceButton*)pDevice, clusterId, attributeMetadata);          break;
+        case MQTT_LAMP_RGB:             Private::MqttSendLightRgb(self, (const DeviceLightRGB*)pDevice, clusterId, attributeMetadata);      break;
+        default:                        /*Support this type!*/                                                                              break;
     }
 }
-void TransportMqtt::Private::MqttSendLightLevel(TransportMqtt& self, const DeviceLightLevel* pDevice)
+void TransportMqtt::Private::MqttSendLightLevel(TransportMqtt& self, const DeviceLightLevel* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata)
 {
 
 }
-void TransportMqtt::Private::MqttSendOutlet(TransportMqtt& self, const DeviceButton* pDevice)
+void TransportMqtt::Private::MqttSendOutlet(TransportMqtt& self, const DeviceButton* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata)
 {
 
 }
-void TransportMqtt::Private::MqttSendLightRgb(TransportMqtt& self, const DeviceLightRGB* pDevice)
+void TransportMqtt::Private::MqttSendLightRgb(TransportMqtt& self, const DeviceLightRGB* pDevice, ClusterId clusterId, const EmberAfAttributeMetadata* attributeMetadata)
 {
     //Read the cluster info and compose an MQTT update. 
     //Might need to look at the cluster/attribute data to determine what kind of update to post...
